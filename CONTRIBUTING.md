@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing!
 
+> **AI agents / doc index:** see [AGENTS.md](./AGENTS.md) for Cursor rules, skills, and common workflows.
+
 ## Prerequisites
 
 - **Node.js `20.18.3`** and **npm `10.8.2`** (pinned — see `.nvmrc`, `.node-version`, `package.json` → `engines`)
