@@ -6,7 +6,7 @@ Thank you for your interest in contributing!
 
 ## Prerequisites
 
-- **Node.js `20.18.3`** and **npm `10.8.2`** (pinned — see `.nvmrc`, `.node-version`, `package.json` → `engines`)
+- **Node.js `20.20.2`** and **npm `10.8.2`** (pinned — see `.nvmrc`, `.node-version`, `package.json` → `engines`)
 - [Rust](https://www.rust-lang.org/tools/install) (stable)
 - Platform-specific dependencies:
   - **Windows**: Windows SDK (for MSIX builds)
@@ -23,7 +23,7 @@ nvm use
 # fnm
 fnm use       # uses .node-version
 
-node -v       # v20.18.3
+node -v       # v20.20.2
 npm -v        # 10.8.2
 ```
 

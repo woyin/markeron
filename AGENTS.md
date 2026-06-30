@@ -5,7 +5,7 @@ Index for AI agents and contributors. Prefer these docs over guessing project co
 ## Quick start
 
 ```bash
-nvm use          # Node 20.18.3, npm 10.8.2
+nvm use          # Node 20.20.2, npm 10.8.2
 npm install
 npm run dev      # Tauri + frontend
 ```
@@ -51,6 +51,8 @@ cd src-tauri && cargo fmt --check && cargo clippy -- -D warnings && cargo test
 ```
 
 Or before release: `npm run release:check`
+
+Validate pinned Node against lockfile deps: `npm run check:engines`
 
 ## Agent defaults
 

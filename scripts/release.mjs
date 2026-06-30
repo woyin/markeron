@@ -57,6 +57,9 @@ function assertGhAvailable() {
 }
 
 function runChecks() {
+  header('Lockfile engine compatibility')
+  run('npm run check:engines')
+
   header('Frontend typecheck + build')
   run('npm run build:fe')
 
