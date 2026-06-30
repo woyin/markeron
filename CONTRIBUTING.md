@@ -4,12 +4,28 @@ Thank you for your interest in contributing!
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 20
+- **Node.js `20.18.3`** and **npm `10.8.2`** (pinned — see `.nvmrc`, `.node-version`, `package.json` → `engines`)
 - [Rust](https://www.rust-lang.org/tools/install) (stable)
 - Platform-specific dependencies:
   - **Windows**: Windows SDK (for MSIX builds)
   - **macOS**: Xcode Command Line Tools
   - **Linux**: `libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev libxcb-shm0-dev libxcb-randr0-dev`
+
+### Node.js setup
+
+```bash
+# nvm
+nvm install   # uses .nvmrc
+nvm use
+
+# fnm
+fnm use       # uses .node-version
+
+node -v       # v20.18.3
+npm -v        # 10.8.2
+```
+
+`npm install` runs a version check automatically. Wrong Node/npm versions will fail with setup instructions.
 
 ## Development Setup
 
