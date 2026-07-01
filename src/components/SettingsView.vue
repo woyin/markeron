@@ -525,6 +525,30 @@ onUnmounted(() => {
             </div>
           </div>
 
+          <!-- Whiteboard mode -->
+          <div class="settings-card help-card">
+            <div class="help-card-header">{{ t('help.whiteboardMode') }}</div>
+            <div class="help-rows">
+              <div class="help-row">
+                <span class="help-label">{{ t('help.toggleWhiteboard') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">W</kbd></div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.copyWhiteboard') }}</span>
+                <div class="help-keys">
+                  <kbd class="help-kbd">Ctrl+C</kbd><span class="help-sep">/</span><kbd class="help-kbd">⌘+C</kbd>
+                </div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.exitWhiteboard') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Esc</kbd></div>
+              </div>
+              <div class="help-row help-row-block">
+                <span class="help-desc">{{ t('help.whiteboardPreserveHint') }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Edit & other -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.editAndOther') }}</div>

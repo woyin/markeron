@@ -127,6 +127,12 @@ export default {
     nextColor: 'Next color',
     rightClickColor: 'Quick color picker',
     mouseRightClick: 'Right-click',
+    whiteboardMode: 'Whiteboard Mode',
+    toggleWhiteboard: 'Enter / exit whiteboard',
+    copyWhiteboard: 'Copy whiteboard to clipboard',
+    exitWhiteboard: 'Exit whiteboard mode',
+    whiteboardPreserveHint:
+      'In General settings, choose whether pressing W preserves the current whiteboard content. When off, each entry starts with a clean canvas.',
     editAndOther: 'Edit & Other',
     settingsPanel: 'Settings panel',
     copyScreen: 'Copy screen to clipboard',
