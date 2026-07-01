@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart'
 import type { AppConfig } from '../../types/app'
 import { useI18n } from '../../i18n'
+import { isMacOS } from '../../utils/platform'
 
 const { t, locale, setLocale, availableLocales } = useI18n()
 
@@ -16,9 +17,11 @@ const localeOpen = ref(false)
 const localeDropdownRef = ref<HTMLElement | null>(null)
 
 const snapStepOptions = [15, 30, 45] as const
+const modKeyLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
 
 const props = defineProps<{
   enableDragging: boolean
+  dragRequiresModifier: boolean
   preserveDrawings: boolean
   whiteboardPreserveDrawings: boolean
   autoStartEnabled: boolean
@@ -27,6 +30,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:enableDragging': [value: boolean]
+  'update:dragRequiresModifier': [value: boolean]
   'update:preserveDrawings': [value: boolean]
   'update:whiteboardPreserveDrawings': [value: boolean]
   'update:autoStartEnabled': [value: boolean]
@@ -92,6 +96,26 @@ async function toggleDragging() {
     await invoke('save_general', { general: cfg.general })
   } catch (error) {
     console.error('Failed to save drag setting:', error)
+  }
+}
+
+async function toggleDragRequiresModifier() {
+  const newValue = !props.dragRequiresModifier
+  emit('update:dragRequiresModifier', newValue)
+  try {
+    const cfg = await invoke<AppConfig>('get_config')
+    if (!cfg.general)
+      cfg.general = {
+        enableDragging: props.enableDragging,
+        dragRequiresModifier: false,
+        preserveDrawings: false,
+        whiteboardPreserveDrawings: true,
+        angleSnapStep: props.angleSnapStep,
+      }
+    cfg.general.dragRequiresModifier = newValue
+    await invoke('save_general', { general: cfg.general })
+  } catch (error) {
+    console.error('Failed to save drag modifier setting:', error)
   }
 }
 
@@ -252,6 +276,28 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
           </button>
         </div>
         <p class="settings-card-desc">{{ t('settings.enableDraggingDesc') }}</p>
+      </div>
+
+      <div v-if="enableDragging" class="settings-card">
+        <div class="settings-card-row">
+          <span class="text-[12.5px] settings-text-label">{{
+            t('settings.dragRequiresModifier', { modKey: modKeyLabel })
+          }}</span>
+          <button
+            role="switch"
+            :aria-checked="dragRequiresModifier"
+            :aria-label="t('settings.dragRequiresModifier', { modKey: modKeyLabel })"
+            class="relative w-8 h-4.5 rounded-full transition-colors duration-200 cursor-pointer border-none p-0 outline-none shadow-inner"
+            :class="dragRequiresModifier ? 'settings-toggle-on' : 'settings-toggle-off'"
+            @click="toggleDragRequiresModifier"
+          >
+            <span
+              class="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-md transition-transform duration-200"
+              :class="dragRequiresModifier ? 'translate-x-[14px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+        <p class="settings-card-desc">{{ t('settings.dragRequiresModifierDesc', { modKey: modKeyLabel }) }}</p>
       </div>
 
       <div class="settings-card">

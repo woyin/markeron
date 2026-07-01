@@ -11,6 +11,7 @@ import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS } from '../utils/platform'
+import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
 import { useI18n } from '../i18n'
 
 const { t } = useI18n()
@@ -191,6 +192,8 @@ function toggleSettingsVisible() {
 const hoveredActionInfo = shallowRef<{ action: DrawAction; index: number } | null>(null)
 const isMoving = ref(false)
 const enableDragging = ref(false)
+const dragRequiresModifier = ref(false)
+const pointerModDown = ref(false)
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
 let hoverRafId: number | null = null
@@ -269,6 +272,15 @@ function commitCurrentTextBox(cancel = false) {
   }
 }
 
+function canStartElementDrag(e: PointerEvent): boolean {
+  return canStartElementDragGate({
+    enableDragging: enableDragging.value,
+    dragRequiresModifier: dragRequiresModifier.value,
+    hasHoveredElement: !!hoveredActionInfo.value,
+    modifierDown: modDown(e),
+  })
+}
+
 function onDoubleClick(e: MouseEvent) {
   if (e.button !== 0) return
   if (showSettings.value || showQuickColors.value) return
@@ -320,8 +332,8 @@ function onPointerDown(e: PointerEvent) {
     return
   }
 
-  // Prioritize dragging: if pointer is over an existing element, start drag regardless of tool
-  if (hoveredActionInfo.value && enableDragging.value) {
+  // Drag when over an element; optional: require Ctrl/Command (scheme A — modifier on element wins over rect draw)
+  if (canStartElementDrag(e)) {
     isDragging = true
     dragStartX = e.clientX
     dragStartY = e.clientY
@@ -357,6 +369,7 @@ function onPointerDown(e: PointerEvent) {
 function onPointerMove(e: PointerEvent) {
   lastPointerX = e.clientX
   lastPointerY = e.clientY
+  pointerModDown.value = modDown(e)
   updateCursorEl(e.clientX, e.clientY)
 
   if (isDragging) {
@@ -476,7 +489,11 @@ function updateCursorEl(x: number, y: number) {
 
 // CSS cursor for the canvas: 'none' when our SVG overlay handles it
 const canvasCursor = computed(() => {
-  if (enableDragging.value && (isMoving.value || (hoveredActionInfo.value && !isDrawing.value))) return 'move'
+  const showDragCursor =
+    enableDragging.value &&
+    (isMoving.value ||
+      (hoveredActionInfo.value && !isDrawing.value && (!dragRequiresModifier.value || pointerModDown.value)))
+  if (showDragCursor) return 'move'
   if (currentTool.value === 'text') return 'text'
   if (showQuickColors.value || showSettings.value) return 'default'
   return 'none'
@@ -510,6 +527,9 @@ function onKeyUp(e: KeyboardEvent) {
   if (e.key === 'Alt') {
     e.preventDefault()
   }
+  if (e.key === 'Control' || e.key === 'Meta') {
+    pointerModDown.value = false
+  }
 }
 
 onMounted(async () => {
@@ -523,7 +543,9 @@ onMounted(async () => {
   try {
     const cfg = await invoke<AppConfig>('get_config')
     enableDragging.value = cfg.general?.enableDragging ?? false
+    dragRequiresModifier.value = cfg.general?.dragRequiresModifier ?? false
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
+    whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
   } catch (error) {
     console.error('Failed to get initial config:', error)
@@ -533,6 +555,7 @@ onMounted(async () => {
   unlisteners.push(
     await listen<AppConfig>('config-changed', (event) => {
       enableDragging.value = event.payload.general?.enableDragging ?? false
+      dragRequiresModifier.value = event.payload.general?.dragRequiresModifier ?? false
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)

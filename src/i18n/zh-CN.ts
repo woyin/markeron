@@ -89,6 +89,9 @@ export default {
     autoStartDesc: '开启后，应用程序会在系统启动时自动在后台静默运行。',
     enableDragging: '允许拖拽已有元素',
     enableDraggingDesc: '开启后，可以通过鼠标拖动已经绘制的图形和文字。',
+    dragRequiresModifier: '按住 {modKey} 才拖动',
+    dragRequiresModifierDesc:
+      '开启后，需按住 {modKey} 并拖动才能移动元素；不按 {modKey} 时可在已有图形上正常绘制。指针在元素上时，{modKey}+拖动用于移动（而非画矩形）。',
     preserveDrawings: '退出后保留标注',
     preserveDrawingsDesc: '开启后，退出标注模式时不会清除已有标注，下次进入将恢复上次的绘制内容。',
     whiteboardPreserveDrawings: '按 W 切换时保留白板内容',
@@ -137,7 +140,8 @@ export default {
     clearAllAnnotation: '清除全部标注',
     exitAnnotation: '退出标注模式',
     dragAndText: '拖拽与文字',
-    dragDesc: '在设置中开启「允许拖拽已有元素」后，鼠标悬停在已有元素上拖动即可移动。',
+    dragDesc:
+      '在设置中开启「允许拖拽已有元素」后，鼠标悬停在已有元素上拖动即可移动。可额外开启「按住 Ctrl/Command 才拖动」，避免叠画时误触移动。',
     editTextDesc: '双击已有文字重新进入编辑模式；<kbd class="help-kbd">T</kbd> 模式下双击空白处新建文字。',
     confirmTextDesc: '<kbd class="help-kbd">Ctrl+Enter</kbd>（macOS 为 <kbd class="help-kbd">⌘+Return</kbd>）。',
     dragElement: '拖拽元素',

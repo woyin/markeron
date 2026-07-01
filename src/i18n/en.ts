@@ -90,6 +90,9 @@ export default {
     autoStartDesc: 'When enabled, the app runs silently in the background on system startup.',
     enableDragging: 'Allow dragging elements',
     enableDraggingDesc: 'When enabled, you can drag existing drawings and text by hovering over them.',
+    dragRequiresModifier: 'Require {modKey} to drag',
+    dragRequiresModifierDesc:
+      'When enabled, hold {modKey} while dragging to move an element. Without {modKey}, you can draw over existing elements. On an element, {modKey}+drag moves it (instead of drawing a rectangle).',
     preserveDrawings: 'Preserve drawings on exit',
     preserveDrawingsDesc:
       'When enabled, annotations are kept in memory after exiting annotation mode. Re-entering will restore your previous drawings.',
@@ -142,7 +145,8 @@ export default {
     clearAllAnnotation: 'Clear all annotations',
     exitAnnotation: 'Exit annotation',
     dragAndText: 'Drag & Text',
-    dragDesc: 'Enable "Allow dragging elements" in settings, then hover over an element and drag to move it.',
+    dragDesc:
+      'Enable "Allow dragging elements" in settings, then hover over an element and drag to move it. Optionally enable "Require Ctrl/Command to drag" to avoid accidental moves while drawing.',
     editTextDesc:
       'Double-click existing text to re-edit; in <kbd class="help-kbd">T</kbd> mode, double-click empty area to create new text.',
     confirmTextDesc: '<kbd class="help-kbd">Ctrl+Enter</kbd> (macOS: <kbd class="help-kbd">⌘+Return</kbd>).',

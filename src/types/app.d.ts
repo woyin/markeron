@@ -9,6 +9,7 @@ export interface AppConfig {
     preserveDrawings: boolean
     whiteboardPreserveDrawings: boolean
     angleSnapStep?: 15 | 30 | 45
+    dragRequiresModifier?: boolean
   }
 }
 

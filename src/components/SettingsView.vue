@@ -145,6 +145,7 @@ async function resetDefaults() {
 
 const autoStartEnabled = ref(false)
 const enableDragging = ref(false)
+const dragRequiresModifier = ref(false)
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
 const angleSnapStep = ref<15 | 30 | 45>(15)
@@ -155,6 +156,7 @@ onMounted(async () => {
   const cfg = await invoke<AppConfig>('get_config')
   Object.assign(shortcuts, cfg.shortcuts)
   enableDragging.value = cfg.general?.enableDragging ?? false
+  dragRequiresModifier.value = cfg.general?.dragRequiresModifier ?? false
   preserveDrawings.value = cfg.general?.preserveDrawings ?? false
   whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
   angleSnapStep.value = (cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15
@@ -362,11 +364,13 @@ onUnmounted(() => {
       <GeneralTab
         v-else-if="activeTab === 'general'"
         :enable-dragging="enableDragging"
+        :drag-requires-modifier="dragRequiresModifier"
         :preserve-drawings="preserveDrawings"
         :whiteboard-preserve-drawings="whiteboardPreserveDrawings"
         :auto-start-enabled="autoStartEnabled"
         :angle-snap-step="angleSnapStep"
         @update:enable-dragging="enableDragging = $event"
+        @update:drag-requires-modifier="dragRequiresModifier = $event"
         @update:preserve-drawings="preserveDrawings = $event"
         @update:whiteboard-preserve-drawings="whiteboardPreserveDrawings = $event"
         @update:auto-start-enabled="autoStartEnabled = $event"

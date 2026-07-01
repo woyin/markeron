@@ -28,6 +28,8 @@ pub struct GeneralConfig {
     pub whiteboard_preserve_drawings: bool,
     #[serde(default = "default_angle_snap_step", rename = "angleSnapStep")]
     pub angle_snap_step: u16,
+    #[serde(default, rename = "dragRequiresModifier")]
+    pub drag_requires_modifier: bool,
 }
 
 impl Default for GeneralConfig {
@@ -38,6 +40,7 @@ impl Default for GeneralConfig {
             preserve_drawings: false,
             whiteboard_preserve_drawings: true,
             angle_snap_step: default_angle_snap_step(),
+            drag_requires_modifier: false,
         }
     }
 }
@@ -193,6 +196,10 @@ mod tests {
             parsed.general.angle_snap_step,
             config.general.angle_snap_step
         );
+        assert_eq!(
+            parsed.general.drag_requires_modifier,
+            config.general.drag_requires_modifier
+        );
     }
 
     #[test]
@@ -207,7 +214,8 @@ mod tests {
                 "locale": "zh-CN",
                 "preserveDrawings": true,
                 "whiteboardPreserveDrawings": false,
-                "angleSnapStep": 30
+                "angleSnapStep": 30,
+                "dragRequiresModifier": true
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
@@ -218,6 +226,7 @@ mod tests {
         assert!(config.general.preserve_drawings);
         assert!(!config.general.whiteboard_preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 30);
+        assert!(config.general.drag_requires_modifier);
     }
 
     #[test]
@@ -234,6 +243,23 @@ mod tests {
         assert!(!config.general.preserve_drawings);
         assert_eq!(config.general.whiteboard_preserve_drawings, true);
         assert_eq!(config.general.angle_snap_step, 15);
+        assert!(!config.general.drag_requires_modifier);
+    }
+
+    #[test]
+    fn config_deserializes_with_missing_drag_requires_modifier() {
+        let json = r#"{
+            "shortcuts": {
+                "toggleDrawing": "Ctrl+Shift+D",
+                "clearDrawing": "Ctrl+Shift+C"
+            },
+            "general": {
+                "enableDragging": true
+            }
+        }"#;
+        let config: AppConfig = serde_json::from_str(json).unwrap();
+        assert!(config.general.enable_dragging);
+        assert!(!config.general.drag_requires_modifier);
     }
 
     #[test]
