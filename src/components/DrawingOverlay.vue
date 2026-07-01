@@ -8,7 +8,7 @@ import { createKeyDownHandler } from '../composables/useOverlayKeyboard'
 import type { AppConfig } from '../types/app'
 import ToolToolbar from './ToolToolbar.vue'
 import TextBox from './TextBox.vue'
-import { TOOL_ICON_MAP, WIDTH_PRESETS } from '../constants/tools'
+import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth } from '../constants/tools'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
@@ -133,9 +133,8 @@ function selectQuickColor(color: string) {
 
 function onWheel(e: WheelEvent) {
   if (!active.value || !e.ctrlKey) return
-  const tool = currentTool.value
-  if (tool === 'highlighter' || tool === 'eraser') return
   e.preventDefault()
+  const tool = currentTool.value
   const dir = e.deltaY < 0 ? 1 : -1
   const idx = WIDTH_PRESETS.indexOf(lineWidth.value)
   const cur =
@@ -181,6 +180,8 @@ const {
 } = useDrawing(historyCanvasRef, previewCanvasRef)
 
 const textFontSize = computed(() => Math.max(16, lineWidth.value * 6))
+const eraserCursorDiameter = computed(() => Math.min(80, eraserLineWidth(lineWidth.value)))
+const eraserCursorRadius = computed(() => eraserCursorDiameter.value / 2)
 
 const activeTextBoxColor = ref('#FF0000')
 const activeTextBoxFontSize = ref(24)
@@ -571,7 +572,10 @@ function getCursorHotspot(): { x: number; y: number } {
   // Mapped to 32x32 cursor size: x = 388/1024*32 ≈ 12, y = 846/1024*32 ≈ 26
   if (tool === 'pen') return { x: 12, y: 26 }
   if (tool === 'highlighter') return { x: 5, y: 27 } // tip at ~(150, 850) in 1024x1024 space
-  if (tool === 'eraser') return { x: 16, y: 16 }
+  if (tool === 'eraser') {
+    const d = Math.min(80, eraserLineWidth(lineWidth.value))
+    return { x: d / 2, y: d / 2 }
+  }
   return { x: 14, y: 14 }
 }
 
@@ -904,14 +908,36 @@ function exitDrawing() {
       <!-- Eraser: dashed circle + crosshair -->
       <svg
         v-else-if="currentTool === 'eraser'"
-        width="32"
-        height="32"
+        :width="eraserCursorDiameter"
+        :height="eraserCursorDiameter"
         xmlns="http://www.w3.org/2000/svg"
-        style="display: block"
+        style="display: block; overflow: visible"
       >
-        <circle cx="16" cy="16" r="14" fill="none" stroke="white" stroke-width="1.5" stroke-dasharray="3 2" />
-        <line x1="16" y1="12" x2="16" y2="20" stroke="white" stroke-width="1" />
-        <line x1="12" y1="16" x2="20" y2="16" stroke="white" stroke-width="1" />
+        <circle
+          :cx="eraserCursorRadius"
+          :cy="eraserCursorRadius"
+          :r="Math.max(2, eraserCursorRadius - 2)"
+          fill="none"
+          stroke="white"
+          stroke-width="1.5"
+          stroke-dasharray="3 2"
+        />
+        <line
+          :x1="eraserCursorRadius"
+          :y1="eraserCursorRadius - 4"
+          :x2="eraserCursorRadius"
+          :y2="eraserCursorRadius + 4"
+          stroke="white"
+          stroke-width="1"
+        />
+        <line
+          :x1="eraserCursorRadius - 4"
+          :y1="eraserCursorRadius"
+          :x2="eraserCursorRadius + 4"
+          :y2="eraserCursorRadius"
+          stroke="white"
+          stroke-width="1"
+        />
       </svg>
       <!-- Arrow/Rectangle/Ellipse/Line: colored crosshair -->
       <svg v-else width="28" height="28" xmlns="http://www.w3.org/2000/svg" style="display: block">

@@ -618,6 +618,9 @@ onUnmounted(() => {
                   + Scroll
                 </div>
               </div>
+              <div class="help-row help-row-block">
+                <span class="help-desc">{{ t('help.strokeWidthHint') }}</span>
+              </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.clearAllAnnotation') }}</span>
                 <div class="help-keys"><kbd class="help-kbd">Delete</kbd></div>

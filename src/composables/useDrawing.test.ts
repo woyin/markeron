@@ -89,6 +89,24 @@ describe('useDrawing', () => {
       expect(drawing.lineWidth.value).toBe(3)
     })
 
+    it('shares stroke width across pen and shapes; eraser is independent', () => {
+      drawing.currentTool.value = 'pen'
+      drawing.lineWidth.value = 8
+      drawing.currentTool.value = 'arrow'
+      expect(drawing.lineWidth.value).toBe(8)
+      drawing.currentTool.value = 'rect'
+      expect(drawing.lineWidth.value).toBe(8)
+      drawing.currentTool.value = 'highlighter'
+      expect(drawing.lineWidth.value).toBe(3)
+      drawing.currentTool.value = 'eraser'
+      expect(drawing.lineWidth.value).toBe(3)
+      drawing.lineWidth.value = 2
+      drawing.currentTool.value = 'pen'
+      expect(drawing.lineWidth.value).toBe(8)
+      drawing.currentTool.value = 'eraser'
+      expect(drawing.lineWidth.value).toBe(2)
+    })
+
     it('starts not drawing', () => {
       expect(drawing.isDrawing.value).toBe(false)
     })

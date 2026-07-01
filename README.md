@@ -86,7 +86,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | Copy screen | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | Whiteboard toggle | <kbd>W</kbd> | <kbd>W</kbd> |
 | Undo / Redo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
-| Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll |
+| Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll (pen & shapes share; highlighter/eraser/text separate) |
 | Clear all | <kbd>Delete</kbd> | <kbd>Delete</kbd> |
 | Exit | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
@@ -145,6 +145,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 - **Whiteboard & content** — default entry (screen / whiteboard), keep after exit, keep on <kbd>W</kbd> toggle
 - **Element dragging** — off, hover to drag, or hold <kbd>Ctrl</kbd>/<kbd>Command</kbd> to drag (disabled while eraser is selected)
 - **Eraser mode** — stroke (local erase) or object (delete whole elements when passing over); eraser tool disables element dragging
+- **Stroke width** — <kbd>Ctrl</kbd>/<kbd>Command</kbd> + scroll or toolbar; pen & shapes share one width, highlighter/eraser/text are separate
 - **Angle snap step** — snap interval for straight lines drawn with <kbd>Alt</kbd>
 - **Auto start** — launch the app automatically at system startup
 

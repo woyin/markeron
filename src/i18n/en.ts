@@ -16,7 +16,8 @@ export default {
     rect: 'Rectangle outline',
     ellipse: 'Ellipse outline',
     line: 'Straight line segment',
-    eraser: 'Stroke mode erases along the path; switch to object mode in General → Eraser mode',
+    eraser:
+      'Separate width from pen/shapes (Ctrl+scroll or toolbar), scaled up for erasing; switch object mode in General → Eraser mode',
     text: 'Double-click to place, scroll to resize',
   },
   colors: {
@@ -182,7 +183,9 @@ export default {
     copyScreen: 'Copy screen to clipboard',
     undo: 'Undo',
     redo: 'Redo',
-    strokeWidth: 'Stroke / font size',
+    strokeWidth: 'Stroke width',
+    strokeWidthHint:
+      'Pen, arrow, rectangle, ellipse, and line share one width; highlighter, eraser, and text each have their own (default: medium). Use toolbar buttons or Ctrl+scroll; highlighter and eraser strokes are scaled up when drawn.',
     clearAllAnnotation: 'Clear all annotations',
     exitAnnotation: 'Exit annotation',
     dragAndText: 'Drag & Text',

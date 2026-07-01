@@ -392,6 +392,19 @@ describe('hitTestAction', () => {
       })
       expect(hitTestAction(action, { x: 50, y: 40 })).toBe(false)
     })
+
+    it('extraMargin expands hit radius', () => {
+      const action = makeAction({
+        tool: 'pen',
+        lineWidth: 3,
+        points: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+        ],
+        bbox: { x1: -15, y1: -50, x2: 115, y2: 50 },
+      })
+      expect(hitTestAction(action, { x: 50, y: 40 }, 30)).toBe(true)
+    })
   })
 
   describe('highlighter tool', () => {

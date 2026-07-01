@@ -14,6 +14,7 @@ export type { Tool, Point, DrawAction } from './drawingTypes'
 export type { InputPointLike } from './drawingTypes'
 
 import type { Tool, Point, DrawAction, InputPointLike } from './drawingTypes'
+import { createDefaultLineWidths, eraserLineWidth, highlighterLineWidth, toolLineWidthGroup } from '../constants/tools'
 
 const HIT_GRID_SIZE = 192
 const HIT_GRID_MAX_CELLS = 64
@@ -43,13 +44,26 @@ export function useDrawing(
 ) {
   const currentTool = ref<Tool>('pen')
   const currentColor = ref('#FF0000')
-  const lineWidth = ref(3)
+  const lineWidths = ref(createDefaultLineWidths())
+  const lineWidth = computed({
+    get: () => lineWidths.value[toolLineWidthGroup(currentTool.value)],
+    set: (value: number) => {
+      lineWidths.value[toolLineWidthGroup(currentTool.value)] = value
+    },
+  })
   const isDrawing = ref(false)
   const angleSnapStep = ref<15 | 30 | 45>(15)
   const eraserMode = ref<EraserMode>('stroke')
 
   function setEraserMode(mode: EraserMode) {
     eraserMode.value = mode
+  }
+
+  function resolveDrawLineWidth(tool: Tool): number {
+    const w = lineWidths.value[toolLineWidthGroup(tool)]
+    if (tool === 'highlighter') return highlighterLineWidth(w)
+    if (tool === 'eraser') return eraserLineWidth(w)
+    return w
   }
 
   let objectEraserBatch: { action: DrawAction; index: number }[] = []
@@ -502,7 +516,7 @@ export function useDrawing(
     const action: DrawAction = {
       tool: 'text',
       color: color ?? currentColor.value,
-      lineWidth: lineWidth.value,
+      lineWidth: lineWidths.value.text,
       opacity: 1,
       points: [{ x, y }],
       text,
@@ -545,7 +559,7 @@ export function useDrawing(
     const pts = action.points
     let removedAny = false
     for (let i = objectEraserLastProcessedPt; i < pts.length; i++) {
-      const hit = findActionAt(pts[i])
+      const hit = findActionAt(pts[i], action.lineWidth / 2)
       if (!hit || objectEraserRemovedSet.has(hit.action)) continue
       objectEraserRemovedSet.add(hit.action)
       const idx = history.indexOf(hit.action)
@@ -573,7 +587,7 @@ export function useDrawing(
     if (useIncrementalStroke) initStrokeCanvas()
 
     const opacity = currentTool.value === 'highlighter' ? 0.35 : 1
-    const width = currentTool.value === 'highlighter' ? 20 : currentTool.value === 'eraser' ? 25 : lineWidth.value
+    const width = resolveDrawLineWidth(currentTool.value)
 
     currentAction.value = {
       tool: currentTool.value,
@@ -1109,7 +1123,7 @@ export function useDrawing(
     flushRender()
   }
 
-  function findActionAt(p: Point): { action: DrawAction; index: number } | null {
+  function findActionAt(p: Point, extraMargin = 0): { action: DrawAction; index: number } | null {
     ensureHitGrid()
     ensureHistoryIndex()
 
@@ -1133,7 +1147,7 @@ export function useDrawing(
         }
       }
 
-      if (hitTestAction(action, p)) {
+      if (hitTestAction(action, p, extraMargin)) {
         const index = historyIndexMap.get(action)
         if (index !== undefined && index < history.length && history[index] === action) {
           return { action, index }

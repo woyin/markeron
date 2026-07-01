@@ -113,14 +113,17 @@ export function snapPointToAngle(start: Point, raw: Point, stepDegrees = 15): Po
   }
 }
 
-export function hitTestAction(action: DrawAction, p: Point): boolean {
+export function hitTestAction(action: DrawAction, p: Point, extraMargin = 0): boolean {
   const pts = action.points
   if (pts.length === 0) return false
 
   const bbox = action.bbox
-  if (bbox && (p.x < bbox.x1 || p.x > bbox.x2 || p.y < bbox.y1 || p.y > bbox.y2)) return false
+  if (bbox) {
+    const m = extraMargin
+    if (p.x < bbox.x1 - m || p.x > bbox.x2 + m || p.y < bbox.y1 - m || p.y > bbox.y2 + m) return false
+  }
 
-  const threshold = Math.max(10, (action.lineWidth || 2) / 2 + 5)
+  const threshold = Math.max(10, (action.lineWidth || 2) / 2 + 5) + extraMargin
 
   if (action.tool === 'text' && action.text) {
     const fs = action.fontSize ?? 24

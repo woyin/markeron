@@ -85,7 +85,7 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 | 复制屏幕 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | 白板模式切换 | <kbd>W</kbd> | <kbd>W</kbd> |
 | 撤销 / 重做 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
-| 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮 |
+| 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮（画笔与形状共用；荧光笔/橡皮擦/文字各自独立） |
 | 清除全部 | <kbd>Delete</kbd> | <kbd>Delete</kbd> |
 | 退出标注 | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
@@ -144,6 +144,7 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 - **白板与内容** — 默认进入（屏幕标注 / 白板）、退出标注后保留、按 <kbd>W</kbd> 切换时保留
 - **元素拖拽** — 关闭、悬停拖动，或按住 <kbd>Ctrl</kbd>/<kbd>Command</kbd> 才拖动（橡皮擦工具下不触发）
 - **橡皮擦模式** — 轨迹擦除（局部）或对象擦除（划过删除整段元素）；使用橡皮擦时不触发元素拖拽
+- **线宽** — <kbd>Ctrl</kbd>/<kbd>Command</kbd> + 滚轮或工具栏调节；画笔与形状共用，荧光笔/橡皮擦/文字各自独立
 - **吸附角度步进** — 按住 <kbd>Alt</kbd> 绘制直线时的吸附角度间隔
 - **开机自动启动** — 系统启动时自动在后台运行
 

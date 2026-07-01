@@ -16,7 +16,8 @@ export default {
     rect: '矩形边框',
     ellipse: '椭圆边框',
     line: '直线段',
-    eraser: '轨迹擦除：沿路径局部擦除；可在「常规 → 橡皮擦模式」切换对象擦除',
+    eraser:
+      '画笔与形状共用粗细；橡皮擦单独调节（Ctrl+滚轮或工具栏），实际擦除更大；可在「常规 → 橡皮擦模式」切换对象擦除',
     text: '双击放置，滚轮调字号',
   },
   colors: {
@@ -177,7 +178,9 @@ export default {
     copyScreen: '复制屏幕到剪贴板',
     undo: '撤销',
     redo: '重做',
-    strokeWidth: '线宽 / 字号',
+    strokeWidth: '调整线宽',
+    strokeWidthHint:
+      '画笔与箭头/矩形/椭圆/直线共用粗细；荧光笔、橡皮擦、文字各自独立（默认均为「中」）。可用工具栏线宽按钮或 Ctrl+滚轮调节；荧光笔与橡皮擦的实际绘制会按比例放大。',
     clearAllAnnotation: '清除全部标注',
     exitAnnotation: '退出标注模式',
     dragAndText: '拖拽与文字',
