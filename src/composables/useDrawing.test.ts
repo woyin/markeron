@@ -161,6 +161,44 @@ describe('useDrawing', () => {
       drawing.redo()
     })
 
+    it('canUndo and canRedo reflect stack state', () => {
+      expect(drawing.canUndo.value).toBe(false)
+      expect(drawing.canRedo.value).toBe(false)
+
+      drawing.startDraw({ x: 0, y: 0 })
+      drawing.draw({ x: 10, y: 10 })
+      drawing.endDraw()
+      expect(drawing.canUndo.value).toBe(true)
+      expect(drawing.canRedo.value).toBe(false)
+
+      drawing.undo()
+      expect(drawing.canUndo.value).toBe(false)
+      expect(drawing.canRedo.value).toBe(true)
+    })
+
+    it('undo removes the drawn action from history', () => {
+      drawing.startDraw({ x: 100, y: 100 })
+      drawing.draw({ x: 150, y: 150 })
+      drawing.endDraw()
+      expect(drawing.findActionAt({ x: 125, y: 125 })).not.toBeNull()
+
+      drawing.undo()
+      expect(drawing.findActionAt({ x: 125, y: 125 })).toBeNull()
+
+      drawing.redo()
+      expect(drawing.findActionAt({ x: 125, y: 125 })).not.toBeNull()
+    })
+
+    it('canClear reflects whether canvas has drawings', () => {
+      expect(drawing.canClear.value).toBe(false)
+      drawing.startDraw({ x: 0, y: 0 })
+      drawing.draw({ x: 10, y: 10 })
+      drawing.endDraw()
+      expect(drawing.canClear.value).toBe(true)
+      drawing.clearAll()
+      expect(drawing.canClear.value).toBe(false)
+    })
+
     it('new draw after undo clears redo stack', () => {
       drawing.startDraw({ x: 0, y: 0 })
       drawing.draw({ x: 10, y: 10 })

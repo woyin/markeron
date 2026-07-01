@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
 import type { Tool } from './drawingTypes'
 import { isMacOS } from '../utils/platform'
 
@@ -6,7 +6,8 @@ const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'li
 
 export interface KeyboardContext {
   active: Ref<boolean>
-  showSettings: Ref<boolean>
+  showToolbarPopup: Ref<boolean>
+  toolbarPinned: Ref<boolean> | ComputedRef<boolean>
   showQuickColors: Ref<boolean>
   quickColorsPos: Ref<{ x: number; y: number }>
   textBoxPos: Ref<{ x: number; y: number } | null>
@@ -29,8 +30,8 @@ export interface KeyboardActions {
   exitWhiteboardMode: () => void
   copyScreen: () => void
   copyWhiteboard: () => void
-  setSettingsVisible: (visible: boolean) => void
-  toggleSettingsVisible: () => void
+  setToolbarPopupVisible: (visible: boolean) => void
+  toggleToolbarPopupVisible: () => void
   commitCurrentTextBox: (cancel?: boolean) => void
 }
 
@@ -62,7 +63,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
         e.preventDefault()
         ctx.mousePos.value = { ...ctx.quickColorsPos.value }
         ctx.showQuickColors.value = false
-        actions.toggleSettingsVisible()
+        actions.toggleToolbarPopupVisible()
       }
       return
     }
@@ -75,11 +76,12 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Settings panel toggle
+    // Toolbar popup toggle (Space) — skipped when toolbar is pinned always-on
     if (e.key === ' ') {
+      if (ctx.toolbarPinned.value) return
       e.preventDefault()
       ctx.mousePos.value = { x: ctx.lastPointerX(), y: ctx.lastPointerY() }
-      actions.toggleSettingsVisible()
+      actions.toggleToolbarPopupVisible()
       return
     }
 
@@ -97,7 +99,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
     if (e.key === 't' || e.key === 'T') {
       ctx.currentTool.value = 'text'
       actions.showToolTip('text')
-      actions.setSettingsVisible(false)
+      actions.setToolbarPopupVisible(false)
       return
     }
 
@@ -106,7 +108,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       const tool = TOOL_KEYS[parseInt(e.key) - 1]
       ctx.currentTool.value = tool
       actions.showToolTip(tool)
-      actions.setSettingsVisible(false)
+      actions.setToolbarPopupVisible(false)
       return
     }
 
@@ -131,8 +133,8 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Don't process edit shortcuts when settings panel is open
-    if (ctx.showSettings.value) return
+    // Don't process edit shortcuts when toolbar popup is open (space mode)
+    if (ctx.showToolbarPopup.value && !ctx.toolbarPinned.value) return
 
     // Undo/Redo/Clear/Exit
     if (modDown(e) && e.shiftKey && e.key === 'Z') {

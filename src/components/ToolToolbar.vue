@@ -1,21 +1,32 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted, computed, watch } from 'vue'
+import { Undo2, Redo2, Trash2, Layout, Copy, MoreHorizontal, ChevronUp } from '@lucide/vue'
 import type { Tool } from '../composables/useDrawing'
 import { isMacOS } from '../utils/platform'
 import { useI18n } from '../i18n'
 import { TOOL_DEFS, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_ROWS } from '../constants/colors'
+import { loadToolbarPosition, saveToolbarPosition } from '../utils/toolbarPosition'
+import type { ToolbarLayout } from '../utils/toolbarSettings'
 
 const { t } = useI18n()
 
 const modKeyLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
 
 const props = defineProps<{
+  layout: ToolbarLayout
+  pinned: boolean
   currentTool: Tool
   currentColor: string
   lineWidth: number
-  x: number
-  y: number
+  whiteboardMode: boolean
+  canUndo: boolean
+  canRedo: boolean
+  canClear: boolean
+  anchorX: number
+  anchorY: number
+  pointerX: number
+  pointerY: number
 }>()
 
 const emit = defineEmits<{
@@ -23,34 +34,53 @@ const emit = defineEmits<{
   selectColor: [color: string]
   updateLineWidth: [width: number]
   close: []
+  undo: []
+  redo: []
+  clearAll: []
+  toggleWhiteboard: []
+  copy: []
+  panelHover: [hovering: boolean]
 }>()
 
 const tools = computed(() => TOOL_DEFS.map((d) => ({ ...d, label: t(`tools.${d.id}`) })))
-
 const colors = COLOR_ROWS
-
+const simpleColors = computed(() => colors[0] ?? [])
 const widths = computed(() => WIDTH_PRESETS.map((v) => ({ value: v, label: t(`widths.${v}`) })))
+
+const expanded = ref(false)
+const showFullPanel = computed(() => props.layout === 'detailed' || expanded.value)
+
+const panelW = computed(() => (showFullPanel.value ? 272 : 304))
+const closeOnSelect = computed(() => !props.pinned)
 
 function needsWhiteCheck(ri: number, ci: number): boolean {
   return ci >= 5 || (ri === colors.length - 1 && ci >= 3)
 }
 
-function selectToolAndClose(tool: Tool) {
+function maybeClose() {
+  if (closeOnSelect.value) emit('close')
+}
+
+function selectTool(tool: Tool) {
   emit('selectTool', tool)
-  emit('close')
+  maybeClose()
 }
 
-function selectColorAndClose(color: string) {
+function selectColor(color: string) {
   emit('selectColor', color)
-  emit('close')
+  maybeClose()
 }
 
-function updateWidthAndClose(width: number) {
+function updateWidth(width: number) {
   emit('updateLineWidth', width)
-  emit('close')
+  maybeClose()
 }
 
-const panelW = 272
+function toggleExpanded() {
+  expanded.value = !expanded.value
+  nextTick(() => initPosition())
+}
+
 const panelRef = ref<HTMLDivElement | null>(null)
 const panelLeft = ref(0)
 const panelTop = ref(0)
@@ -58,16 +88,48 @@ const positioned = ref(false)
 const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 
+function clampPosition(left: number, top: number, panelH: number) {
+  const w = panelW.value
+  return {
+    left: Math.max(12, Math.min(left, window.innerWidth - w - 12)),
+    top: Math.max(12, Math.min(top, window.innerHeight - panelH - 12)),
+  }
+}
+
+function syncPanelHover() {
+  if (!panelRef.value || !positioned.value) {
+    emit('panelHover', false)
+    return
+  }
+  const r = panelRef.value.getBoundingClientRect()
+  const inside =
+    props.pointerX >= r.left && props.pointerX <= r.right && props.pointerY >= r.top && props.pointerY <= r.bottom
+  emit('panelHover', inside)
+}
+
 function initPosition() {
   nextTick(() => {
     const panelH = panelRef.value?.offsetHeight ?? 400
-    let left = props.x - panelW / 2
-    let top = props.y - panelH / 2
-    left = Math.max(12, Math.min(left, window.innerWidth - panelW - 12))
-    top = Math.max(12, Math.min(top, window.innerHeight - panelH - 12))
-    panelLeft.value = left
-    panelTop.value = top
+    let left: number
+    let top: number
+    if (props.pinned) {
+      const saved = loadToolbarPosition()
+      if (saved) {
+        left = saved.left
+        top = saved.top
+      } else {
+        left = 12
+        top = 12
+      }
+    } else {
+      left = props.anchorX - panelW.value / 2
+      top = props.anchorY - panelH / 2
+    }
+    const clamped = clampPosition(left, top, panelH)
+    panelLeft.value = clamped.left
+    panelTop.value = clamped.top
     positioned.value = true
+    syncPanelHover()
   })
 }
 
@@ -93,18 +155,35 @@ function onDrag(e: MouseEvent) {
   if (dragRafId !== null) return
   dragRafId = requestAnimationFrame(() => {
     dragRafId = null
-    panelLeft.value = Math.max(0, Math.min(lastDragX - dragOffset.value.x, window.innerWidth - panelW))
+    const w = panelW.value
+    panelLeft.value = Math.max(0, Math.min(lastDragX - dragOffset.value.x, window.innerWidth - w))
     panelTop.value = Math.max(0, Math.min(lastDragY - dragOffset.value.y, window.innerHeight - cachedPanelH))
   })
 }
 
 function stopDrag() {
+  if (!isDragging.value) return
   isDragging.value = false
   if (dragRafId !== null) {
     cancelAnimationFrame(dragRafId)
     dragRafId = null
   }
+  if (props.pinned) {
+    saveToolbarPosition(panelLeft.value, panelTop.value)
+  }
+  syncPanelHover()
 }
+
+defineExpose({ syncPanelHover })
+
+watch(
+  () => [props.layout, props.pinned] as const,
+  () => {
+    expanded.value = false
+    positioned.value = false
+    initPosition()
+  },
+)
 
 onMounted(() => {
   initPosition()
@@ -113,6 +192,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  emit('panelHover', false)
   window.removeEventListener('mousemove', onDrag)
   window.removeEventListener('mouseup', stopDrag)
   if (dragRafId !== null) {
@@ -123,22 +203,102 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fixed top-0 left-0 w-screen h-screen z-100001" @mousedown.self="emit('close')">
+  <div
+    class="fixed top-0 left-0 w-screen h-screen z-100001"
+    :class="pinned ? 'pointer-events-none' : ''"
+    @mousedown.self="!pinned && emit('close')"
+  >
     <div
       ref="panelRef"
-      class="absolute left-0 top-0 w-[272px]"
+      class="absolute left-0 top-0"
+      :class="pinned ? 'pointer-events-auto' : ''"
       :style="{
+        width: panelW + 'px',
         transform: `translate3d(${panelLeft}px,${panelTop}px,0)`,
         willChange: isDragging ? 'transform' : 'auto',
         opacity: positioned ? 1 : 0,
       }"
       @mousedown.stop
+      @mouseenter="emit('panelHover', true)"
+      @mouseleave="emit('panelHover', false)"
     >
       <div class="overlay-panel-surface overlay-panel w-full">
         <div class="h-2.5 cursor-default" @mousedown="startDrag" />
 
-        <!-- Tools -->
-        <div class="px-3.5 pt-1 pb-2.5">
+        <!-- Actions -->
+        <div class="px-3 pt-1 pb-2 flex items-center gap-1 cursor-default" @mousedown="startDrag">
+          <button
+            type="button"
+            class="overlay-toolbar-action"
+            :disabled="!canUndo"
+            :title="t('toolbar.undo')"
+            :aria-label="t('toolbar.undo')"
+            @click="emit('undo')"
+          >
+            <Undo2 :size="15" />
+          </button>
+          <button
+            type="button"
+            class="overlay-toolbar-action"
+            :disabled="!canRedo"
+            :title="t('toolbar.redo')"
+            :aria-label="t('toolbar.redo')"
+            @click="emit('redo')"
+          >
+            <Redo2 :size="15" />
+          </button>
+          <button
+            type="button"
+            class="overlay-toolbar-action"
+            :disabled="!canClear"
+            :title="t('toolbar.clear')"
+            :aria-label="t('toolbar.clear')"
+            @click="emit('clearAll')"
+          >
+            <Trash2 :size="15" />
+          </button>
+          <span class="flex-1" />
+          <button
+            type="button"
+            class="overlay-toolbar-action"
+            :class="whiteboardMode ? 'overlay-toolbar-action--active' : ''"
+            :title="whiteboardMode ? t('toolbar.exitWhiteboard') : t('toolbar.whiteboard')"
+            :aria-label="whiteboardMode ? t('toolbar.exitWhiteboard') : t('toolbar.whiteboard')"
+            @click="emit('toggleWhiteboard')"
+          >
+            <Layout :size="15" />
+          </button>
+          <button
+            type="button"
+            class="overlay-toolbar-action"
+            :title="t('toolbar.copy')"
+            :aria-label="t('toolbar.copy')"
+            @click="emit('copy')"
+          >
+            <Copy :size="15" />
+          </button>
+        </div>
+
+        <!-- Simple compact tools -->
+        <div v-if="!showFullPanel" class="px-3 pb-2">
+          <div class="grid grid-cols-8 gap-0.5">
+            <button
+              v-for="tool in tools"
+              :key="tool.id"
+              :aria-label="`${tool.label} (${tool.key})`"
+              :aria-pressed="currentTool === tool.id"
+              class="flex items-center justify-center h-8 border-none rounded-lg cursor-pointer transition-all duration-150"
+              :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
+              :title="`${tool.label} (${tool.key})`"
+              @click="selectTool(tool.id)"
+            >
+              <component :is="tool.icon" :size="16" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed tools -->
+        <div v-else class="px-3.5 pt-0 pb-2.5">
           <div class="flex items-center justify-between mb-2 cursor-default" @mousedown="startDrag">
             <span class="text-[11px] font-semibold overlay-text-section tracking-[0.5px] font-sans">{{
               t('panel.tools')
@@ -154,7 +314,7 @@ onUnmounted(() => {
               class="flex flex-col items-center gap-[3px] pt-2 px-1 pb-1.5 border-none rounded-[10px] cursor-pointer relative transition-all duration-150"
               :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
               :title="`${tool.label} (${tool.key})`"
-              @click="selectToolAndClose(tool.id)"
+              @click="selectTool(tool.id)"
             >
               <component :is="tool.icon" :size="18" />
               <span class="text-[10px] leading-none font-sans">{{ tool.label }}</span>
@@ -167,8 +327,27 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Colors -->
-        <div class="px-3.5 py-2.5 ui-divider-h">
+        <!-- Simple colors -->
+        <div v-if="!showFullPanel" class="px-3 py-2 ui-divider-h">
+          <div class="flex justify-between">
+            <button
+              v-for="color in simpleColors"
+              :key="color"
+              class="w-[30px] h-[30px] p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
+              :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
+              @click="selectColor(color)"
+            >
+              <span
+                class="w-6 h-6 rounded-full color-swatch-ring transition-[border-color] duration-120"
+                :class="{ 'color-swatch-ring--active': currentColor === color }"
+                :style="{ backgroundColor: color }"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Detailed colors -->
+        <div v-else class="px-3.5 py-2.5 ui-divider-h">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[11px] font-semibold overlay-text-section tracking-[0.5px] font-sans">{{
               t('panel.colors')
@@ -181,7 +360,7 @@ onUnmounted(() => {
                 :key="color"
                 class="w-[30px] h-[30px] p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
                 :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
-                @click="selectColorAndClose(color)"
+                @click="selectColor(color)"
               >
                 <span
                   class="w-6 h-6 rounded-full color-swatch-ring transition-[border-color] duration-120"
@@ -208,7 +387,7 @@ onUnmounted(() => {
               type="color"
               class="absolute w-0 h-0 opacity-0 pointer-events-none"
               :value="currentColor"
-              @input="emit('selectColor', ($event.target as HTMLInputElement).value)"
+              @input="selectColor(($event.target as HTMLInputElement).value)"
             />
             <span
               class="w-[20px] h-[20px] rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
@@ -243,7 +422,7 @@ onUnmounted(() => {
 
         <!-- Stroke width -->
         <div class="px-3.5 py-2.5 ui-divider-h">
-          <div class="flex items-center justify-between mb-2">
+          <div v-if="showFullPanel" class="flex items-center justify-between mb-2">
             <span class="text-[11px] font-semibold overlay-text-section tracking-[0.5px] font-sans">{{
               t('panel.strokeWidth')
             }}</span>
@@ -255,7 +434,7 @@ onUnmounted(() => {
               class="group flex-1 flex items-center justify-center h-8 border-none rounded-lg cursor-pointer transition-all duration-120"
               :class="lineWidth === w.value ? 'overlay-width-btn--active' : 'overlay-width-btn'"
               :title="w.label"
-              @click="updateWidthAndClose(w.value)"
+              @click="updateWidth(w.value)"
             >
               <span
                 class="w-[70%] rounded-full transition-transform duration-120 group-hover:scale-x-110"
@@ -268,8 +447,20 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Shortcut hints -->
-        <div class="flex flex-col gap-1.5 pt-3 px-3.5 pb-3 ui-divider-h">
+        <!-- More / collapse (simple layout only) -->
+        <div v-if="layout === 'simple'" class="px-3.5 pb-3">
+          <button
+            type="button"
+            class="w-full flex items-center justify-center gap-1.5 h-8 border-none rounded-lg cursor-pointer overlay-tool-btn text-[11px] font-sans"
+            @click="toggleExpanded"
+          >
+            <component :is="expanded ? ChevronUp : MoreHorizontal" :size="14" />
+            {{ expanded ? t('toolbar.less') : t('toolbar.more') }}
+          </button>
+        </div>
+
+        <!-- Shortcut hints (detailed only) -->
+        <div v-if="showFullPanel" class="flex flex-col gap-1.5 pt-1 px-3.5 pb-3 ui-divider-h">
           <div class="flex items-center justify-between text-[10.5px] font-sans">
             <span class="flex items-center gap-1.5 overlay-text-body">
               <kbd class="ui-kbd">{{ modKeyLabel }}</kbd>
@@ -317,3 +508,43 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.overlay-toolbar-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.06);
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.overlay-toolbar-action:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 1);
+}
+
+.overlay-toolbar-action:disabled {
+  opacity: 0.32;
+  cursor: default;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.overlay-toolbar-action:disabled:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.overlay-toolbar-action--active {
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 1);
+}
+</style>

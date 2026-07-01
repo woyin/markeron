@@ -15,8 +15,13 @@ export interface AppConfig {
     preserveDrawings: boolean
     whiteboardPreserveDrawings: boolean
     angleSnapStep?: 15 | 30 | 45
+    toolbarVisibility?: ToolbarVisibility
+    toolbarLayout?: ToolbarLayout
   }
 }
+
+export type ToolbarVisibility = 'space' | 'always'
+export type ToolbarLayout = 'simple' | 'detailed'
 
 export interface SaveResult {
   ok: boolean

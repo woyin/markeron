@@ -16,9 +16,10 @@ fn default_angle_snap_step() -> u16 {
     15
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DragMode {
     #[serde(rename = "off")]
+    #[default]
     Off,
     #[serde(rename = "hover")]
     Hover,
@@ -26,10 +27,22 @@ pub enum DragMode {
     Modifier,
 }
 
-impl Default for DragMode {
-    fn default() -> Self {
-        Self::Off
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum ToolbarVisibility {
+    #[serde(rename = "space")]
+    #[default]
+    Space,
+    #[serde(rename = "always")]
+    Always,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum ToolbarLayout {
+    #[serde(rename = "simple")]
+    Simple,
+    #[serde(rename = "detailed")]
+    #[default]
+    Detailed,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,6 +61,10 @@ pub struct GeneralConfig {
     pub whiteboard_preserve_drawings: bool,
     #[serde(default = "default_angle_snap_step", rename = "angleSnapStep")]
     pub angle_snap_step: u16,
+    #[serde(default, rename = "toolbarVisibility")]
+    pub toolbar_visibility: ToolbarVisibility,
+    #[serde(default, rename = "toolbarLayout")]
+    pub toolbar_layout: ToolbarLayout,
 }
 
 impl Default for GeneralConfig {
@@ -60,6 +77,8 @@ impl Default for GeneralConfig {
             preserve_drawings: false,
             whiteboard_preserve_drawings: true,
             angle_snap_step: default_angle_snap_step(),
+            toolbar_visibility: ToolbarVisibility::Space,
+            toolbar_layout: ToolbarLayout::Detailed,
         }
     }
 }
@@ -88,6 +107,18 @@ impl GeneralConfig {
         });
         self.enable_dragging = false;
         self.drag_requires_modifier = false;
+        if !matches!(
+            self.toolbar_visibility,
+            ToolbarVisibility::Space | ToolbarVisibility::Always
+        ) {
+            self.toolbar_visibility = ToolbarVisibility::Space;
+        }
+        if !matches!(
+            self.toolbar_layout,
+            ToolbarLayout::Simple | ToolbarLayout::Detailed
+        ) {
+            self.toolbar_layout = ToolbarLayout::Detailed;
+        }
         self
     }
 }
@@ -354,7 +385,10 @@ mod tests {
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert_eq!(config.general.clone().normalized().drag_mode(), DragMode::Hover);
+        assert_eq!(
+            config.general.clone().normalized().drag_mode(),
+            DragMode::Hover
+        );
         assert_eq!(config.general.locale, Some("en".to_string()));
         assert!(config.general.preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 15);
@@ -376,6 +410,30 @@ mod tests {
         assert_eq!(config.general.locale, None);
         assert!(!config.general.preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 15);
+    }
+
+    #[test]
+    fn config_deserializes_toolbar_settings() {
+        let json = r#"{
+            "shortcuts": {
+                "toggleDrawing": "Ctrl+Shift+D",
+                "clearDrawing": "Ctrl+Shift+C"
+            },
+            "general": {
+                "toolbarVisibility": "always",
+                "toolbarLayout": "simple"
+            }
+        }"#;
+        let config: AppConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.general.toolbar_visibility, ToolbarVisibility::Always);
+        assert_eq!(config.general.toolbar_layout, ToolbarLayout::Simple);
+    }
+
+    #[test]
+    fn general_config_defaults_toolbar_settings() {
+        let general = GeneralConfig::default();
+        assert_eq!(general.toolbar_visibility, ToolbarVisibility::Space);
+        assert_eq!(general.toolbar_layout, ToolbarLayout::Detailed);
     }
 
     #[test]

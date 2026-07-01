@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { createKeyDownHandler, type KeyboardContext, type KeyboardActions } from './useOverlayKeyboard'
 import type { Tool } from './drawingTypes'
 
 function createContext(overrides: Partial<KeyboardContext> = {}): KeyboardContext {
   return {
     active: ref(true),
-    showSettings: ref(false),
+    showToolbarPopup: ref(false),
+    toolbarPinned: ref(false),
     showQuickColors: ref(false),
     quickColorsPos: ref({ x: 100, y: 100 }),
     textBoxPos: ref(null),
@@ -41,8 +42,8 @@ function createActions(): KeyboardActions & { calls: Record<string, unknown[][]>
     exitWhiteboardMode: make('exitWhiteboardMode') as KeyboardActions['exitWhiteboardMode'],
     copyScreen: make('copyScreen') as KeyboardActions['copyScreen'],
     copyWhiteboard: make('copyWhiteboard') as KeyboardActions['copyWhiteboard'],
-    setSettingsVisible: make('setSettingsVisible') as KeyboardActions['setSettingsVisible'],
-    toggleSettingsVisible: make('toggleSettingsVisible') as KeyboardActions['toggleSettingsVisible'],
+    setToolbarPopupVisible: make('setToolbarPopupVisible') as KeyboardActions['setToolbarPopupVisible'],
+    toggleToolbarPopupVisible: make('toggleToolbarPopupVisible') as KeyboardActions['toggleToolbarPopupVisible'],
     commitCurrentTextBox: make('commitCurrentTextBox') as KeyboardActions['commitCurrentTextBox'],
   }
 }
@@ -119,9 +120,9 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.showToolTip[0]).toEqual(['text'])
     })
 
-    it('tool switch hides settings panel', () => {
+    it('tool switch hides toolbar popup', () => {
       handler(key('3'))
-      expect(actions.calls.setSettingsVisible[0]).toEqual([false])
+      expect(actions.calls.setToolbarPopupVisible[0]).toEqual([false])
     })
   })
 
@@ -141,8 +142,8 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.redo).toHaveLength(1)
     })
 
-    it('does not undo/redo when settings panel is open', () => {
-      ctx.showSettings.value = true
+    it('does not undo/redo when toolbar popup is open', () => {
+      ctx.showToolbarPopup.value = true
       handler(key('z', { ctrlKey: true }))
       expect(actions.calls.undo).toHaveLength(0)
     })
@@ -166,8 +167,8 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.exitDrawing).toHaveLength(0)
     })
 
-    it('does not clear/exit when settings panel is open', () => {
-      ctx.showSettings.value = true
+    it('does not clear/exit when toolbar popup is open', () => {
+      ctx.showToolbarPopup.value = true
       handler(key('Delete'))
       handler(key('Escape'))
       expect(actions.calls.clearAll).toHaveLength(0)
@@ -188,10 +189,16 @@ describe('useOverlayKeyboard', () => {
     })
   })
 
-  describe('space toggles settings', () => {
-    it('space toggles settings panel', () => {
+  describe('space toggles toolbar popup', () => {
+    it('space toggles toolbar popup', () => {
       handler(key(' '))
-      expect(actions.calls.toggleSettingsVisible).toHaveLength(1)
+      expect(actions.calls.toggleToolbarPopupVisible).toHaveLength(1)
+    })
+
+    it('space does nothing when toolbar is pinned', () => {
+      ;(ctx.toolbarPinned as Ref<boolean>).value = true
+      handler(key(' '))
+      expect(actions.calls.toggleToolbarPopupVisible).toHaveLength(0)
     })
 
     it('space updates mousePos from lastPointer', () => {
@@ -206,8 +213,8 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.copyScreen).toHaveLength(1)
     })
 
-    it('Ctrl+C works even when settings is open (before settings check)', () => {
-      ctx.showSettings.value = true
+    it('Ctrl+C works even when toolbar popup is open (before popup check)', () => {
+      ctx.showToolbarPopup.value = true
       handler(key('c', { ctrlKey: true }))
       expect(actions.calls.copyScreen).toHaveLength(1)
     })
@@ -252,10 +259,10 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.cycleColor[1]).toEqual([1])
     })
 
-    it('Space closes quick colors and opens settings', () => {
+    it('Space closes quick colors and opens toolbar popup', () => {
       handler(key(' '))
       expect(ctx.showQuickColors.value).toBe(false)
-      expect(actions.calls.toggleSettingsVisible).toHaveLength(1)
+      expect(actions.calls.toggleToolbarPopupVisible).toHaveLength(1)
     })
 
     it('Ctrl+C copies screen in quick color mode', () => {

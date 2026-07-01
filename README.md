@@ -36,7 +36,7 @@
 
 - **Annotate anywhere** — draw over any app, including the taskbar
 - **8 tools** — pen, highlighter, arrow, rectangle, ellipse, line, eraser, text
-- **Intuitive panel** — press <kbd>Space</kbd> to toggle tools, colors, and stroke widths
+- **Flexible toolbar** — press <kbd>Space</kbd> to toggle, or enable **always-on** in Settings; simple or detailed layout with undo, copy, and whiteboard actions in-panel
 - **Full keyboard control** — every action has a shortcut, no menus needed
 - **Preserve drawings** — optionally keep annotations in memory after exiting, so you can resume where you left off
 - **Whiteboard mode** — press <kbd>W</kbd> to switch into a clean whiteboard workspace; whether drawings are preserved when toggling is configurable in Settings
@@ -81,7 +81,8 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 
 | Action | Windows | macOS |
 | :--- | :--- | :--- |
-| Settings panel | <kbd>Space</kbd> | <kbd>Space</kbd> |
+| Toolbar (toggle) | <kbd>Space</kbd> | <kbd>Space</kbd> |
+| Toolbar always-on / layout | Settings → General | Settings → General |
 | Copy screen | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | Whiteboard toggle | <kbd>W</kbd> | <kbd>W</kbd> |
 | Undo / Redo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
@@ -176,7 +177,7 @@ markeron/
 ├── src/
 │   ├── components/
 │   │   ├── DrawingOverlay.vue   # Drawing overlay (Canvas + interactions)
-│   │   ├── SettingsPanel.vue    # Annotation toolbar (tool / color / stroke)
+│   │   ├── ToolToolbar.vue      # Annotation toolbar (tool / color / stroke)
 │   │   ├── SettingsView.vue     # Settings window (shortcut config / sidebar layout)
 │   │   └── TextBox.vue          # Inline text input
 │   ├── composables/

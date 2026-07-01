@@ -103,6 +103,26 @@ export default {
       'When enabled, pressing W to enter or exit whiteboard mode keeps the existing whiteboard content. Turn this off to start whiteboard mode with a clean canvas each time.',
     angleSnapStep: 'Angle snap step',
     angleSnapStepDesc: 'Choose how far straight lines snap while holding Alt.',
+    toolbarVisibility: 'Toolbar display',
+    toolbarVisibilitySpace: 'Space key',
+    toolbarVisibilityAlways: 'Always on',
+    toolbarVisibilityDesc:
+      'Space key: press Space in annotation mode to open the toolbar (closes after picking a tool). Always on: keep the toolbar visible while annotating.',
+    toolbarLayout: 'Toolbar layout',
+    toolbarLayoutSimple: 'Simple',
+    toolbarLayoutDetailed: 'Detailed',
+    toolbarLayoutDesc:
+      'Simple shows compact tools and colors with a More button for full options. Detailed shows the full tool panel.',
+  },
+  toolbar: {
+    undo: 'Undo',
+    redo: 'Redo',
+    clear: 'Clear all',
+    whiteboard: 'Whiteboard',
+    exitWhiteboard: 'Exit whiteboard',
+    copy: 'Copy',
+    more: 'More',
+    less: 'Less',
   },
   help: {
     basicUsage: 'Basic Usage',
@@ -139,7 +159,9 @@ export default {
     whiteboardPreserveHint:
       'In General settings, choose whether pressing W preserves the current whiteboard content. When off, each entry starts with a clean canvas.',
     editAndOther: 'Edit & Other',
-    settingsPanel: 'Settings panel',
+    settingsPanel: 'Toolbar (Space to toggle)',
+    toolbarOptionsHint:
+      'In General settings, choose always-on or Space toggle, and simple or detailed layout. In simple mode, use More for the full panel. Space does nothing when the toolbar is always on.',
     copyScreen: 'Copy screen to clipboard',
     undo: 'Undo',
     redo: 'Redo',

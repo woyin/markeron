@@ -35,7 +35,7 @@
 
 - **随处标注** — 在任何应用上方绘制，覆盖全屏包括任务栏
 - **8 种工具** — 画笔、荧光笔、箭头、矩形、椭圆、直线、橡皮擦、文字
-- **直观面板** — 按 <kbd>Space</kbd> 呼出，工具 / 颜色 / 线宽一站式调整
+- **灵活工具栏** — 按 <kbd>Space</kbd> 呼出，或在设置中**常驻显示**；支持简约 / 详细布局，面板内可撤销、复制、切换白板
 - **全键盘操控** — 每个操作都有快捷键，无需菜单
 - **保留标注** — 退出标注模式后可保留绘制内容，下次进入自动恢复
 - **白板模式** — 按 <kbd>W</kbd> 可切换到干净的白板工作区；是否在切换时保留绘制内容可在设置中配置
@@ -80,7 +80,8 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 
 | 功能 | Windows | macOS |
 | :--- | :--- | :--- |
-| 呼出设置面板 | <kbd>Space</kbd> | <kbd>Space</kbd> |
+| 呼出工具栏 | <kbd>Space</kbd> | <kbd>Space</kbd> |
+| 工具栏常驻 / 布局 | 设置 → 常规 | 设置 → 常规 |
 | 复制屏幕 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | 白板模式切换 | <kbd>W</kbd> | <kbd>W</kbd> |
 | 撤销 / 重做 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
@@ -175,7 +176,7 @@ markeron/
 ├── src/
 │   ├── components/
 │   │   ├── DrawingOverlay.vue   # 绘图覆盖层（Canvas + 交互）
-│   │   ├── SettingsPanel.vue    # 标注模式工具面板（工具 / 颜色 / 线宽）
+│   │   ├── ToolToolbar.vue      # 标注模式工具面板（工具 / 颜色 / 线宽）
 │   │   ├── SettingsView.vue     # 设置窗口（快捷键配置 / 侧边栏布局）
 │   │   └── TextBox.vue          # 内联文字输入框
 │   ├── composables/

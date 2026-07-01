@@ -1,4 +1,4 @@
-import { ref, shallowRef, type Ref } from 'vue'
+import { ref, shallowRef, computed, type Ref } from 'vue'
 import {
   computeBbox,
   bboxesIntersect,
@@ -92,6 +92,23 @@ export function useDrawing(
   const history: DrawAction[] = []
   const undoStack: UndoEntry[] = []
   const redoStack: UndoEntry[] = []
+  const historyRevision = ref(0)
+  const canUndo = computed(() => {
+    void historyRevision.value
+    return undoStack.length > 0
+  })
+  const canRedo = computed(() => {
+    void historyRevision.value
+    return redoStack.length > 0
+  })
+  const canClear = computed(() => {
+    void historyRevision.value
+    return history.length > 0
+  })
+
+  function markHistoryStacksChanged() {
+    historyRevision.value++
+  }
   const currentAction = shallowRef<DrawAction | null>(null)
   const previewAction = shallowRef<DrawAction | null>(null)
 
@@ -509,13 +526,17 @@ export function useDrawing(
     appendActionToHitGrid(action)
     historyDirty = true
     previewDirty = true
+    markHistoryStacksChanged()
     flushRender()
   }
 
   function startDraw(point: Point) {
     if (currentTool.value === 'text') return
     isDrawing.value = true
-    redoStack.length = 0
+    if (redoStack.length > 0) {
+      redoStack.length = 0
+      markHistoryStacksChanged()
+    }
 
     const useIncrementalStroke = currentTool.value === 'pen'
     if (useIncrementalStroke) initStrokeCanvas()
@@ -640,6 +661,7 @@ export function useDrawing(
         if (eraseTargets.length > 0) {
           undoStack.push({ type: 'erase', targets: eraseTargets })
           redoStack.length = 0
+          markHistoryStacksChanged()
         }
       }
       invalidateCache()
@@ -651,6 +673,7 @@ export function useDrawing(
       undoStack.push({ type: 'add', action })
       appendActionToHitGrid(action)
       historyDirty = true
+      markHistoryStacksChanged()
     }
 
     currentAction.value = null
@@ -853,6 +876,7 @@ export function useDrawing(
         const afterSnap = takeDragSnapshot(action, history.indexOf(action))
         undoStack.push({ type: 'drag', action, from: beforeSnap, to: afterSnap })
         redoStack.length = 0
+        markHistoryStacksChanged()
       }
     }
     previewAction.value = null
@@ -901,6 +925,7 @@ export function useDrawing(
 
     redoStack.push(entry)
     invalidateCache()
+    markHistoryStacksChanged()
     flushRender()
   }
 
@@ -943,6 +968,7 @@ export function useDrawing(
 
     undoStack.push(entry)
     invalidateCache()
+    markHistoryStacksChanged()
     flushRender()
   }
 
@@ -968,6 +994,7 @@ export function useDrawing(
     currentAction.value = null
     previewAction.value = null
     previewDirty = true
+    markHistoryStacksChanged()
     flushRender()
   }
 
@@ -1002,6 +1029,7 @@ export function useDrawing(
     dragOffsetY = 0
     clearStrokeCanvas()
     previewDirty = true
+    markHistoryStacksChanged()
     flushRender()
   }
 
@@ -1049,6 +1077,7 @@ export function useDrawing(
       undoStack.push({ type: 'remove', action, index })
       redoStack.length = 0
       invalidateCache()
+      markHistoryStacksChanged()
       flushRender()
     }
   }
@@ -1085,6 +1114,9 @@ export function useDrawing(
     addTextAction,
     undo,
     redo,
+    canUndo,
+    canRedo,
+    canClear,
     clearAll,
     exportAsDataURL,
     hardReset,

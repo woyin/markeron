@@ -6,13 +6,20 @@ import { useDrawing, type Tool, type DrawAction } from '../composables/useDrawin
 import { useTooltip } from '../composables/useTooltip'
 import { createKeyDownHandler } from '../composables/useOverlayKeyboard'
 import type { AppConfig } from '../types/app'
-import SettingsPanel from './SettingsPanel.vue'
+import ToolToolbar from './ToolToolbar.vue'
 import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
 import { isDragEnabled, resolveDragMode, type DragMode } from '../utils/dragMode'
+import {
+  isToolbarPinned,
+  resolveToolbarLayout,
+  resolveToolbarVisibility,
+  type ToolbarLayout,
+  type ToolbarVisibility,
+} from '../utils/toolbarSettings'
 import { useI18n } from '../i18n'
 
 const { t } = useI18n()
@@ -32,7 +39,24 @@ const previewCanvasRef = ref<HTMLCanvasElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
 const textBoxRef = ref<InstanceType<typeof TextBox> | null>(null)
 const active = ref(false)
-const showSettings = ref(false)
+const showToolbarPopup = ref(false)
+const toolbarVisibility = ref<ToolbarVisibility>('space')
+const toolbarLayout = ref<ToolbarLayout>('detailed')
+const toolbarPinned = computed(() => isToolbarPinned(toolbarVisibility.value))
+const toolbarVisible = computed(() => active.value && (toolbarPinned.value || showToolbarPopup.value))
+const toolbarPopupOpen = computed(() => active.value && showToolbarPopup.value && !toolbarPinned.value)
+/** Hide overlay chrome during screen capture so panels are not in the clipboard image. */
+const hideUiForCapture = ref(false)
+const toolbarShown = computed(() => toolbarVisible.value && !hideUiForCapture.value)
+const toolbarHovered = ref(false)
+const toolbarRef = ref<InstanceType<typeof ToolToolbar> | null>(null)
+watch(toolbarShown, (shown) => {
+  if (!shown) {
+    toolbarHovered.value = false
+  } else {
+    nextTick(() => toolbarRef.value?.syncPanelHover())
+  }
+})
 const mousePos = ref({ x: 0, y: 0 })
 const textBoxPos = ref<{ x: number; y: number } | null>(null)
 const whiteboardMode = ref(false)
@@ -93,7 +117,7 @@ function cycleColor(direction: number) {
 
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
-  if (!active.value || showSettings.value || textBoxPos.value || isDrawing.value) return
+  if (!active.value || toolbarPopupOpen.value || textBoxPos.value || isDrawing.value) return
   quickColorsPos.value = { x: e.clientX, y: e.clientY }
   showQuickColors.value = true
 }
@@ -139,6 +163,9 @@ const {
   removeAction,
   undo,
   redo,
+  canUndo,
+  canRedo,
+  canClear,
   clearAll,
   exportAsDataURL,
   hardReset,
@@ -156,9 +183,23 @@ const activeTextBoxFontSize = ref(24)
 const activeTextBoxInitialText = ref('')
 const editingOriginalAction = shallowRef<DrawAction | null>(null)
 
-function setSettingsVisible(visible: boolean) {
-  if (showSettings.value === visible) return
-  showSettings.value = visible
+function setToolbarPopupVisible(visible: boolean) {
+  if (toolbarPinned.value) return
+  if (showToolbarPopup.value === visible) return
+  showToolbarPopup.value = visible
+}
+
+function applyToolbarFromConfig(general?: AppConfig['general']) {
+  toolbarVisibility.value = resolveToolbarVisibility(general)
+  toolbarLayout.value = resolveToolbarLayout(general)
+  if (toolbarPinned.value) {
+    showToolbarPopup.value = false
+  }
+}
+
+function toggleToolbarPopupVisible() {
+  if (toolbarPinned.value) return
+  setToolbarPopupVisible(!showToolbarPopup.value)
 }
 
 function enterWhiteboardMode() {
@@ -167,7 +208,7 @@ function enterWhiteboardMode() {
     hardReset()
   }
   whiteboardMode.value = true
-  showSettings.value = false
+  showToolbarPopup.value = false
   showQuickColors.value = false
   textBoxPos.value = null
   currentTool.value = 'pen'
@@ -177,17 +218,13 @@ function enterWhiteboardMode() {
 function exitWhiteboardMode() {
   if (!whiteboardMode.value) return
   whiteboardMode.value = false
-  showSettings.value = false
+  showToolbarPopup.value = false
   showQuickColors.value = false
   textBoxPos.value = null
   if (!whiteboardPreserveDrawings.value) {
     hardReset()
   }
   showTip(t('overlay.whiteboardExit'))
-}
-
-function toggleSettingsVisible() {
-  setSettingsVisible(!showSettings.value)
 }
 
 const hoveredActionInfo = shallowRef<{ action: DrawAction; index: number } | null>(null)
@@ -202,6 +239,25 @@ let dragStartX = 0
 let dragStartY = 0
 let lastPointerX = 0
 let lastPointerY = 0
+
+function onGlobalPointerMove(e: PointerEvent) {
+  lastPointerX = e.clientX
+  lastPointerY = e.clientY
+  mousePos.value = { x: e.clientX, y: e.clientY }
+}
+
+watch(
+  active,
+  (isActive) => {
+    if (isActive) {
+      window.addEventListener('pointermove', onGlobalPointerMove, { passive: true })
+    } else {
+      window.removeEventListener('pointermove', onGlobalPointerMove)
+      toolbarHovered.value = false
+    }
+  },
+  { immediate: true },
+)
 
 // Cap total canvas bitmap pixels to keep drawImage / clearRect fast on
 // high-resolution displays with low scale factors (e.g. 4K @ 150% → 2560×1440
@@ -286,7 +342,7 @@ function canStartElementDrag(e: PointerEvent): boolean {
 
 function onDoubleClick(e: MouseEvent) {
   if (e.button !== 0) return
-  if (showSettings.value || showQuickColors.value) return
+  if (toolbarPopupOpen.value || showQuickColors.value) return
 
   const pos = { x: e.clientX, y: e.clientY }
   const clickedActionInfo = findActionAt(pos)
@@ -325,7 +381,7 @@ function onDoubleClick(e: MouseEvent) {
 
 function onPointerDown(e: PointerEvent) {
   if (e.button !== 0) return
-  if (showSettings.value || showQuickColors.value) return
+  if (toolbarPopupOpen.value || showQuickColors.value) return
 
   lastPointerX = e.clientX
   lastPointerY = e.clientY
@@ -386,7 +442,7 @@ function onPointerMove(e: PointerEvent) {
 
     if (
       active.value &&
-      !showSettings.value &&
+      !toolbarPopupOpen.value &&
       !showQuickColors.value &&
       !textBoxPos.value &&
       isDragEnabled(dragMode.value)
@@ -396,7 +452,7 @@ function onPointerMove(e: PointerEvent) {
           hoverRafId = null
           if (
             active.value &&
-            !showSettings.value &&
+            !toolbarPopupOpen.value &&
             !showQuickColors.value &&
             !textBoxPos.value &&
             isDragEnabled(dragMode.value)
@@ -449,7 +505,8 @@ function onTextCancel() {
 const onKeyDown = createKeyDownHandler(
   {
     active,
-    showSettings,
+    showToolbarPopup,
+    toolbarPinned,
     showQuickColors,
     quickColorsPos,
     textBoxPos,
@@ -471,8 +528,8 @@ const onKeyDown = createKeyDownHandler(
     exitWhiteboardMode,
     copyScreen,
     copyWhiteboard,
-    setSettingsVisible,
-    toggleSettingsVisible,
+    setToolbarPopupVisible,
+    toggleToolbarPopupVisible,
     commitCurrentTextBox,
   },
 )
@@ -504,11 +561,19 @@ const canvasCursor = computed(() => {
       (hoveredActionInfo.value && !isDrawing.value && (dragMode.value === 'hover' || pointerModDown.value)))
   if (showDragCursor) return 'move'
   if (currentTool.value === 'text') return 'text'
-  if (showQuickColors.value || showSettings.value) return 'default'
+  if (showQuickColors.value || toolbarPopupOpen.value) return 'default'
   return 'none'
 })
 
-const showCustomCursor = computed(() => active.value && canvasCursor.value === 'none' && !textBoxPos.value)
+const showCustomCursor = computed(
+  () =>
+    active.value &&
+    canvasCursor.value === 'none' &&
+    !textBoxPos.value &&
+    !hideUiForCapture.value &&
+    !toolbarHovered.value &&
+    !showQuickColors.value,
+)
 
 // Fix cursor offset when switching tools/colors via shortcut while pointer is stationary
 watch([currentTool, currentColor], () => {
@@ -559,6 +624,7 @@ onMounted(async () => {
   try {
     const cfg = await invoke<AppConfig>('get_config')
     applyDragModeFromConfig(cfg.general)
+    applyToolbarFromConfig(cfg.general)
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
     whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -570,6 +636,7 @@ onMounted(async () => {
   unlisteners.push(
     await listen<AppConfig>('config-changed', (event) => {
       applyDragModeFromConfig(event.payload.general)
+      applyToolbarFromConfig(event.payload.general)
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -580,7 +647,7 @@ onMounted(async () => {
     await listen<boolean>('toggle-drawing', (event) => {
       const isActive = event.payload
       active.value = isActive
-      showSettings.value = false
+      showToolbarPopup.value = false
       showQuickColors.value = false
       textBoxPos.value = null
       if (!isActive) {
@@ -607,6 +674,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  window.removeEventListener('pointermove', onGlobalPointerMove)
   window.removeEventListener('resize', debouncedResize)
   if (resizeTimer) {
     clearTimeout(resizeTimer)
@@ -628,18 +696,40 @@ onUnmounted(() => {
 
 let isCopying = false
 
+function toggleWhiteboardFromToolbar() {
+  if (whiteboardMode.value) {
+    exitWhiteboardMode()
+  } else {
+    enterWhiteboardMode()
+  }
+}
+
+function copyFromToolbar() {
+  if (whiteboardMode.value) {
+    copyWhiteboard()
+  } else {
+    copyScreen()
+  }
+}
+
 async function copyScreen() {
   if (isCopying) return
   isCopying = true
   try {
+    hideUiForCapture.value = true
+    showQuickColors.value = false
+    disposeTooltip()
     await nextTick()
-    await new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50)))
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 32))),
+    )
     await invoke('copy_screen')
     showTip(t('overlay.copiedToClipboard'))
   } catch (err) {
     console.error('Copy screen failed:', err)
     showTip(t('overlay.copyFailed'))
   } finally {
+    hideUiForCapture.value = false
     isCopying = false
   }
 }
@@ -663,7 +753,7 @@ async function copyWhiteboard() {
 
 function exitDrawing() {
   commitCurrentTextBox()
-  showSettings.value = false
+  showToolbarPopup.value = false
   showQuickColors.value = false
   textBoxPos.value = null
   invoke('exit_drawing')
@@ -845,7 +935,7 @@ function exitDrawing() {
     </div>
 
     <TextBox
-      v-if="active && textBoxPos"
+      v-if="active && textBoxPos && !hideUiForCapture"
       ref="textBoxRef"
       :x="textBoxPos.x"
       :y="textBoxPos.y"
@@ -858,7 +948,7 @@ function exitDrawing() {
 
     <Transition name="tooltip-fade">
       <div
-        v-if="active && toolTip"
+        v-if="active && toolTip && !hideUiForCapture"
         class="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 py-2 px-5 bg-[rgba(28,28,30,0.94)] rounded-[10px] text-white text-[15px] font-sans tracking-[0.5px] pointer-events-none z-100003 whitespace-nowrap shadow-[0_2px_12px_rgba(0,0,0,0.3)]"
       >
         <span
@@ -879,7 +969,7 @@ function exitDrawing() {
     <!-- Quick Color Palette (right-click) -->
     <Transition name="quick-colors">
       <div
-        v-if="active && showQuickColors"
+        v-if="active && showQuickColors && !hideUiForCapture"
         class="fixed inset-0 z-100002"
         @mousedown.self="showQuickColors = false"
         @contextmenu.prevent="showQuickColors = false"
@@ -921,16 +1011,26 @@ function exitDrawing() {
       </div>
     </Transition>
 
-    <SettingsPanel
-      v-if="active && showSettings"
+    <ToolToolbar
+      v-if="toolbarShown"
+      ref="toolbarRef"
+      :layout="toolbarLayout"
+      :pinned="toolbarPinned"
       :current-tool="currentTool"
       :current-color="currentColor"
       :line-width="lineWidth"
-      :x="mousePos.x"
-      :y="mousePos.y"
+      :whiteboard-mode="whiteboardMode"
+      :can-undo="canUndo"
+      :can-redo="canRedo"
+      :can-clear="canClear"
+      :anchor-x="mousePos.x"
+      :anchor-y="mousePos.y"
+      :pointer-x="mousePos.x"
+      :pointer-y="mousePos.y"
       @select-tool="
         (tool: Tool) => {
           currentTool = tool
+          showToolTip(tool)
         }
       "
       @select-color="
@@ -944,7 +1044,13 @@ function exitDrawing() {
           lineWidth = w
         }
       "
-      @close="setSettingsVisible(false)"
+      @close="setToolbarPopupVisible(false)"
+      @panel-hover="toolbarHovered = $event"
+      @undo="undo"
+      @redo="redo"
+      @clear-all="clearAll"
+      @toggle-whiteboard="toggleWhiteboardFromToolbar"
+      @copy="copyFromToolbar"
     />
   </div>
 </template>
