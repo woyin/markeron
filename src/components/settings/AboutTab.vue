@@ -4,7 +4,6 @@ import { useI18n } from '../../i18n'
 import { useUpdater } from '../../composables/useUpdater'
 
 const { t } = useI18n()
-const APP_VERSION = __APP_VERSION__
 
 const { status, newVersion, progress, checkForUpdate, downloadAndInstall } = useUpdater()
 
@@ -29,7 +28,6 @@ async function openUrl(url: string) {
     </div>
 
     <h1 class="text-[18px] font-semibold settings-text-heading tracking-wide mb-1">MarkerOn</h1>
-    <span class="text-[12px] settings-text-faint font-mono tracking-wider mb-1.5">v{{ APP_VERSION }}</span>
     <p class="text-[11.5px] settings-text-subtle mb-4">{{ t('about.tagline') }}</p>
 
     <!-- Update checker -->

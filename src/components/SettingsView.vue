@@ -19,6 +19,7 @@ import GeneralTab from './settings/GeneralTab.vue'
 import AboutTab from './settings/AboutTab.vue'
 
 const { t } = useI18n()
+const APP_VERSION = __APP_VERSION__
 
 const modLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
 
@@ -284,7 +285,7 @@ onUnmounted(() => {
         </button>
       </nav>
 
-      <div class="mt-auto"></div>
+      <p class="mt-auto pl-5 pb-4 text-[10.5px] settings-text-faint font-mono tracking-wider">v{{ APP_VERSION }}</p>
     </div>
 
     <!-- Content -->
