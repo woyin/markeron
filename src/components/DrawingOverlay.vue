@@ -12,6 +12,7 @@ import { TOOL_ICON_MAP, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
+import { isDragEnabled, resolveDragMode, type DragMode } from '../utils/dragMode'
 import { useI18n } from '../i18n'
 
 const { t } = useI18n()
@@ -191,8 +192,7 @@ function toggleSettingsVisible() {
 
 const hoveredActionInfo = shallowRef<{ action: DrawAction; index: number } | null>(null)
 const isMoving = ref(false)
-const enableDragging = ref(false)
-const dragRequiresModifier = ref(false)
+const dragMode = ref<DragMode>('off')
 const pointerModDown = ref(false)
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
@@ -272,10 +272,13 @@ function commitCurrentTextBox(cancel = false) {
   }
 }
 
+function applyDragModeFromConfig(general?: AppConfig['general']) {
+  dragMode.value = resolveDragMode(general)
+}
+
 function canStartElementDrag(e: PointerEvent): boolean {
   return canStartElementDragGate({
-    enableDragging: enableDragging.value,
-    dragRequiresModifier: dragRequiresModifier.value,
+    dragMode: dragMode.value,
     hasHoveredElement: !!hoveredActionInfo.value,
     modifierDown: modDown(e),
   })
@@ -338,7 +341,7 @@ function onPointerDown(e: PointerEvent) {
     dragStartX = e.clientX
     dragStartY = e.clientY
     isMoving.value = true
-    beginDrag(hoveredActionInfo.value.action)
+    beginDrag(hoveredActionInfo.value!.action)
     previewCanvasRef.value?.setPointerCapture(e.pointerId)
     return
   }
@@ -381,7 +384,13 @@ function onPointerMove(e: PointerEvent) {
     mousePos.value.x = e.clientX
     mousePos.value.y = e.clientY
 
-    if (active.value && !showSettings.value && !showQuickColors.value && !textBoxPos.value && enableDragging.value) {
+    if (
+      active.value &&
+      !showSettings.value &&
+      !showQuickColors.value &&
+      !textBoxPos.value &&
+      isDragEnabled(dragMode.value)
+    ) {
       if (hoverRafId === null) {
         hoverRafId = requestAnimationFrame(() => {
           hoverRafId = null
@@ -390,7 +399,7 @@ function onPointerMove(e: PointerEvent) {
             !showSettings.value &&
             !showQuickColors.value &&
             !textBoxPos.value &&
-            enableDragging.value
+            isDragEnabled(dragMode.value)
           ) {
             hoveredActionInfo.value = findActionAt(mousePos.value)
           }
@@ -490,9 +499,9 @@ function updateCursorEl(x: number, y: number) {
 // CSS cursor for the canvas: 'none' when our SVG overlay handles it
 const canvasCursor = computed(() => {
   const showDragCursor =
-    enableDragging.value &&
+    isDragEnabled(dragMode.value) &&
     (isMoving.value ||
-      (hoveredActionInfo.value && !isDrawing.value && (!dragRequiresModifier.value || pointerModDown.value)))
+      (hoveredActionInfo.value && !isDrawing.value && (dragMode.value === 'hover' || pointerModDown.value)))
   if (showDragCursor) return 'move'
   if (currentTool.value === 'text') return 'text'
   if (showQuickColors.value || showSettings.value) return 'default'
@@ -523,6 +532,12 @@ const quickColorsPanelStyle = computed(() => {
 
 const unlisteners: UnlistenFn[] = []
 
+function syncPointerModFromKey(e: KeyboardEvent) {
+  if (e.key === 'Control' || e.key === 'Meta' || modDown(e)) {
+    pointerModDown.value = modDown(e)
+  }
+}
+
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === 'Alt') {
     e.preventDefault()
@@ -535,6 +550,7 @@ function onKeyUp(e: KeyboardEvent) {
 onMounted(async () => {
   resizeCanvas()
   window.addEventListener('resize', debouncedResize)
+  window.addEventListener('keydown', syncPointerModFromKey)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
   watchDpr()
@@ -542,8 +558,7 @@ onMounted(async () => {
   // Fetch initial config
   try {
     const cfg = await invoke<AppConfig>('get_config')
-    enableDragging.value = cfg.general?.enableDragging ?? false
-    dragRequiresModifier.value = cfg.general?.dragRequiresModifier ?? false
+    applyDragModeFromConfig(cfg.general)
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
     whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -554,8 +569,7 @@ onMounted(async () => {
   // Listen to config changes
   unlisteners.push(
     await listen<AppConfig>('config-changed', (event) => {
-      enableDragging.value = event.payload.general?.enableDragging ?? false
-      dragRequiresModifier.value = event.payload.general?.dragRequiresModifier ?? false
+      applyDragModeFromConfig(event.payload.general)
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -600,6 +614,7 @@ onUnmounted(() => {
   }
   dprMediaQuery?.removeEventListener('change', onDprChange)
   dprMediaQuery = null
+  window.removeEventListener('keydown', syncPointerModFromKey)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
   if (hoverRafId !== null) {

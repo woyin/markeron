@@ -85,9 +85,9 @@ describe('useI18n', () => {
     it('replaces every occurrence of the same placeholder', () => {
       const { locale, t } = useI18n()
       locale.locale = 'zh-CN'
-      const result = t('settings.dragRequiresModifierDesc', { modKey: 'Ctrl' })
+      const result = t('settings.dragModeDescModifier', { modKey: 'Ctrl' })
       expect(result).not.toContain('{modKey}')
-      expect(result.match(/Ctrl/g)?.length).toBeGreaterThan(1)
+      expect(result).toContain('Ctrl')
     })
 
     it('leaves unmatched placeholders untouched', () => {

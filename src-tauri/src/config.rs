@@ -16,10 +16,30 @@ fn default_angle_snap_step() -> u16 {
     15
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DragMode {
+    #[serde(rename = "off")]
+    Off,
+    #[serde(rename = "hover")]
+    Hover,
+    #[serde(rename = "modifier")]
+    Modifier,
+}
+
+impl Default for DragMode {
+    fn default() -> Self {
+        Self::Off
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GeneralConfig {
-    #[serde(rename = "enableDragging")]
+    #[serde(default, rename = "dragMode")]
+    pub drag_mode: Option<DragMode>,
+    #[serde(default, rename = "enableDragging", skip_serializing)]
     pub enable_dragging: bool,
+    #[serde(default, rename = "dragRequiresModifier", skip_serializing)]
+    pub drag_requires_modifier: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub locale: Option<String>,
     #[serde(default, rename = "preserveDrawings")]
@@ -28,28 +48,46 @@ pub struct GeneralConfig {
     pub whiteboard_preserve_drawings: bool,
     #[serde(default = "default_angle_snap_step", rename = "angleSnapStep")]
     pub angle_snap_step: u16,
-    #[serde(default, rename = "dragRequiresModifier")]
-    pub drag_requires_modifier: bool,
 }
 
 impl Default for GeneralConfig {
     fn default() -> Self {
         Self {
+            drag_mode: None,
             enable_dragging: false,
+            drag_requires_modifier: false,
             locale: None,
             preserve_drawings: false,
             whiteboard_preserve_drawings: true,
             angle_snap_step: default_angle_snap_step(),
-            drag_requires_modifier: false,
         }
     }
 }
 
 impl GeneralConfig {
+    pub fn drag_mode(&self) -> DragMode {
+        self.drag_mode.unwrap_or(DragMode::Off)
+    }
+
     pub fn normalized(mut self) -> Self {
         if !matches!(self.angle_snap_step, 15 | 30 | 45) {
             self.angle_snap_step = default_angle_snap_step();
         }
+        self.drag_mode = Some(match self.drag_mode {
+            Some(m) if matches!(m, DragMode::Off | DragMode::Hover | DragMode::Modifier) => m,
+            Some(_) => DragMode::Off,
+            None => {
+                if self.drag_requires_modifier {
+                    DragMode::Modifier
+                } else if self.enable_dragging {
+                    DragMode::Hover
+                } else {
+                    DragMode::Off
+                }
+            }
+        });
+        self.enable_dragging = false;
+        self.drag_requires_modifier = false;
         self
     }
 }
@@ -120,8 +158,9 @@ pub fn config_path(app: &AppHandle) -> std::path::PathBuf {
 pub fn load_config(app: &AppHandle) -> AppConfig {
     let path = config_path(app);
     match fs::read_to_string(&path) {
-        Ok(raw) => match serde_json::from_str(&raw) {
-            Ok(cfg) => {
+        Ok(raw) => match serde_json::from_str::<AppConfig>(&raw) {
+            Ok(mut cfg) => {
+                cfg.general = cfg.general.normalized();
                 info!("Loaded config from {}", path.display());
                 cfg
             }
@@ -180,10 +219,7 @@ mod tests {
             parsed.shortcuts.clear_drawing,
             config.shortcuts.clear_drawing
         );
-        assert_eq!(
-            parsed.general.enable_dragging,
-            config.general.enable_dragging
-        );
+        assert_eq!(parsed.general.drag_mode(), config.general.drag_mode());
         assert_eq!(
             parsed.general.preserve_drawings,
             config.general.preserve_drawings
@@ -196,37 +232,81 @@ mod tests {
             parsed.general.angle_snap_step,
             config.general.angle_snap_step
         );
-        assert_eq!(
-            parsed.general.drag_requires_modifier,
-            config.general.drag_requires_modifier
-        );
     }
 
     #[test]
-    fn config_deserializes_from_json() {
+    fn config_deserializes_drag_mode() {
         let json = r#"{
             "shortcuts": {
                 "toggleDrawing": "Ctrl+Alt+X",
                 "clearDrawing": "Ctrl+Alt+C"
             },
             "general": {
-                "enableDragging": true,
+                "dragMode": "modifier",
                 "locale": "zh-CN",
                 "preserveDrawings": true,
                 "whiteboardPreserveDrawings": false,
-                "angleSnapStep": 30,
-                "dragRequiresModifier": true
+                "angleSnapStep": 30
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert_eq!(config.shortcuts.toggle_drawing, "Ctrl+Alt+X");
-        assert_eq!(config.shortcuts.clear_drawing, "Ctrl+Alt+C");
-        assert!(config.general.enable_dragging);
+        assert_eq!(config.general.drag_mode(), DragMode::Modifier);
         assert_eq!(config.general.locale, Some("zh-CN".to_string()));
         assert!(config.general.preserve_drawings);
         assert!(!config.general.whiteboard_preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 30);
-        assert!(config.general.drag_requires_modifier);
+    }
+
+    #[test]
+    fn normalized_migrates_legacy_drag_settings() {
+        let general = GeneralConfig {
+            drag_mode: None,
+            enable_dragging: true,
+            drag_requires_modifier: true,
+            ..GeneralConfig::default()
+        };
+        let normalized = general.normalized();
+        assert_eq!(normalized.drag_mode(), DragMode::Modifier);
+        assert!(!normalized.enable_dragging);
+        assert!(!normalized.drag_requires_modifier);
+    }
+
+    #[test]
+    fn normalized_migrates_legacy_hover_drag() {
+        let general = GeneralConfig {
+            drag_mode: None,
+            enable_dragging: true,
+            drag_requires_modifier: false,
+            ..GeneralConfig::default()
+        };
+        assert_eq!(general.normalized().drag_mode(), DragMode::Hover);
+    }
+
+    #[test]
+    fn normalized_keeps_explicit_off_when_legacy_enable_dragging_present() {
+        let general = GeneralConfig {
+            drag_mode: Some(DragMode::Off),
+            enable_dragging: true,
+            drag_requires_modifier: false,
+            ..GeneralConfig::default()
+        };
+        assert_eq!(general.normalized().drag_mode(), DragMode::Off);
+    }
+
+    #[test]
+    fn config_deserializes_explicit_off_with_legacy_fields() {
+        let json = r#"{
+            "shortcuts": {
+                "toggleDrawing": "Ctrl+Shift+D",
+                "clearDrawing": "Ctrl+Shift+C"
+            },
+            "general": {
+                "dragMode": "off",
+                "enableDragging": true
+            }
+        }"#;
+        let config: AppConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.general.normalized().drag_mode(), DragMode::Off);
     }
 
     #[test]
@@ -238,16 +318,15 @@ mod tests {
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert!(!config.general.enable_dragging);
+        assert_eq!(config.general.drag_mode(), DragMode::Off);
         assert_eq!(config.general.locale, None);
         assert!(!config.general.preserve_drawings);
         assert_eq!(config.general.whiteboard_preserve_drawings, true);
         assert_eq!(config.general.angle_snap_step, 15);
-        assert!(!config.general.drag_requires_modifier);
     }
 
     #[test]
-    fn config_deserializes_with_missing_drag_requires_modifier() {
+    fn config_deserializes_legacy_enable_dragging() {
         let json = r#"{
             "shortcuts": {
                 "toggleDrawing": "Ctrl+Shift+D",
@@ -258,8 +337,7 @@ mod tests {
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert!(config.general.enable_dragging);
-        assert!(!config.general.drag_requires_modifier);
+        assert_eq!(config.general.normalized().drag_mode(), DragMode::Hover);
     }
 
     #[test]
@@ -276,7 +354,7 @@ mod tests {
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert!(config.general.enable_dragging);
+        assert_eq!(config.general.clone().normalized().drag_mode(), DragMode::Hover);
         assert_eq!(config.general.locale, Some("en".to_string()));
         assert!(config.general.preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 15);
@@ -290,11 +368,11 @@ mod tests {
                 "clearDrawing": "Ctrl+Shift+C"
             },
             "general": {
-                "enableDragging": false
+                "dragMode": "off"
             }
         }"#;
         let config: AppConfig = serde_json::from_str(json).unwrap();
-        assert!(!config.general.enable_dragging);
+        assert_eq!(config.general.drag_mode(), DragMode::Off);
         assert_eq!(config.general.locale, None);
         assert!(!config.general.preserve_drawings);
         assert_eq!(config.general.angle_snap_step, 15);
@@ -354,7 +432,7 @@ mod tests {
     #[test]
     fn general_config_default_values() {
         let general = GeneralConfig::default();
-        assert!(!general.enable_dragging);
+        assert_eq!(general.drag_mode(), DragMode::Off);
         assert_eq!(general.locale, None);
         assert!(!general.preserve_drawings);
     }

@@ -108,8 +108,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 
 | Action | Effect |
 | :--- | :--- |
-| Hover over an element and drag | **Move** the element (enable "Allow dragging existing elements" in settings) |
-| Hold <kbd>Ctrl</kbd> to drag (optional) | When enabled in General settings, hold <kbd>Ctrl</kbd> while dragging to move — avoids accidental moves while drawing over elements |
+| Element dragging | In General settings: **Off** / **Hover drag** / **Hold Ctrl to drag** |
 | Double-click existing text | Re-enter **edit mode** for that text |
 | Double-click empty area in <kbd>T</kbd> mode | Create a new text input at cursor position |
 
@@ -142,7 +141,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 
 - **Preserve drawings on exit** — keep annotations in memory after exiting annotation mode
 - **Preserve whiteboard drawings on W toggle** — keep the current whiteboard content when pressing <kbd>W</kbd> to enter or exit whiteboard mode
-- **Allow dragging elements** — drag existing drawings and text when hovering over them; optionally require Ctrl/Command to drag and avoid accidental moves
+- **Element dragging** — off, hover to drag, or hold Ctrl/Command to drag (General settings)
 - **Angle snap step** — choose the snap interval used while drawing straight lines with <kbd>Alt</kbd>
 - **Auto start** — launch the app automatically at system startup
 

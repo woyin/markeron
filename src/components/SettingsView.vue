@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { isEnabled } from '@tauri-apps/plugin-autostart'
 import type { AppConfig, SaveResult } from '../types/app'
+import { resolveDragMode, type DragMode } from '../utils/dragMode'
 import { isMacOS } from '../utils/platform'
 import { useI18n, syncLocaleFromConfig } from '../i18n'
 import GeneralTab from './settings/GeneralTab.vue'
@@ -144,8 +145,7 @@ async function resetDefaults() {
 }
 
 const autoStartEnabled = ref(false)
-const enableDragging = ref(false)
-const dragRequiresModifier = ref(false)
+const dragMode = ref<DragMode>('off')
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
 const angleSnapStep = ref<15 | 30 | 45>(15)
@@ -155,8 +155,7 @@ let unlistenSwitchTab: (() => void) | null = null
 onMounted(async () => {
   const cfg = await invoke<AppConfig>('get_config')
   Object.assign(shortcuts, cfg.shortcuts)
-  enableDragging.value = cfg.general?.enableDragging ?? false
-  dragRequiresModifier.value = cfg.general?.dragRequiresModifier ?? false
+  dragMode.value = resolveDragMode(cfg.general)
   preserveDrawings.value = cfg.general?.preserveDrawings ?? false
   whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
   angleSnapStep.value = (cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15
@@ -363,14 +362,12 @@ onUnmounted(() => {
 
       <GeneralTab
         v-else-if="activeTab === 'general'"
-        :enable-dragging="enableDragging"
-        :drag-requires-modifier="dragRequiresModifier"
+        :drag-mode="dragMode"
         :preserve-drawings="preserveDrawings"
         :whiteboard-preserve-drawings="whiteboardPreserveDrawings"
         :auto-start-enabled="autoStartEnabled"
         :angle-snap-step="angleSnapStep"
-        @update:enable-dragging="enableDragging = $event"
-        @update:drag-requires-modifier="dragRequiresModifier = $event"
+        @update:drag-mode="dragMode = $event"
         @update:preserve-drawings="preserveDrawings = $event"
         @update:whiteboard-preserve-drawings="whiteboardPreserveDrawings = $event"
         @update:auto-start-enabled="autoStartEnabled = $event"

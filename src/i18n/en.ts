@@ -88,11 +88,13 @@ export default {
     languageDesc: 'Choose the display language for the application.',
     autoStart: 'Launch at startup',
     autoStartDesc: 'When enabled, the app runs silently in the background on system startup.',
-    enableDragging: 'Allow dragging elements',
-    enableDraggingDesc: 'When enabled, you can drag existing drawings and text by hovering over them.',
-    dragRequiresModifier: 'Require {modKey} to drag',
-    dragRequiresModifierDesc:
-      'When enabled, hold {modKey} while dragging to move an element. Without {modKey}, you can draw over existing elements. On an element, {modKey}+drag moves it (instead of drawing a rectangle).',
+    dragMode: 'Element dragging',
+    dragModeOff: 'Off',
+    dragModeHover: 'Hover',
+    dragModeModifier: '{modKey}',
+    dragModeDescOff: 'Drawings cannot be moved in annotation mode.',
+    dragModeDescHover: 'Hover over an element and drag to move it.',
+    dragModeDescModifier: 'Hold {modKey} and drag to move. Draw freely over elements without the modifier.',
     preserveDrawings: 'Preserve drawings on exit',
     preserveDrawingsDesc:
       'When enabled, annotations are kept in memory after exiting annotation mode. Re-entering will restore your previous drawings.',
@@ -146,7 +148,7 @@ export default {
     exitAnnotation: 'Exit annotation',
     dragAndText: 'Drag & Text',
     dragDesc:
-      'Enable "Allow dragging elements" in settings, then hover over an element and drag to move it. Optionally enable "Require Ctrl/Command to drag" to avoid accidental moves while drawing.',
+      'Choose how to move existing elements in General settings: off, hover to drag, or hold Ctrl/Command to drag.',
     editTextDesc:
       'Double-click existing text to re-edit; in <kbd class="help-kbd">T</kbd> mode, double-click empty area to create new text.',
     confirmTextDesc: '<kbd class="help-kbd">Ctrl+Enter</kbd> (macOS: <kbd class="help-kbd">⌘+Return</kbd>).',

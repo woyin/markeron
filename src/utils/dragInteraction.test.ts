@@ -3,26 +3,25 @@ import { canStartElementDrag } from './dragInteraction'
 
 describe('canStartElementDrag', () => {
   const base = {
-    enableDragging: true,
-    dragRequiresModifier: false,
+    dragMode: 'hover' as const,
     hasHoveredElement: true,
     modifierDown: false,
   }
 
-  it('returns false when dragging is disabled', () => {
-    expect(canStartElementDrag({ ...base, enableDragging: false })).toBe(false)
+  it('returns false when drag mode is off', () => {
+    expect(canStartElementDrag({ ...base, dragMode: 'off' })).toBe(false)
   })
 
   it('returns false when not over an element', () => {
     expect(canStartElementDrag({ ...base, hasHoveredElement: false })).toBe(false)
   })
 
-  it('allows hover drag when modifier is not required', () => {
+  it('allows hover drag in hover mode', () => {
     expect(canStartElementDrag({ ...base, modifierDown: false })).toBe(true)
   })
 
-  it('requires modifier when dragRequiresModifier is enabled', () => {
-    expect(canStartElementDrag({ ...base, dragRequiresModifier: true, modifierDown: false })).toBe(false)
-    expect(canStartElementDrag({ ...base, dragRequiresModifier: true, modifierDown: true })).toBe(true)
+  it('requires modifier in modifier mode', () => {
+    expect(canStartElementDrag({ ...base, dragMode: 'modifier', modifierDown: false })).toBe(false)
+    expect(canStartElementDrag({ ...base, dragMode: 'modifier', modifierDown: true })).toBe(true)
   })
 })
