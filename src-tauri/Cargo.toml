@@ -1,6 +1,6 @@
 [package]
 name = "markeron"
-version = "0.2.0"
+version = "0.2.1"
 description = "轻量级屏幕标注工具"
 authors = ["ifer47"]
 repository = "https://github.com/ifer47/markeron"
