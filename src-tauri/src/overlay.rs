@@ -124,8 +124,8 @@ fn position_toolbar_window(app: &AppHandle) {
     if let Some((x, y, w, _h)) = monitor::get_cursor_monitor_rect() {
         #[cfg(target_os = "macos")]
         {
-            let left = x + w - TOOLBAR_WIDTH - 16.0;
-            let top = y + 40.0;
+            let left = x as f64 + w as f64 - TOOLBAR_WIDTH - 16.0;
+            let top = y as f64 + 40.0;
             window
                 .set_position(tauri::LogicalPosition::new(left, top))
                 .ok();
@@ -212,9 +212,7 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
     let Some(window) = app.get_webview_window("toolbar") else {
         return;
     };
-    window
-        .set_position(tauri::LogicalPosition::new(x, y))
-        .ok();
+    window.set_position(tauri::LogicalPosition::new(x, y)).ok();
 }
 
 pub fn set_toolbar_popup(

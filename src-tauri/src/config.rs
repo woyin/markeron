@@ -604,10 +604,7 @@ mod tests {
                 clear_drawing: "Command+Shift+C".into(),
                 toggle_penetration: "Command+Shift+P".into(),
             };
-            assert_eq!(
-                shortcuts.normalized().toggle_penetration,
-                "Command+Shift+X"
-            );
+            assert_eq!(shortcuts.normalized().toggle_penetration, "Command+Shift+X");
         }
         #[cfg(not(target_os = "macos"))]
         {
