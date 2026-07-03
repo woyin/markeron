@@ -105,10 +105,13 @@ pub fn save_general(
     state: tauri::State<'_, AppState>,
     general: GeneralConfig,
 ) -> AppResult<()> {
-    let mut cfg = lock_or_recover(&state.config);
-    cfg.general = general.normalized();
-    crate::config::save_config(&app, &cfg);
-    if let Err(e) = app.emit("config-changed", cfg.clone()) {
+    let snapshot = {
+        let mut cfg = lock_or_recover(&state.config);
+        cfg.general = general.normalized();
+        crate::config::save_config(&app, &cfg);
+        cfg.clone()
+    };
+    if let Err(e) = app.emit("config-changed", snapshot) {
         warn!("Failed to emit config-changed: {}", e);
     }
     if crate::overlay::current_mode(&state) != crate::overlay::OverlayMode::Hidden {
