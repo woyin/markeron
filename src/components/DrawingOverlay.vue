@@ -317,6 +317,8 @@ let lastPointerY = 0
 let lastScreenX = 0
 let lastScreenY = 0
 let pointerScreenKnown = false
+/** Gate custom SVG cursor until OS pointer is seeded (avoids flash at 0,0). */
+const customCursorPositionReady = ref(true)
 
 function emitPointerScreenForToolbar() {
   if (!pointerScreenKnown) return
@@ -338,7 +340,6 @@ async function seedPointerPosition() {
     lastScreenY = pos.screenY
     pointerScreenKnown = true
     mousePos.value = { x: pos.x, y: pos.y }
-    await refreshCustomCursorPosition()
   } catch (error) {
     console.error('Failed to seed pointer position:', error)
   }
@@ -711,6 +712,7 @@ const showDragCursor = computed(
 const wantsCustomCursor = computed(
   () =>
     active.value &&
+    customCursorPositionReady.value &&
     !penetrationMode.value &&
     !textBoxPos.value &&
     !hideUiForCapture.value &&
@@ -896,6 +898,11 @@ onMounted(async () => {
       const previousMode = lastOverlayMode
       lastOverlayMode = mode
       penetrationMode.value = mode === 'penetration'
+      if (mode === 'drawing') {
+        customCursorPositionReady.value = false
+      } else if (mode === 'hidden') {
+        customCursorPositionReady.value = true
+      }
       active.value = mode === 'drawing'
       showQuickColors.value = false
       textBoxPos.value = null
@@ -919,6 +926,8 @@ onMounted(async () => {
         }
         void (async () => {
           await seedPointerPosition()
+          customCursorPositionReady.value = true
+          await refreshCustomCursorPosition()
           emitPointerScreenForToolbar()
         })()
       } else if (mode === 'penetration') {
