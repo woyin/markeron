@@ -338,9 +338,7 @@ async function seedPointerPosition() {
     lastScreenY = pos.screenY
     pointerScreenKnown = true
     mousePos.value = { x: pos.x, y: pos.y }
-    if (active.value && !penetrationMode.value && !toolbarPanelHovered.value) {
-      updateCursorEl(pos.x, pos.y)
-    }
+    await refreshCustomCursorPosition()
   } catch (error) {
     console.error('Failed to seed pointer position:', error)
   }
@@ -693,6 +691,16 @@ function updateCursorEl(x: number, y: number) {
   cursorEl.value.style.transform = `translate(${x - hx}px, ${y - hy}px)`
 }
 
+async function refreshCustomCursorPosition() {
+  await nextTick()
+  if (!showCustomCursor.value) return
+  if (cursorEl.value) {
+    updateCursorEl(lastPointerX, lastPointerY)
+    return
+  }
+  requestAnimationFrame(() => updateCursorEl(lastPointerX, lastPointerY))
+}
+
 const showDragCursor = computed(
   () =>
     isDragEnabled(dragMode.value) &&
@@ -726,16 +734,12 @@ const showCustomCursor = computed(() => wantsCustomCursor.value)
 
 // Fix cursor offset when switching tools/colors via shortcut while pointer is stationary
 watch([currentTool, currentColor], () => {
-  nextTick(() => {
-    if (active.value && showCustomCursor.value) {
-      updateCursorEl(lastPointerX, lastPointerY)
-    }
-  })
+  void refreshCustomCursorPosition()
 })
 
 watch(showCustomCursor, (visible) => {
   if (visible) {
-    nextTick(() => updateCursorEl(lastPointerX, lastPointerY))
+    void refreshCustomCursorPosition()
   }
 })
 
@@ -913,13 +917,10 @@ onMounted(async () => {
           applyDefaultEntryOnActivate()
           nextTick(() => resizeCanvas())
         }
-        void seedPointerPosition()
-        nextTick(() => {
-          if (showCustomCursor.value) {
-            updateCursorEl(lastPointerX, lastPointerY)
-          }
+        void (async () => {
+          await seedPointerPosition()
           emitPointerScreenForToolbar()
-        })
+        })()
       } else if (mode === 'penetration') {
         abortActivePointerInteraction()
         if (!toolbarPinned.value) {

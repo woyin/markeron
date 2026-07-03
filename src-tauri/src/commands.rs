@@ -34,8 +34,10 @@ pub fn get_config(state: tauri::State<'_, AppState>) -> AppConfig {
 }
 
 #[tauri::command]
-pub fn get_overlay_pointer_position() -> Option<crate::monitor::OverlayPointerPosition> {
-    crate::monitor::get_overlay_client_pointer()
+pub fn get_overlay_pointer_position(
+    app: AppHandle,
+) -> Option<crate::monitor::OverlayPointerPosition> {
+    crate::monitor::get_overlay_client_pointer(&app)
 }
 
 #[tauri::command]

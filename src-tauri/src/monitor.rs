@@ -1,4 +1,5 @@
 use serde::Serialize;
+use tauri::{AppHandle, Manager};
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,13 +53,21 @@ pub fn get_cursor_screen_pos() -> Option<(i32, i32)> {
     Some((x + w as i32 / 2, y + h as i32 / 2))
 }
 
-/// Cursor position in overlay client coordinates (relative to the cursor monitor origin).
-pub fn get_overlay_client_pointer() -> Option<OverlayPointerPosition> {
+/// Cursor position in overlay client coordinates (CSS pixels in the webview).
+pub fn get_overlay_client_pointer(app: &AppHandle) -> Option<OverlayPointerPosition> {
     let (screen_x, screen_y) = get_cursor_screen_pos()?;
     let (mon_x, mon_y, _, _) = get_cursor_monitor_rect()?;
+    let window = app.get_webview_window("overlay")?;
+    let scale = window.scale_factor().ok()?;
+    let dx = (screen_x - mon_x) as f64;
+    let dy = (screen_y - mon_y) as f64;
+    #[cfg(not(target_os = "macos"))]
+    let (x, y) = (dx / scale, dy / scale);
+    #[cfg(target_os = "macos")]
+    let (x, y) = (dx, dy);
     Some(OverlayPointerPosition {
-        x: (screen_x - mon_x) as f64,
-        y: (screen_y - mon_y) as f64,
+        x,
+        y,
         screen_x,
         screen_y,
     })
