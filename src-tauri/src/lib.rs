@@ -120,6 +120,7 @@ pub fn run() {
             commands::get_overlay_pointer_position,
             commands::get_overlay_monitor_logical_bounds,
             commands::is_pointer_over_toolbar_panel,
+            commands::set_overlay_ignore_cursor_events,
             commands::save_shortcuts,
             commands::save_general,
             commands::save_locale,

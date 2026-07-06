@@ -973,6 +973,21 @@ watch(showCustomCursor, (visible, wasVisible) => {
   }
 })
 
+/** Let the toolbar receive hover/clicks while the cursor is over the panel (macOS). */
+async function syncMacOverlayCursorPassthrough() {
+  if (!isMacOS() || !active.value || penetrationMode.value) return
+  const passThrough = toolbarPanelHovered.value || toolbarPanelDragging.value
+  try {
+    await invoke('set_overlay_ignore_cursor_events', { ignore: passThrough })
+  } catch {
+    // non-fatal
+  }
+}
+
+watch([toolbarPanelHovered, toolbarPanelDragging, penetrationMode], () => {
+  void syncMacOverlayCursorPassthrough()
+})
+
 const quickColorsPanelStyle = computed(() => {
   const pw = 260,
     ph = 100
@@ -1268,6 +1283,9 @@ onUnmounted(() => {
   }
   stopMacPointerPoll()
   setMacOverlaySystemCursorHidden(false)
+  if (isMacOS()) {
+    void invoke('set_overlay_ignore_cursor_events', { ignore: false }).catch(() => {})
+  }
   unlisteners.forEach((fn) => fn())
   disposeTooltip()
   destroy()

@@ -53,6 +53,15 @@ pub fn is_pointer_over_toolbar_panel(app: AppHandle) -> bool {
 }
 
 #[tauri::command]
+pub fn set_overlay_ignore_cursor_events(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+    ignore: bool,
+) {
+    crate::overlay::set_overlay_ignore_cursor_events(&app, &state, ignore);
+}
+
+#[tauri::command]
 pub fn save_shortcuts(
     app: AppHandle,
     state: tauri::State<'_, AppState>,

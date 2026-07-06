@@ -403,6 +403,19 @@ pub fn is_pointer_over_toolbar_panel(app: &AppHandle) -> bool {
     }
 }
 
+/// Pass pointer events through the overlay while the cursor is over the toolbar (drawing mode).
+pub fn set_overlay_ignore_cursor_events(app: &AppHandle, state: &AppState, ignore: bool) {
+    if current_mode(state) != OverlayMode::Drawing {
+        return;
+    }
+    if let Some(window) = app.get_webview_window("overlay") {
+        window.set_ignore_cursor_events(ignore).ok();
+    }
+    if ignore {
+        raise_toolbar_above_overlay(app);
+    }
+}
+
 pub fn enter_penetration_mode(app: &AppHandle, state: &AppState) {
     if current_mode(state) != OverlayMode::Drawing {
         return;
