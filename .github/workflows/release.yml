@@ -150,12 +150,16 @@ jobs:
         include:
           - platform: windows-latest
             args: ''
+            slug: windows
           - platform: macos-latest
             args: '--target aarch64-apple-darwin'
+            slug: macos-aarch64
           - platform: macos-latest
             args: '--target x86_64-apple-darwin'
+            slug: macos-x64
           - platform: ubuntu-24.04
             args: ''
+            slug: linux
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -220,6 +224,22 @@ jobs:
           updaterJsonPreferNsis: true
           args: ${{ matrix.args }} ${{ steps.codesign.outputs.sign_args }}
 
+      - name: Stash updater fragment
+        shell: bash
+        run: |
+          JSON="$(find src-tauri/target -path '*/release/bundle/latest.json' | head -1)"
+          if [ -z "$JSON" ]; then
+            echo "Updater fragment not found after build"
+            exit 1
+          fi
+          cp "$JSON" "updater-${{ matrix.slug }}.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: updater-${{ matrix.slug }}
+          path: updater-${{ matrix.slug }}.json
+          if-no-files-found: error
+
       - name: Build MSIX
         if: matrix.platform == 'windows-latest'
         shell: bash
@@ -240,8 +260,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Publish completed release
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: updater-*
+          path: updater-fragments
+          merge-multiple: true
+
+      - name: Merge updater JSON
+        run: node scripts/merge-updater-json.mjs updater-fragments merged-latest.json
+
+      - name: Consolidate release assets and publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-        run: gh release edit "${{ github.ref_name }}" --draft=false --latest
+        run: node scripts/consolidate-github-release.mjs "${{ github.ref_name }}" merged-latest.json

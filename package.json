@@ -36,7 +36,7 @@
     "build:msix": "bash scripts/build-msix.sh",
     "build:all": "tauri build && bash scripts/build-msix.sh",
     "build:fe": "vue-tsc --noEmit && vite build",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/*.test.mjs",
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{ts,vue,css}\" \"*.{ts,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,vue,css}\" \"*.{ts,json}\"",
