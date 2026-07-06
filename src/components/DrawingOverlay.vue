@@ -23,7 +23,7 @@ import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth } from '../constants/tools'
 import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
 import { COLOR_PALETTE } from '../constants/colors'
-import { isMacOS } from '../utils/platform'
+import { isMacOS, MAC_HIDDEN_CURSOR, setMacOverlaySystemCursorHidden } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
 import { isDragEnabled, resolveDragMode, type DragMode } from '../utils/dragMode'
 import { isToolbarPinned, resolveToolbarVisibility, type ToolbarVisibility } from '../utils/toolbarSettings'
@@ -939,7 +939,7 @@ const canvasCursor = computed(() => {
   if (showDragCursor.value) return 'move'
   if (currentTool.value === 'text') return 'text'
   if (showQuickColors.value) return 'default'
-  if (wantsCustomCursor.value) return 'none'
+  if (wantsCustomCursor.value) return isMacOS() ? MAC_HIDDEN_CURSOR : 'none'
   return 'default'
 })
 
@@ -951,6 +951,7 @@ watch([currentTool, currentColor], () => {
 })
 
 watch(showCustomCursor, (visible) => {
+  setMacOverlaySystemCursorHidden(visible)
   if (visible) {
     void refreshCustomCursorPosition()
   }
@@ -1249,6 +1250,7 @@ onUnmounted(() => {
     pointerScreenRafId = null
   }
   stopMacPointerPoll()
+  setMacOverlaySystemCursorHidden(false)
   unlisteners.forEach((fn) => fn())
   disposeTooltip()
   destroy()
@@ -1347,6 +1349,7 @@ function exitDrawing() {
       active && !penetrationMode ? 'pointer-events-auto' : 'pointer-events-none',
       whiteboardMode ? 'bg-white' : '',
     ]"
+    :style="active && !penetrationMode ? { cursor: canvasCursor } : undefined"
   >
     <canvas
       ref="historyCanvasRef"
