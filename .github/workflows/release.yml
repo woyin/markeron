@@ -222,6 +222,7 @@ jobs:
           releaseDraft: true
           prerelease: false
           updaterJsonPreferNsis: true
+          uploadUpdaterJson: false
           args: ${{ matrix.args }} ${{ steps.codesign.outputs.sign_args }}
 
       - name: Stash updater fragment
