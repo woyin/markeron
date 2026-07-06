@@ -6,6 +6,7 @@ import { isMacOS } from '../utils/platform'
 import { useI18n } from '../i18n'
 import { TOOL_DEFS, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_ROWS } from '../constants/colors'
+import { TEXT_OUTLINE_WIDTH_PRESETS, normalizeTextOutline, resolveTextOutlineColor } from '../constants/textOutline'
 import { loadToolbarPosition, saveToolbarPosition } from '../utils/toolbarPosition'
 import { fitToolbarWindow, measureToolbarPanelHeight } from '../utils/toolbarWindow'
 import { isPointerOverPanelRect } from '../utils/toolbarPanelHover'
@@ -13,6 +14,7 @@ import { LogicalPosition } from '@tauri-apps/api/dpi'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { ToolbarLayout } from '../utils/toolbarSettings'
+import type { TextOutlineStyle } from '../composables/drawingTypes'
 
 const { t } = useI18n()
 
@@ -25,6 +27,7 @@ const props = defineProps<{
   currentTool: Tool
   currentColor: string
   lineWidth: number
+  textOutline: TextOutlineStyle
   whiteboardMode: boolean
   penetrationMode?: boolean
   canUndo: boolean
@@ -40,6 +43,7 @@ const emit = defineEmits<{
   selectTool: [tool: Tool]
   selectColor: [color: string]
   updateLineWidth: [width: number]
+  updateTextOutline: [textOutline: TextOutlineStyle]
   close: []
   undo: []
   redo: []
@@ -55,6 +59,9 @@ const tools = computed(() => TOOL_DEFS.map((d) => ({ ...d, label: t(`tools.${d.i
 const colors = COLOR_ROWS
 const simpleColors = computed(() => colors[0] ?? [])
 const widths = computed(() => WIDTH_PRESETS.map((v) => ({ value: v, label: t(`widths.${v}`) })))
+const outlineWidths = computed(() => TEXT_OUTLINE_WIDTH_PRESETS.map((v) => ({ value: v, label: t(`widths.${v}`) })))
+const outlinePreviewColor = computed(() => resolveTextOutlineColor(props.textOutline, props.currentColor))
+const customOutlineColor = computed(() => normalizeTextOutline(props.textOutline).color)
 
 const expanded = ref(false)
 const showFullPanel = computed(() => props.layout === 'detailed' || expanded.value)
@@ -83,6 +90,14 @@ function selectColor(color: string) {
 function updateWidth(width: number) {
   emit('updateLineWidth', width)
   maybeClose()
+}
+
+function updateTextOutline(patch: Partial<TextOutlineStyle>) {
+  emit('updateTextOutline', normalizeTextOutline({ ...props.textOutline, ...patch }))
+}
+
+function updateCustomTextOutlineColor(color: string) {
+  updateTextOutline({ enabled: true, colorMode: 'fixed', color })
 }
 
 function toggleExpanded() {
@@ -654,6 +669,86 @@ onUnmounted(() => {
                 }"
               />
             </button>
+          </div>
+        </div>
+
+        <!-- Text outline -->
+        <div v-if="showFullPanel && currentTool === 'text'" class="px-3.5 py-2.5 ui-divider-h">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] font-semibold overlay-text-section tracking-[0.5px] font-sans">{{
+              t('panel.textOutline')
+            }}</span>
+            <button
+              type="button"
+              class="px-2.5 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120"
+              :class="{ 'ui-segment--active': textOutline.enabled }"
+              :aria-pressed="textOutline.enabled"
+              @click="updateTextOutline({ enabled: !textOutline.enabled })"
+            >
+              {{ textOutline.enabled ? t('panel.textOutlineOn') : t('panel.textOutlineOff') }}
+            </button>
+          </div>
+          <div class="flex items-center gap-1.5 mb-2">
+            <button
+              type="button"
+              class="flex-1 h-8 rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120"
+              :class="{ 'ui-segment--active': textOutline.enabled && textOutline.colorMode === 'auto' }"
+              :aria-pressed="textOutline.enabled && textOutline.colorMode === 'auto'"
+              :title="t('panel.textOutlineAuto')"
+              @click="updateTextOutline({ enabled: true, colorMode: 'auto' })"
+            >
+              {{ t('panel.textOutlineAuto') }}
+            </button>
+            <label
+              class="flex-1 h-8 rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120 cursor-pointer flex items-center justify-center gap-1.5 relative overflow-hidden"
+              :class="{ 'ui-segment--active': textOutline.enabled && textOutline.colorMode === 'fixed' }"
+              :title="t('panel.textOutlineCustom')"
+            >
+              <input
+                type="color"
+                class="absolute w-0 h-0 opacity-0 pointer-events-none"
+                :value="customOutlineColor"
+                @input="updateCustomTextOutlineColor(($event.target as HTMLInputElement).value)"
+              />
+              <span
+                class="w-3.5 h-3.5 rounded-full color-swatch-ring color-swatch-ring--compact transition-[border-color] duration-120"
+                :class="{
+                  'color-swatch-ring--active': textOutline.enabled && textOutline.colorMode === 'fixed',
+                }"
+                :style="{ backgroundColor: customOutlineColor }"
+              />
+              <span>{{ t('panel.textOutlineCustom') }}</span>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex flex-1 gap-1">
+              <button
+                v-for="w in outlineWidths"
+                :key="w.value"
+                type="button"
+                class="group flex-1 flex items-center justify-center h-8 border-none rounded-lg cursor-pointer transition-all duration-120"
+                :class="
+                  textOutline.enabled && textOutline.width === w.value
+                    ? 'overlay-width-btn--active'
+                    : 'overlay-width-btn'
+                "
+                :title="w.label"
+                @click="updateTextOutline({ enabled: true, width: w.value })"
+              >
+                <span
+                  class="w-[70%] rounded-full transition-transform duration-120 group-hover:scale-x-110"
+                  :class="
+                    textOutline.enabled && textOutline.width === w.value
+                      ? 'overlay-width-line--active'
+                      : 'overlay-width-line'
+                  "
+                  :style="{
+                    height: Math.max(1.5, w.value * 1.1) + 'px',
+                    backgroundColor: textOutline.enabled ? outlinePreviewColor : undefined,
+                  }"
+                />
+              </button>
+            </div>
           </div>
         </div>
 

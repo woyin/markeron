@@ -1,4 +1,4 @@
-import type { Tool } from './useDrawing'
+import type { TextOutlineStyle, Tool } from './drawingTypes'
 import type { ToolbarLayout } from '../utils/toolbarSettings'
 
 export const OVERLAY_STATE_EVENT = 'overlay-state-sync'
@@ -20,6 +20,7 @@ export interface OverlayStateSync {
   currentTool: Tool
   currentColor: string
   lineWidth: number
+  textOutline: TextOutlineStyle
   whiteboardMode: boolean
   penetrationMode: boolean
   canUndo: boolean
@@ -32,6 +33,7 @@ export type ToolbarAction =
   | { type: 'selectTool'; tool: Tool }
   | { type: 'selectColor'; color: string }
   | { type: 'updateLineWidth'; width: number }
+  | { type: 'updateTextOutline'; textOutline: TextOutlineStyle }
   | { type: 'undo' }
   | { type: 'redo' }
   | { type: 'clearAll' }

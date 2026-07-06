@@ -2,6 +2,7 @@ import { ref, shallowRef, computed, type Ref } from 'vue'
 import type { EraserMode } from '../utils/eraserMode'
 import {
   computeBbox,
+  computeTextBbox,
   bboxesIntersect,
   offsetAttachedErasers,
   updateShapeHitCache,
@@ -9,11 +10,12 @@ import {
   snapPointToAngle,
 } from './drawingGeometry'
 import { drawActionDirect } from './drawingRender'
+import { normalizeTextOutline } from '../constants/textOutline'
 
 export type { Tool, Point, DrawAction } from './drawingTypes'
 export type { InputPointLike } from './drawingTypes'
 
-import type { Tool, Point, DrawAction, InputPointLike } from './drawingTypes'
+import type { Tool, Point, DrawAction, InputPointLike, TextOutlineStyle } from './drawingTypes'
 import { createDefaultLineWidths, eraserLineWidth, highlighterLineWidth, toolLineWidthGroup } from '../constants/tools'
 
 const HIT_GRID_SIZE = 192
@@ -512,7 +514,16 @@ export function useDrawing(
     renderFrame()
   }
 
-  function addTextAction(text: string, x: number, y: number, width: number, fontSize: number, color?: string) {
+  function addTextAction(
+    text: string,
+    x: number,
+    y: number,
+    width: number,
+    fontSize: number,
+    color?: string,
+    textOutline?: TextOutlineStyle,
+  ) {
+    const normalizedOutline = normalizeTextOutline(textOutline)
     const action: DrawAction = {
       tool: 'text',
       color: color ?? currentColor.value,
@@ -521,6 +532,9 @@ export function useDrawing(
       points: [{ x, y }],
       text,
       fontSize,
+    }
+    if (normalizedOutline.enabled) {
+      action.textOutline = normalizedOutline
     }
 
     const ctx = getPreviewCtx()
@@ -533,13 +547,7 @@ export function useDrawing(
         if (w > maxWidth) maxWidth = w
       }
       action.textWidth = maxWidth
-      const lh = Math.round(fontSize * 1.3)
-      action.bbox = {
-        x1: x - 10,
-        y1: y - lh / 2 - 10,
-        x2: x + maxWidth + 20,
-        y2: y + lines.length * lh + lh / 2 + 10,
-      }
+      action.bbox = computeTextBbox(action)
     }
 
     redoStack.length = 0
@@ -879,7 +887,7 @@ export function useDrawing(
     if (canvas) {
       const dpr = getEffectiveDpr()
       const pad = Math.max(20, action.lineWidth / 2 + 10) + 2
-      const bbox = computeBbox(action, pad)
+      const bbox = action.tool === 'text' ? computeTextBbox(action) : computeBbox(action, pad)
       if (bbox) {
         const bw = Math.ceil((bbox.x2 - bbox.x1) * dpr)
         const bh = Math.ceil((bbox.y2 - bbox.y1) * dpr)
@@ -930,20 +938,10 @@ export function useDrawing(
         pathCache.delete(action)
       }
 
-      const pad = Math.max(20, action.lineWidth / 2 + 10)
       if (action.tool === 'text' && action.textWidth != null) {
-        const fs = action.fontSize ?? 24
-        const lh = Math.round(fs * 1.3)
-        const lines = (action.text ?? '').split('\n')
-        const x = action.points[0].x
-        const y = action.points[0].y
-        action.bbox = {
-          x1: x - 10,
-          y1: y - lh / 2 - 10,
-          x2: x + action.textWidth + 20,
-          y2: y + lines.length * lh + lh / 2 + 10,
-        }
+        action.bbox = computeTextBbox(action)
       } else {
+        const pad = Math.max(20, action.lineWidth / 2 + 10)
         action.bbox = computeBbox(action, pad)
       }
       updateShapeHitCache(action)

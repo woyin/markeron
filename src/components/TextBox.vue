@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { isMacOS } from '../utils/platform'
 import { useI18n } from '../i18n'
+import type { TextOutlineStyle } from '../composables/drawingTypes'
+import { getActiveTextOutline } from '../constants/textOutline'
 
 const { t } = useI18n()
 
@@ -11,6 +13,7 @@ const props = defineProps<{
   color: string
   fontSize: number
   initialText?: string
+  textOutline?: TextOutlineStyle
 }>()
 
 const emit = defineEmits<{
@@ -20,6 +23,18 @@ const emit = defineEmits<{
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const fs = ref(props.fontSize)
+const draftText = ref(props.initialText ?? '')
+const boxWidth = ref('auto')
+const boxHeight = ref('auto')
+const lineHeight = computed(() => Math.round(fs.value * 1.3))
+const textBoxTransform = computed(() => `translate(${props.x}px, ${props.y - lineHeight.value / 2}px)`)
+const activeTextOutline = computed(() =>
+  draftText.value.length > 0 ? getActiveTextOutline(props.textOutline, props.color) : null,
+)
+const outlineStrokeStyle = computed(() => {
+  const outline = activeTextOutline.value
+  return outline ? `${outline.width}px ${outline.color}` : undefined
+})
 
 function autoResize() {
   const el = textareaRef.value
@@ -28,12 +43,16 @@ function autoResize() {
   el.style.height = el.scrollHeight + 'px'
   el.style.width = 'auto'
   el.style.width = Math.max(4, el.scrollWidth + 4) + 'px'
+  boxHeight.value = el.style.height
+  boxWidth.value = el.style.width
+}
+
+function onInput(e: Event) {
+  draftText.value = (e.target as HTMLTextAreaElement).value
+  autoResize()
 }
 
 onMounted(() => {
-  if (props.initialText && textareaRef.value) {
-    textareaRef.value.value = props.initialText
-  }
   autoResize()
   const el = textareaRef.value
   if (!el) return
@@ -44,7 +63,7 @@ onMounted(() => {
 })
 
 function getText(): string {
-  return textareaRef.value?.value ?? ''
+  return draftText.value
 }
 
 function commitText() {
@@ -80,21 +99,39 @@ defineExpose({ commitText, getText, getFontSize })
 </script>
 
 <template>
+  <div
+    v-if="activeTextOutline"
+    aria-hidden="true"
+    class="fixed left-0 top-0 z-100001 px-0.5 py-0 pointer-events-none select-none font-text overflow-visible whitespace-pre min-w-[4px] max-w-[80vw]"
+    :style="{
+      transform: textBoxTransform,
+      width: boxWidth,
+      height: boxHeight,
+      color: 'transparent',
+      fontSize: fs + 'px',
+      lineHeight: lineHeight + 'px',
+      minHeight: lineHeight + 'px',
+      WebkitTextStroke: outlineStrokeStyle,
+    }"
+  >
+    {{ draftText }}
+  </div>
   <textarea
     ref="textareaRef"
     class="textbox-input fixed left-0 top-0 z-100002 px-0.5 py-0 border-none bg-transparent outline-none resize-none font-text overflow-hidden whitespace-pre min-w-[4px] max-w-[80vw]"
+    :value="draftText"
     :style="{
-      transform: `translate(${x}px, ${y - Math.round(fs * 1.3) / 2}px)`,
+      transform: textBoxTransform,
       color: color,
       fontSize: fs + 'px',
-      lineHeight: Math.round(fs * 1.3) + 'px',
-      minHeight: Math.round(fs * 1.3) + 'px',
+      lineHeight: lineHeight + 'px',
+      minHeight: lineHeight + 'px',
       caretColor: color,
     }"
     :placeholder="t('textBox.placeholder')"
     spellcheck="false"
     @keydown="onKeyDown"
-    @input="autoResize"
+    @input="onInput"
     @mousedown.stop
     @wheel="onWheel"
   />

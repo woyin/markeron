@@ -1,4 +1,5 @@
 import type { DrawAction, Point } from './drawingTypes'
+import { getActiveTextOutline } from '../constants/textOutline'
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, points: Point[]) {
   ctx.beginPath()
@@ -84,6 +85,13 @@ export function drawText(ctx: CanvasRenderingContext2D, action: DrawAction) {
   ctx.globalAlpha = 1
   ctx.fillStyle = action.color
   ctx.textBaseline = 'alphabetic'
+  const outline = getActiveTextOutline(action.textOutline, action.color)
+  if (outline) {
+    ctx.strokeStyle = outline.color
+    ctx.lineWidth = outline.width
+    ctx.lineJoin = 'round'
+    ctx.miterLimit = 2
+  }
   const lines = (action.text ?? '').split('\n')
   const x = action.points[0].x + 2
   const lh = Math.round(fs * 1.3)
@@ -103,7 +111,9 @@ export function drawText(ctx: CanvasRenderingContext2D, action: DrawAction) {
   const baselineOffset = (ascent - descent) / 2
   for (let i = 0; i < lines.length; i++) {
     const lineCenterY = action.points[0].y + i * lh
-    ctx.fillText(lines[i], x, lineCenterY + baselineOffset)
+    const baselineY = lineCenterY + baselineOffset
+    if (outline) ctx.strokeText(lines[i], x, baselineY)
+    ctx.fillText(lines[i], x, baselineY)
   }
 }
 

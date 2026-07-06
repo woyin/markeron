@@ -1,4 +1,5 @@
 import type { DrawAction, Point } from './drawingTypes'
+import { textOutlinePadding } from '../constants/textOutline'
 
 export function computeBbox(action: DrawAction, pad: number): DrawAction['bbox'] {
   const pts = action.points
@@ -14,6 +15,24 @@ export function computeBbox(action: DrawAction, pad: number): DrawAction['bbox']
     if (pts[i].y > y2) y2 = pts[i].y
   }
   return { x1: x1 - pad, y1: y1 - pad, x2: x2 + pad, y2: y2 + pad }
+}
+
+export function computeTextBbox(action: DrawAction): DrawAction['bbox'] {
+  if (action.tool !== 'text' || action.points.length === 0) return undefined
+  const fs = action.fontSize ?? 24
+  const lh = Math.round(fs * 1.3)
+  const lines = (action.text ?? '').split('\n')
+  const outlinePad = textOutlinePadding(action.textOutline)
+  const x = action.points[0].x
+  const y = action.points[0].y
+  const textWidth = action.textWidth ?? 200
+
+  return {
+    x1: x - 10 - outlinePad,
+    y1: y - lh / 2 - 10 - outlinePad,
+    x2: x + textWidth + 20 + outlinePad,
+    y2: y + lines.length * lh + lh / 2 + 10 + outlinePad,
+  }
 }
 
 export function bboxesIntersect(a: NonNullable<DrawAction['bbox']>, b: NonNullable<DrawAction['bbox']>) {
@@ -126,13 +145,8 @@ export function hitTestAction(action: DrawAction, p: Point, extraMargin = 0): bo
   const threshold = Math.max(10, (action.lineWidth || 2) / 2 + 5) + extraMargin
 
   if (action.tool === 'text' && action.text) {
-    const fs = action.fontSize ?? 24
-    const lh = Math.round(fs * 1.3)
-    const textWidth = action.textWidth ?? 200
-    const lines = action.text.split('\n')
-    const boxX = pts[0].x - 10
-    const boxY = pts[0].y - lh / 2 - 10
-    return p.x >= boxX && p.x <= boxX + textWidth + 20 && p.y >= boxY && p.y <= boxY + lines.length * lh + 20
+    const textBox = computeTextBbox(action)
+    return !!textBox && p.x >= textBox.x1 && p.x <= textBox.x2 && p.y >= textBox.y1 && p.y <= textBox.y2
   }
 
   if (action.tool === 'pen' || action.tool === 'highlighter') {

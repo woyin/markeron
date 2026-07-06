@@ -50,6 +50,11 @@ export default {
     arrowShape: 'Arrow',
     rightClick: 'Right-click',
     switchColor: 'Color',
+    textOutline: 'Text outline',
+    textOutlineOn: 'On',
+    textOutlineOff: 'Off',
+    textOutlineAuto: 'Auto',
+    textOutlineCustom: 'Custom',
     colorSwitch: 'Q ← switch → E',
   },
   overlay: {

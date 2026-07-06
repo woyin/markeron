@@ -50,6 +50,11 @@ export default {
     arrowShape: '箭头',
     rightClick: '右键',
     switchColor: '切换颜色',
+    textOutline: '文字描边',
+    textOutlineOn: '开启',
+    textOutlineOff: '关闭',
+    textOutlineAuto: '自动',
+    textOutlineCustom: '自定义',
     colorSwitch: 'Q ← 切换 → E',
   },
   overlay: {

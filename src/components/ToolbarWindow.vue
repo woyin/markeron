@@ -4,6 +4,8 @@ import { invoke } from '@tauri-apps/api/core'
 import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event'
 import ToolToolbar from './ToolToolbar.vue'
 import type { Tool } from '../composables/useDrawing'
+import type { TextOutlineStyle } from '../composables/drawingTypes'
+import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
 import {
   OVERLAY_STATE_EVENT,
   OVERLAY_STATE_REQUEST_EVENT,
@@ -28,6 +30,7 @@ import type { AppConfig } from '../types/app'
 const currentTool = ref<Tool>('pen')
 const currentColor = ref('#FFCC02')
 const lineWidth = ref(3)
+const textOutline = ref<TextOutlineStyle>(createDefaultTextOutline())
 const whiteboardMode = ref(false)
 const penetrationMode = ref(false)
 const canUndo = ref(false)
@@ -46,6 +49,7 @@ function applyOverlayState(state: OverlayStateSync) {
   currentTool.value = state.currentTool
   currentColor.value = state.currentColor
   lineWidth.value = state.lineWidth
+  textOutline.value = normalizeTextOutline(state.textOutline)
   whiteboardMode.value = state.whiteboardMode
   penetrationMode.value = state.penetrationMode
   canUndo.value = state.canUndo
@@ -162,6 +166,7 @@ onUnmounted(() => {
       :current-tool="currentTool"
       :current-color="currentColor"
       :line-width="lineWidth"
+      :text-outline="textOutline"
       :whiteboard-mode="whiteboardMode"
       :penetration-mode="penetrationMode"
       :can-undo="canUndo"
@@ -174,6 +179,7 @@ onUnmounted(() => {
       @select-tool="emitToolbarAction({ type: 'selectTool', tool: $event })"
       @select-color="emitToolbarAction({ type: 'selectColor', color: $event })"
       @update-line-width="emitToolbarAction({ type: 'updateLineWidth', width: $event })"
+      @update-text-outline="emitToolbarAction({ type: 'updateTextOutline', textOutline: $event })"
       @undo="emitToolbarAction({ type: 'undo' })"
       @redo="emitToolbarAction({ type: 'redo' })"
       @clear-all="emitToolbarAction({ type: 'clearAll' })"

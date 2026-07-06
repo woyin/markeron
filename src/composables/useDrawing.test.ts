@@ -22,6 +22,7 @@ function createMockCanvas(): HTMLCanvasElement {
     translate: vi.fn(),
     setTransform: vi.fn(),
     fillText: vi.fn(),
+    strokeText: vi.fn(),
     measureText: vi.fn(() => ({ width: 50 })),
     canvas: null as unknown as HTMLCanvasElement,
     globalCompositeOperation: 'source-over',
@@ -33,6 +34,7 @@ function createMockCanvas(): HTMLCanvasElement {
     lineJoin: 'miter',
     font: '',
     textBaseline: 'alphabetic',
+    miterLimit: 10,
   }
 
   const canvas = {
@@ -360,6 +362,21 @@ describe('useDrawing', () => {
     it('text with zero offset', () => {
       drawing.addTextAction('Test', 50, 50, 0, 16, '#FF0000')
       drawing.undo()
+    })
+
+    it('expands text hit testing when outline is enabled', () => {
+      drawing.addTextAction('Test', 50, 50, 0, 16, '#FF0000')
+      expect(drawing.findActionAt({ x: 43, y: 50 })).not.toBeNull()
+      expect(drawing.findActionAt({ x: 36, y: 50 })).toBeNull()
+      drawing.clearAll()
+
+      drawing.addTextAction('Test', 50, 50, 0, 16, '#FF0000', {
+        enabled: true,
+        colorMode: 'fixed',
+        color: '#FFFFFF',
+        width: 8,
+      })
+      expect(drawing.findActionAt({ x: 36, y: 50 })).not.toBeNull()
     })
   })
 

@@ -3,6 +3,7 @@ import { ref, shallowRef, onMounted, onUnmounted, nextTick, computed, watch } fr
 import { invoke } from '@tauri-apps/api/core'
 import { listen, emit, type UnlistenFn } from '@tauri-apps/api/event'
 import { useDrawing, type Tool, type DrawAction } from '../composables/useDrawing'
+import type { TextOutlineStyle } from '../composables/drawingTypes'
 import { useTooltip } from '../composables/useTooltip'
 import { createKeyDownHandler } from '../composables/useOverlayKeyboard'
 import {
@@ -18,6 +19,7 @@ import {
 import type { AppConfig } from '../types/app'
 import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth } from '../constants/tools'
+import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
@@ -184,10 +186,12 @@ const {
 const textFontSize = computed(() => Math.max(16, lineWidth.value * 6))
 const eraserCursorDiameter = computed(() => Math.min(80, eraserLineWidth(lineWidth.value)))
 const eraserCursorRadius = computed(() => eraserCursorDiameter.value / 2)
+const textOutline = ref<TextOutlineStyle>(createDefaultTextOutline())
 
 const activeTextBoxColor = ref('#FF0000')
 const activeTextBoxFontSize = ref(24)
 const activeTextBoxInitialText = ref('')
+const activeTextBoxOutline = ref<TextOutlineStyle>(createDefaultTextOutline())
 const editingOriginalAction = shallowRef<DrawAction | null>(null)
 
 function applyToolbarFromConfig(general?: AppConfig['general']) {
@@ -205,7 +209,7 @@ function applyToolbarFromConfig(general?: AppConfig['general']) {
   }
 }
 
-const TOOLBAR_PANEL_HEIGHT = 400
+const TOOLBAR_PANEL_HEIGHT = 500
 
 function toolbarPanelWidth(layout: ToolbarLayout): number {
   return layout === 'detailed' ? 272 : 304
@@ -448,12 +452,20 @@ function commitCurrentTextBox(cancel = false) {
     if (cancel && editingOriginalAction.value) {
       // Cancel edit: restore the original text action
       const a = editingOriginalAction.value
-      addTextAction(a.text!, a.points[0].x, a.points[0].y, 0, a.fontSize!, a.color)
+      addTextAction(a.text!, a.points[0].x, a.points[0].y, 0, a.fontSize!, a.color, normalizeTextOutline(a.textOutline))
     } else if (!cancel) {
       const text = textBoxRef.value.getText()
       const actualFs = textBoxRef.value.getFontSize()
       if (text.trim()) {
-        addTextAction(text, textBoxPos.value.x, textBoxPos.value.y, 0, actualFs, activeTextBoxColor.value)
+        addTextAction(
+          text,
+          textBoxPos.value.x,
+          textBoxPos.value.y,
+          0,
+          actualFs,
+          activeTextBoxColor.value,
+          activeTextBoxOutline.value,
+        )
       }
     }
     textBoxPos.value = null
@@ -493,6 +505,8 @@ function onDoubleClick(e: MouseEvent) {
     activeTextBoxColor.value = action.color
     activeTextBoxFontSize.value = action.fontSize ?? 24
     activeTextBoxInitialText.value = action.text ?? ''
+    activeTextBoxOutline.value = normalizeTextOutline(action.textOutline)
+    textOutline.value = normalizeTextOutline(action.textOutline)
 
     currentTool.value = 'text'
 
@@ -507,6 +521,7 @@ function onDoubleClick(e: MouseEvent) {
     activeTextBoxColor.value = currentColor.value
     activeTextBoxFontSize.value = textFontSize.value
     activeTextBoxInitialText.value = ''
+    activeTextBoxOutline.value = normalizeTextOutline(textOutline.value)
     nextTick(() => {
       textBoxPos.value = pos
     })
@@ -843,6 +858,7 @@ function syncOverlayStateToToolbar() {
     currentTool: currentTool.value,
     currentColor: currentColor.value,
     lineWidth: lineWidth.value,
+    textOutline: textOutline.value,
     whiteboardMode: whiteboardMode.value,
     penetrationMode: penetrationMode.value,
     canUndo: canUndo.value,
@@ -874,6 +890,13 @@ async function handleToolbarAction(action: ToolbarAction) {
       await resumeDrawingFromToolbar()
       lineWidth.value = action.width
       break
+    case 'updateTextOutline':
+      await resumeDrawingFromToolbar()
+      textOutline.value = normalizeTextOutline(action.textOutline)
+      if (textBoxPos.value) {
+        activeTextBoxOutline.value = normalizeTextOutline(action.textOutline)
+      }
+      break
     case 'undo':
       undo()
       break
@@ -904,6 +927,7 @@ watch(
     currentTool,
     currentColor,
     lineWidth,
+    textOutline,
     whiteboardMode,
     penetrationMode,
     canUndo,
@@ -1375,6 +1399,7 @@ function exitDrawing() {
       :color="activeTextBoxColor"
       :font-size="activeTextBoxFontSize"
       :initial-text="activeTextBoxInitialText"
+      :text-outline="activeTextBoxOutline"
       @commit="onTextCommit"
       @cancel="onTextCancel"
     />
