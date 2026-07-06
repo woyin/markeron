@@ -48,6 +48,11 @@ pub fn get_overlay_monitor_logical_bounds(
 }
 
 #[tauri::command]
+pub fn is_pointer_over_toolbar_panel(app: AppHandle) -> bool {
+    crate::overlay::is_pointer_over_toolbar_panel(&app)
+}
+
+#[tauri::command]
 pub fn save_shortcuts(
     app: AppHandle,
     state: tauri::State<'_, AppState>,

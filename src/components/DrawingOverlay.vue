@@ -385,7 +385,13 @@ async function runMacPointerPollTick() {
         lastScreenY = pos.screenY
         pointerScreenKnown = true
         mousePos.value = { x: pos.x, y: pos.y }
-        void emit(OVERLAY_POINTER_SCREEN_EVENT, { x: pos.screenX, y: pos.screenY })
+        if (!toolbarPanelDragging.value) {
+          try {
+            toolbarPanelHovered.value = await invoke<boolean>('is_pointer_over_toolbar_panel')
+          } catch {
+            // keep previous hover state
+          }
+        }
         if (!toolbarPanelHovered.value && !toolbarPanelDragging.value) {
           updateCursorEl(pos.x, pos.y)
         }
@@ -1214,6 +1220,7 @@ onMounted(async () => {
 
   unlisteners.push(
     await listen<boolean>(TOOLBAR_PANEL_HOVER_EVENT, (event) => {
+      if (isMacOS()) return
       if (!event.payload && toolbarPanelDragging.value) return
       toolbarPanelHovered.value = event.payload
     }),

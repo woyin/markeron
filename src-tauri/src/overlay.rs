@@ -366,6 +366,43 @@ pub fn activate_drawing(app: &AppHandle, state: &AppState) {
     info!("Drawing mode activated");
 }
 
+/// Whether the OS cursor is over the visible toolbar window (macOS drawing-mode panel hover).
+pub fn is_pointer_over_toolbar_panel(app: &AppHandle) -> bool {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = app;
+        false
+    }
+    #[cfg(target_os = "macos")]
+    {
+        let Some(toolbar) = app.get_webview_window("toolbar") else {
+            return false;
+        };
+        if !toolbar.is_visible().unwrap_or(false) {
+            return false;
+        }
+        let Some((px, py)) = monitor::get_cursor_screen_pos() else {
+            return false;
+        };
+        let Ok(pos) = toolbar.outer_position() else {
+            return false;
+        };
+        let Ok(size) = toolbar.outer_size() else {
+            return false;
+        };
+        let Ok(scale) = toolbar.scale_factor() else {
+            return false;
+        };
+        let left = pos.x as f64 / scale;
+        let top = pos.y as f64 / scale;
+        let w = size.width as f64 / scale;
+        let h = size.height as f64 / scale;
+        let x = px as f64;
+        let y = py as f64;
+        x >= left && x < left + w && y >= top && y < top + h
+    }
+}
+
 pub fn enter_penetration_mode(app: &AppHandle, state: &AppState) {
     if current_mode(state) != OverlayMode::Drawing {
         return;
