@@ -7,8 +7,9 @@ import { useI18n } from '../i18n'
 import { TOOL_DEFS, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_ROWS } from '../constants/colors'
 import { TEXT_OUTLINE_WIDTH_PRESETS, normalizeTextOutline, resolveTextOutlineColor } from '../constants/textOutline'
-import { loadToolbarPosition, saveToolbarPosition } from '../utils/toolbarPosition'
-import { fitToolbarWindow, measureToolbarPanelHeight } from '../utils/toolbarWindow'
+import { loadToolbarPosition, saveToolbarPosition, clampToolbarWindowPosition } from '../utils/toolbarPosition'
+import { fitToolbarWindow, measureToolbarPanelHeight, fetchOverlayMonitorBounds } from '../utils/toolbarWindow'
+import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { isPointerOverPanelRect } from '../utils/toolbarPanelHover'
 import { LogicalPosition } from '@tauri-apps/api/dpi'
 import { invoke } from '@tauri-apps/api/core'
@@ -204,6 +205,14 @@ let dragRafId: number | null = null
 let dragPointerId: number | null = null
 let captureTarget: HTMLElement | null = null
 let windowDragOffset = { x: 0, y: 0 }
+let dragMonitorBounds: MonitorLogicalBounds | null = null
+
+function clampStandaloneWindowPosition(left: number, top: number, panelH: number) {
+  if (!dragMonitorBounds) {
+    return { left, top }
+  }
+  return clampToolbarWindowPosition(left, top, panelW.value, panelH, dragMonitorBounds)
+}
 
 function scheduleDragUpdate() {
   if (dragRafId !== null) return
@@ -211,9 +220,11 @@ function scheduleDragUpdate() {
     dragRafId = null
     if (!isDragging.value) return
     if (props.standaloneWindow) {
-      void getCurrentWindow().setPosition(
-        new LogicalPosition(lastScreenX - windowDragOffset.x, lastScreenY - windowDragOffset.y),
-      )
+      const panelH = panelRef.value ? measureToolbarPanelHeight(panelRef.value) : cachedPanelH
+      const rawLeft = lastScreenX - windowDragOffset.x
+      const rawTop = lastScreenY - windowDragOffset.y
+      const clamped = clampStandaloneWindowPosition(rawLeft, rawTop, panelH)
+      void getCurrentWindow().setPosition(new LogicalPosition(clamped.left, clamped.top))
       return
     }
     const w = panelW.value
@@ -247,6 +258,10 @@ function startDrag(e: PointerEvent) {
   lastScreenY = e.screenY
   if (props.standaloneWindow) {
     windowDragOffset = { x: e.clientX, y: e.clientY }
+    dragMonitorBounds = null
+    void fetchOverlayMonitorBounds().then((bounds) => {
+      dragMonitorBounds = bounds
+    })
     return
   }
   cachedPanelH = panelRef.value?.offsetHeight ?? 400
@@ -289,6 +304,7 @@ function stopDrag(e?: PointerEvent) {
   releaseDragCapture()
   emit('panelDrag', false)
   if (props.standaloneWindow) {
+    dragMonitorBounds = null
     void (async () => {
       const win = getCurrentWindow()
       const [pos, scale] = await Promise.all([win.outerPosition(), win.scaleFactor()])

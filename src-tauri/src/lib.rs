@@ -5,6 +5,8 @@ mod error;
 mod i18n;
 #[cfg(target_os = "macos")]
 mod macos;
+#[cfg(target_os = "macos")]
+mod macos_cursor;
 mod monitor;
 mod overlay;
 mod shortcuts;
@@ -116,6 +118,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_config,
             commands::get_overlay_pointer_position,
+            commands::get_overlay_monitor_logical_bounds,
             commands::save_shortcuts,
             commands::save_general,
             commands::save_locale,
@@ -178,6 +181,7 @@ pub fn run() {
 
             let ctrlc_handle = handle.clone();
             ctrlc::set_handler(move || {
+                crate::monitor::release_drawing_cursor_clip();
                 ctrlc_handle.exit(0);
             })
             .ok();

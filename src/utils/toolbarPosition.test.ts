@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { migratePhysicalToLogical } from './toolbarPosition'
+import { clampToolbarWindowPosition, migratePhysicalToLogical } from './toolbarPosition'
+
+describe('clampToolbarWindowPosition', () => {
+  const monitor = { left: 0, top: 0, width: 1920, height: 1080 }
+
+  it('keeps position inside monitor', () => {
+    expect(clampToolbarWindowPosition(100, 200, 272, 400, monitor)).toEqual({ left: 100, top: 200 })
+  })
+
+  it('clamps panel dragged past right edge', () => {
+    expect(clampToolbarWindowPosition(2000, 200, 272, 400, monitor).left).toBe(1920 - 272 - 8)
+  })
+
+  it('clamps panel dragged past bottom edge', () => {
+    expect(clampToolbarWindowPosition(100, 900, 272, 400, monitor).top).toBe(1080 - 400 - 8)
+  })
+})
 
 describe('migratePhysicalToLogical', () => {
   it('passes through logical coords unchanged', () => {

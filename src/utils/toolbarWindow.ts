@@ -1,6 +1,24 @@
 import { LogicalSize, LogicalPosition } from '@tauri-apps/api/dpi'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { loadToolbarPosition, migratePhysicalToLogical, saveToolbarPosition } from './toolbarPosition'
+import { invoke } from '@tauri-apps/api/core'
+import {
+  clampToolbarWindowPosition,
+  loadToolbarPosition,
+  migratePhysicalToLogical,
+  saveToolbarPosition,
+  type MonitorLogicalBounds,
+} from './toolbarPosition'
+
+const TOOLBAR_PANEL_WIDTH = 272
+const TOOLBAR_PANEL_HEIGHT = 500
+
+export async function fetchOverlayMonitorBounds(): Promise<MonitorLogicalBounds | null> {
+  try {
+    return await invoke<MonitorLogicalBounds | null>('get_overlay_monitor_logical_bounds')
+  } catch {
+    return null
+  }
+}
 
 export async function restoreToolbarWindowPosition(): Promise<void> {
   const saved = loadToolbarPosition(true)
@@ -8,9 +26,13 @@ export async function restoreToolbarWindowPosition(): Promise<void> {
   const win = getCurrentWindow()
   const scale = await win.scaleFactor()
   const logical = migratePhysicalToLogical(saved, scale)
-  await win.setPosition(new LogicalPosition(logical.left, logical.top))
+  const bounds = await fetchOverlayMonitorBounds()
+  const position = bounds
+    ? clampToolbarWindowPosition(logical.left, logical.top, TOOLBAR_PANEL_WIDTH, TOOLBAR_PANEL_HEIGHT, bounds)
+    : logical
+  await win.setPosition(new LogicalPosition(position.left, position.top))
   if (saved.coordSpace !== 'logical') {
-    saveToolbarPosition(logical.left, logical.top, true)
+    saveToolbarPosition(position.left, position.top, true)
   }
 }
 

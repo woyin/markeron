@@ -2,6 +2,7 @@
 import { ref, shallowRef, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, emit, type UnlistenFn } from '@tauri-apps/api/event'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useDrawing, type Tool, type DrawAction } from '../composables/useDrawing'
 import type { TextOutlineStyle } from '../composables/drawingTypes'
 import { useTooltip } from '../composables/useTooltip'
@@ -443,6 +444,26 @@ function resizeCanvas() {
   }
 
   redrawAll()
+}
+
+/** Wait for Win32/WebView2 to finish DPI relayout after a monitor move. */
+function afterLayoutFrames(frameCount = 2): Promise<void> {
+  return new Promise((resolve) => {
+    const step = (remaining: number) => {
+      if (remaining <= 0) {
+        resolve()
+        return
+      }
+      requestAnimationFrame(() => step(remaining - 1))
+    }
+    step(frameCount)
+  })
+}
+
+async function scheduleOverlayResize() {
+  await afterLayoutFrames()
+  resizeCanvas()
+  watchDpr()
 }
 
 let toolBeforeModifier: string | null = null
@@ -982,12 +1003,30 @@ function onKeyUp(e: KeyboardEvent) {
 const unlisteners: UnlistenFn[] = []
 
 onMounted(async () => {
-  resizeCanvas()
+  void scheduleOverlayResize()
   window.addEventListener('resize', debouncedResize)
   window.addEventListener('keydown', syncPointerModFromKey)
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onKeyUp)
   watchDpr()
+
+  const overlayWindow = getCurrentWindow()
+  unlisteners.push(
+    await overlayWindow.onResized(() => {
+      debouncedResize()
+    }),
+  )
+  unlisteners.push(
+    await overlayWindow.onScaleChanged(() => {
+      watchDpr()
+      debouncedResize()
+    }),
+  )
+  unlisteners.push(
+    await listen('overlay-geometry-changed', () => {
+      void scheduleOverlayResize()
+    }),
+  )
 
   // Fetch initial config
   try {
@@ -1054,7 +1093,7 @@ onMounted(async () => {
         if (previousMode === 'hidden') {
           currentTool.value = 'pen'
           applyDefaultEntryOnActivate()
-          nextTick(() => resizeCanvas())
+          void scheduleOverlayResize()
         }
         void (async () => {
           await seedPointerPosition()

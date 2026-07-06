@@ -12,6 +12,32 @@ export interface ToolbarPosition {
   coordSpace?: ToolbarCoordSpace
 }
 
+export interface MonitorLogicalBounds {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/** Keep a toolbar panel fully inside the overlay monitor (logical coordinates). */
+export function clampToolbarWindowPosition(
+  left: number,
+  top: number,
+  panelWidth: number,
+  panelHeight: number,
+  monitor: MonitorLogicalBounds,
+  margin = 8,
+): { left: number; top: number } {
+  const minLeft = monitor.left + margin
+  const minTop = monitor.top + margin
+  const maxLeft = Math.max(minLeft, monitor.left + monitor.width - panelWidth - margin)
+  const maxTop = Math.max(minTop, monitor.top + monitor.height - panelHeight - margin)
+  return {
+    left: Math.min(Math.max(left, minLeft), maxLeft),
+    top: Math.min(Math.max(top, minTop), maxTop),
+  }
+}
+
 function storageKey(forStandaloneWindow: boolean): string {
   return forStandaloneWindow ? WINDOW_STORAGE_KEY_V2 : STORAGE_KEY
 }

@@ -41,6 +41,13 @@ pub fn get_overlay_pointer_position(
 }
 
 #[tauri::command]
+pub fn get_overlay_monitor_logical_bounds(
+    app: AppHandle,
+) -> Option<crate::monitor::MonitorLogicalBounds> {
+    crate::monitor::get_overlay_monitor_logical_bounds(&app)
+}
+
+#[tauri::command]
 pub fn save_shortcuts(
     app: AppHandle,
     state: tauri::State<'_, AppState>,

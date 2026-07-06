@@ -63,6 +63,26 @@ fn emit_mode(app: &AppHandle, mode: OverlayMode) {
     }
 }
 
+fn emit_overlay_geometry_changed(app: &AppHandle) {
+    if let Err(e) = app.emit("overlay-geometry-changed", ()) {
+        warn!("Failed to emit overlay-geometry-changed: {}", e);
+    }
+}
+
+/// Notify the overlay webview after Win32/Tauri has applied a new monitor geometry.
+/// A short defer lets WM_DPICHANGED propagate before the frontend resizes canvases.
+pub fn notify_overlay_geometry_changed(app: &AppHandle) {
+    emit_overlay_geometry_changed(app);
+    let app = app.clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(50));
+        let app_for_thread = app.clone();
+        let _ = app.run_on_main_thread(move || {
+            emit_overlay_geometry_changed(&app_for_thread);
+        });
+    });
+}
+
 pub fn setup_overlay_size(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("overlay") {
         if let Some((x, y, w, h)) = monitor::get_cursor_monitor_rect() {
@@ -71,7 +91,18 @@ pub fn setup_overlay_size(app: &AppHandle) {
                 window.set_size(tauri::LogicalSize::new(w, h)).ok();
                 window.set_position(tauri::LogicalPosition::new(x, y)).ok();
             }
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(windows)]
+            {
+                if let Ok(hwnd) = window.hwnd() {
+                    crate::win32::position_window_on_monitor(hwnd.0 as isize, x, y, w, h);
+                } else {
+                    window
+                        .set_size(tauri::PhysicalSize::new(w, h.saturating_sub(1)))
+                        .ok();
+                    window.set_position(tauri::PhysicalPosition::new(x, y)).ok();
+                }
+            }
+            #[cfg(all(not(target_os = "macos"), not(windows)))]
             {
                 window
                     .set_size(tauri::PhysicalSize::new(w, h.saturating_sub(1)))
@@ -115,6 +146,9 @@ pub fn setup_overlay_size(app: &AppHandle) {
 }
 
 const TOOLBAR_WIDTH: f64 = 320.0;
+const TOOLBAR_PANEL_WIDTH: f64 = 272.0;
+const TOOLBAR_PANEL_HEIGHT: f64 = 500.0;
+const TOOLBAR_EDGE_MARGIN: f64 = 8.0;
 
 fn position_toolbar_window(app: &AppHandle) {
     let Some(window) = app.get_webview_window("toolbar") else {
@@ -240,6 +274,18 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
     let Some(window) = app.get_webview_window("toolbar") else {
         return;
     };
+    let (x, y) = if let Some(bounds) = monitor::get_overlay_monitor_logical_bounds(app) {
+        monitor::clamp_logical_position_to_monitor(
+            x,
+            y,
+            TOOLBAR_PANEL_WIDTH,
+            TOOLBAR_PANEL_HEIGHT,
+            &bounds,
+            TOOLBAR_EDGE_MARGIN,
+        )
+    } else {
+        (x, y)
+    };
     window.set_position(tauri::LogicalPosition::new(x, y)).ok();
     raise_toolbar_above_overlay(app);
 }
@@ -277,6 +323,7 @@ pub fn deactivate_drawing(app: &AppHandle, state: &AppState) {
         return;
     }
 
+    monitor::release_drawing_cursor_clip();
     set_mode(state, OverlayMode::Hidden);
     *lock_or_recover(&state.whiteboard_mode) = false;
 
@@ -304,6 +351,7 @@ pub fn activate_drawing(app: &AppHandle, state: &AppState) {
         window.show().ok();
         window.set_ignore_cursor_events(false).ok();
         window.set_always_on_top(true).ok();
+        notify_overlay_geometry_changed(app);
     }
 
     ensure_toolbar_window(app, state);
@@ -313,6 +361,7 @@ pub fn activate_drawing(app: &AppHandle, state: &AppState) {
     }
     raise_toolbar_above_overlay(app);
 
+    monitor::remember_and_clip_drawing_monitor(app);
     emit_mode(app, OverlayMode::Drawing);
     info!("Drawing mode activated");
 }
@@ -330,6 +379,8 @@ pub fn enter_penetration_mode(app: &AppHandle, state: &AppState) {
     if let Some(window) = app.get_webview_window("overlay") {
         window.set_ignore_cursor_events(true).ok();
     }
+
+    monitor::suspend_drawing_cursor_clip();
 
     // Respect toolbar visibility: only show when configured as always-on.
     ensure_toolbar_window(app, state);
@@ -352,6 +403,7 @@ pub fn exit_penetration_mode(app: &AppHandle, state: &AppState) {
 
     ensure_toolbar_window(app, state);
     raise_toolbar_above_overlay(app);
+    monitor::apply_drawing_cursor_clip();
     emit_mode(app, OverlayMode::Drawing);
 }
 
