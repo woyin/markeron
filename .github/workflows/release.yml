@@ -222,19 +222,20 @@ jobs:
           releaseDraft: true
           prerelease: false
           updaterJsonPreferNsis: true
-          uploadUpdaterJson: false
+          includeUpdaterJson: true
           args: ${{ matrix.args }} ${{ steps.codesign.outputs.sign_args }}
 
       - name: Stash updater fragment
         shell: bash
         run: |
-          JSON="$(find src-tauri/target -name 'latest.json' -path '*/bundle/*' | head -1)"
-          if [ -z "$JSON" ]; then
-            echo "Updater fragment not found after build"
-            find src-tauri/target -name 'latest.json' || true
+          # tauri-action writes latest.json to the project root (not under bundle/)
+          if [ -f latest.json ]; then
+            cp latest.json "updater-${{ matrix.slug }}.json"
+          else
+            echo "Updater fragment not found after build (expected ./latest.json)"
+            find . -name 'latest.json' 2>/dev/null || true
             exit 1
           fi
-          cp "$JSON" "updater-${{ matrix.slug }}.json"
 
       - uses: actions/upload-artifact@v4
         with:

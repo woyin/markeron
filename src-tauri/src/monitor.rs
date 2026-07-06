@@ -34,12 +34,11 @@ pub fn remember_and_clip_drawing_monitor(app: &AppHandle) {
 
 /// Re-apply cursor clip after leaving penetration mode.
 pub fn apply_drawing_cursor_clip() {
-    let rect = DRAWING_MONITOR_CLIP.lock().ok().and_then(|guard| *guard);
-    let Some(bounds) = rect else {
-        return;
-    };
     #[cfg(windows)]
     {
+        let Some(bounds) = DRAWING_MONITOR_CLIP.lock().ok().and_then(|guard| *guard) else {
+            return;
+        };
         let rc = clip_rect_from_monitor(bounds);
         if !crate::win32::clip_cursor_to_rect(Some(&rc)) {
             tracing::warn!(
@@ -52,7 +51,12 @@ pub fn apply_drawing_cursor_clip() {
         }
     }
     #[cfg(target_os = "macos")]
-    crate::macos_cursor::start_cursor_clip(bounds);
+    {
+        let Some(bounds) = DRAWING_MONITOR_CLIP.lock().ok().and_then(|guard| *guard) else {
+            return;
+        };
+        crate::macos_cursor::start_cursor_clip(bounds);
+    }
 }
 
 /// Temporarily release cursor confinement (e.g. click-through) while keeping monitor bounds.
