@@ -227,9 +227,10 @@ jobs:
       - name: Stash updater fragment
         shell: bash
         run: |
-          JSON="$(find src-tauri/target -path '*/release/bundle/latest.json' | head -1)"
+          JSON="$(find src-tauri/target -name 'latest.json' -path '*/bundle/*' | head -1)"
           if [ -z "$JSON" ]; then
             echo "Updater fragment not found after build"
+            find src-tauri/target -name 'latest.json' || true
             exit 1
           fi
           cp "$JSON" "updater-${{ matrix.slug }}.json"
