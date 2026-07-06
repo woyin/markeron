@@ -97,6 +97,8 @@ function updateCustomTextOutlineColor(color: string) {
 
 function toggleExpanded() {
   expanded.value = !expanded.value
+  // Click target is inside the panel — keep overlay custom cursor suppressed during resize.
+  emit('panelHover', true)
   nextTick(() => {
     initPosition()
     scheduleSyncStandaloneWindowSize()
@@ -133,6 +135,7 @@ async function syncStandaloneWindowSize() {
   const width = panelW.value
   const height = measureToolbarPanelHeight(panelRef.value)
   await fitToolbarWindow(width, height)
+  syncPanelHover()
 }
 
 function probePanelHoverAtScreen(screenX: number, screenY: number) {
@@ -189,11 +192,7 @@ function initPosition() {
     panelLeft.value = clamped.left
     panelTop.value = clamped.top
     positioned.value = true
-    if (props.standaloneWindow) {
-      emit('panelHover', false)
-    } else {
-      syncPanelHover()
-    }
+    syncPanelHover()
     void syncStandaloneWindowSize()
   })
 }

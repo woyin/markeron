@@ -62,6 +62,7 @@ function applyOverlayState(state: OverlayStateSync) {
 function onPointerMove(e: PointerEvent) {
   pointerX.value = e.clientX
   pointerY.value = e.clientY
+  toolToolbarRef.value?.probePanelHoverAtScreen?.(e.screenX, e.screenY)
 }
 
 async function onToolbarClose() {
