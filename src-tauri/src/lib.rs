@@ -69,7 +69,7 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
         .min_inner_size(500.0, 380.0)
         .resizable(true)
         .center()
-        .visible(true);
+        .visible(false);
 
     #[cfg(target_os = "macos")]
     let builder = macos::style_settings_builder(builder);
