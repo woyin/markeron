@@ -110,6 +110,28 @@ async function openUrl(url: string) {
       </button>
       <button
         class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
+        @click="openUrl('https://afdian.com/a/markeron')"
+      >
+        <span class="text-[12px] settings-text-muted">{{ t('about.sponsor') }}</span>
+        <span class="flex items-center gap-1.5 text-[12px] settings-text-accent-link">
+          爱发电
+          <svg
+            class="w-3 h-3 opacity-50"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </span>
+      </button>
+      <button
+        class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
         @click="openUrl('https://github.com/ifer47/markeron/issues')"
       >
         <span class="text-[12px] settings-text-muted">{{ t('about.feedback') }}</span>

@@ -204,6 +204,7 @@ export default {
     author: '作者',
     license: '开源协议',
     feedback: '反馈问题',
+    sponsor: '赞助开发',
     diagnostics: '应用诊断',
     checkUpdate: '检查更新',
     checking: '正在检查...',

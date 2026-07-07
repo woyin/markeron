@@ -8,6 +8,7 @@
     <a href="https://github.com/ifer47/markeron/releases"><img src="https://img.shields.io/github/downloads/ifer47/markeron/total" alt="Downloads" /></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="https://github.com/ifer47/markeron/stargazers"><img src="https://img.shields.io/github/stars/ifer47/markeron?style=social" alt="Stars" /></a>
+    <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="爱发电赞助" /></a>
   </p>
   <p>
     <a href="./README.md">English</a>
@@ -210,6 +211,10 @@ markeron/
 ```
 
 </details>
+
+## 支持开发
+
+MarkerOn 免费且开源。如果它在你的演示、教学或会议中帮到了你，欢迎通过 [爱发电](https://afdian.com/a/markeron) 赞助，每一份支持都有助于项目的持续维护。
 
 ## 许可证
 

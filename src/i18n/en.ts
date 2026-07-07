@@ -209,6 +209,7 @@ export default {
     author: 'Author',
     license: 'License',
     feedback: 'Feedback',
+    sponsor: 'Support development',
     diagnostics: 'Diagnostics & logs',
     checkUpdate: 'Check for updates',
     checking: 'Checking...',
