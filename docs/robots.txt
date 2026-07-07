@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ifer47.github.io/markeron/sitemap.xml
+Sitemap: https://markeron.cn/sitemap.xml

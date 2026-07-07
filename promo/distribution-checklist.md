@@ -8,8 +8,27 @@ Last researched: 2026-07-03
 
 - Local source: `docs/`
 - Workflow: `.github/workflows/pages.yml`
-- Expected URL after enabling/deploying Pages: `https://ifer47.github.io/markeron/`
-- Add a custom domain later if desired, for example `markeron.app`.
+- Custom domain: `https://markeron.cn/` (GitHub Pages + Aliyun DNS)
+- Legacy URL (redirects after DNS): `https://ifer47.github.io/markeron/`
+
+#### Aliyun DNS (markeron.cn)
+
+In [Aliyun DNS console](https://dc.console.aliyun.com/next/index#/domain-list/all), open **markeron.cn** → **DNS settings** → **Add record**:
+
+| Type | Host | Value | TTL |
+| :--- | :--- | :--- | :--- |
+| A | `@` | `185.199.108.153` | 600 |
+| A | `@` | `185.199.109.153` | 600 |
+| A | `@` | `185.199.110.153` | 600 |
+| A | `@` | `185.199.111.153` | 600 |
+
+Optional `www` redirect:
+
+| Type | Host | Value | TTL |
+| :--- | :--- | :--- | :--- |
+| CNAME | `www` | `ifer47.github.io` | 600 |
+
+Then in GitHub **Settings → Pages**, confirm custom domain is `markeron.cn` and enable **Enforce HTTPS** once DNS checks pass (may take up to 24h).
 
 ### WinGet via Microsoft Store
 
