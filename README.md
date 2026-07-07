@@ -1,13 +1,14 @@
 <div align="center">
   <img src=".github/assets/icon.png" width="80" height="80" alt="MarkerOn icon" />
   <h1>MarkerOn</h1>
-  <p><strong>Lightweight screen annotation tool</strong> (~1.5 MB) — press a hotkey (<strong>keyboard-first</strong>) to instantly draw, highlight, and annotate anywhere on your desktop.</p>
+  <p><strong>Lightweight screen annotation tool</strong> (~1.5 MB) — press a hotkey (<strong>keyboard-first</strong>) to instantly draw, highlight, and annotate anywhere on your desktop. Built for demos, teaching, meetings, and screen recording.</p>
   <p>
     <a href="https://github.com/ifer47/markeron/actions/workflows/ci.yml"><img src="https://github.com/ifer47/markeron/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
     <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/github/v/tag/ifer47/markeron?label=latest&color=blue" alt="Release" /></a>
     <a href="https://github.com/ifer47/markeron/releases"><img src="https://img.shields.io/github/downloads/ifer47/markeron/total" alt="Downloads" /></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="https://github.com/ifer47/markeron/stargazers"><img src="https://img.shields.io/github/stars/ifer47/markeron?style=social" alt="Stars" /></a>
+    <a href="https://ifer47.github.io/markeron/"><img src="https://img.shields.io/badge/website-docs-0ea5e9" alt="Website" /></a>
     <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="Sponsor on 爱发电" /></a>
   </p>
   <p>
@@ -23,6 +24,8 @@
 <p align="center">
   <img src="assets/MarkerOn_en.png" width="720" alt="MarkerOn" />
 </p>
+
+**Contents:** [Download](#download) · [Quick Start](#quick-start) · [Features](#features) · [Shortcuts](#keyboard-shortcuts) · [Feedback](#feedback--issues) · [Development](#development)
 
 ## Download
 
@@ -44,9 +47,17 @@ winget install --id 9N6623X973JV --source msstore
 
 > Official downloads are GitHub Releases and Microsoft Store. Third-party mirrors may be outdated or repackaged.
 
-> After launching, the app runs silently in the **system tray** with no window shown.
+## Quick Start
+
+1. **Install and launch** — MarkerOn runs in the **system tray**; no window appears.
+2. **Enter annotation mode** — press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> (<kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> on macOS).
+3. **Draw, then click through** — use number keys for tools; press <kbd>X</kbd> to interact with apps below while keeping annotations visible; press <kbd>Esc</kbd> to exit.
+
+> **New here?** Press <kbd>Space</kbd> for the toolbar. See [Keyboard Shortcuts](#keyboard-shortcuts) for the full list.
 
 ## Features
+
+> A lightweight, keyboard-first screen annotation tool for live demos, teaching, meetings, and recordings.
 
 - **Annotate anywhere** — draw over any app, including the taskbar
 - **8 tools** — pen, highlighter, arrow, rectangle, ellipse, line, eraser, text
@@ -56,6 +67,12 @@ winget install --id 9N6623X973JV --source msstore
 - **Preserve drawings** — enable **Keep after exit** under Whiteboard & content to resume on re-enter
 - **Whiteboard mode** — set default entry to whiteboard, or press <kbd>W</kbd> to toggle; content rules are in **Whiteboard & content** settings
 - **Whiteboard copy** — copy the whiteboard as an image with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>C</kbd>
+
+<p align="center">
+  <img src="assets/click-through-mode.gif" width="720" alt="Click-through mode demo — draw on screen, press X, then interact with apps below while annotations stay visible" />
+  <br />
+  <em>Draw anywhere, press <kbd>X</kbd> to click through to apps below, then keep explaining without losing your marks.</em>
+</p>
 
 <table>
 <tr>
@@ -100,7 +117,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | Toolbar (toggle) | <kbd>Space</kbd> | <kbd>Space</kbd> |
 | Click-through (while drawing) | <kbd>X</kbd> | <kbd>X</kbd> |
 | Toolbar always-on / layout | Settings → General | Settings → General |
-| Copy screen | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
+| Copy screen / whiteboard | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | Whiteboard toggle | <kbd>W</kbd> | <kbd>W</kbd> |
 | Undo / Redo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
 | Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll (pen & shapes share; highlighter/eraser/text separate) |
@@ -157,18 +174,25 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 
 ## Settings
 
-- **Toolbar display** — press <kbd>Space</kbd> to toggle, or always-on (Space does nothing when pinned); floating toolbar window with drawing / click-through buttons; use **More** to expand full options
-- **Click-through** — pass mouse events to apps below; toggle in toolbar, with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> or <kbd>X</kbd> (not in whiteboard mode)
+Advanced options in **Settings → General** (toolbar display, click-through, and stroke width are also there — see [Features](#features)):
+
 - **Whiteboard & content** — default entry (screen / whiteboard), keep after exit, keep on <kbd>W</kbd> toggle
 - **Element dragging** — off, hover to drag, or hold <kbd>Ctrl</kbd>/<kbd>Command</kbd> to drag (disabled while eraser is selected)
-- **Eraser mode** — stroke (local erase) or object (delete whole elements when passing over); eraser tool disables element dragging
-- **Stroke width** — <kbd>Ctrl</kbd>/<kbd>Command</kbd> + scroll or toolbar; pen & shapes share one width, highlighter/eraser/text are separate
+- **Eraser mode** — stroke (local erase) or object (delete whole elements when passing over)
 - **Angle snap step** — snap interval for straight lines drawn with <kbd>Alt</kbd>
 - **Auto start** — launch the app automatically at system startup
 
+## Feedback & Issues
+
+- **Bug reports:** Settings → **Diagnostics** → export a report, then open a [GitHub Issue](https://github.com/ifer47/markeron/issues)
+- **Privacy:** [PRIVACY.md](./PRIVACY.md)
+
 ## Development
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for prerequisites (Node 24, Rust, platform dependencies) and the full workflow.
+
 ```bash
+nvm use    # Node 24.15.0
 npm install
 npm run dev
 npm run build
@@ -192,6 +216,7 @@ markeron/
 ├── src-tauri/
 │   ├── src/
 │   │   ├── overlay.rs           # Overlay session state, toolbar window, click-through
+│   │   ├── diagnostics.rs       # Diagnostic report export
 │   │   └── lib.rs               # Rust backend — tray, shortcuts, IPC
 │   └── tauri.conf.json          # Tauri configuration
 │
@@ -200,7 +225,8 @@ markeron/
 │   │   ├── DrawingOverlay.vue   # Drawing overlay (Canvas + interactions)
 │   │   ├── ToolbarWindow.vue    # Standalone toolbar window host
 │   │   ├── ToolToolbar.vue      # Annotation toolbar (tool / color / stroke)
-│   │   ├── SettingsView.vue     # Settings window (shortcut config / sidebar layout)
+│   │   ├── SettingsView.vue     # Settings window (tabs / sidebar layout)
+│   │   ├── settings/            # General, Shortcuts, Help, Diagnostics, About tabs
 │   │   └── TextBox.vue          # Inline text input
 │   ├── composables/
 │   │   ├── useDrawing.ts        # Drawing engine (pen, shapes, text, undo/redo)
@@ -217,6 +243,10 @@ markeron/
 ```
 
 </details>
+
+## Sponsors
+
+MarkerOn is free and open source. [Sponsor on 爱发电 (Afdian)](https://afdian.com/a/markeron) to support ongoing maintenance.
 
 ## License
 

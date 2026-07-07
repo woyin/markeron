@@ -8,6 +8,7 @@
     <a href="https://github.com/ifer47/markeron/releases"><img src="https://img.shields.io/github/downloads/ifer47/markeron/total" alt="Downloads" /></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
     <a href="https://github.com/ifer47/markeron/stargazers"><img src="https://img.shields.io/github/stars/ifer47/markeron?style=social" alt="Stars" /></a>
+    <a href="https://ifer47.github.io/markeron/"><img src="https://img.shields.io/badge/网站-文档-0ea5e9" alt="网站" /></a>
     <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="爱发电赞助" /></a>
   </p>
   <p>
@@ -23,12 +24,15 @@
   <img src="assets/MarkerOn.png" width="720" alt="MarkerOn" />
 </p>
 
+**目录：** [下载安装](#下载安装) · [快速开始](#快速开始) · [功能一览](#功能一览) · [快捷键](#快捷键一览) · [反馈](#反馈与-issue) · [开发构建](#开发构建)
+
 ## 下载安装
 
 <p>
   <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/badge/Windows-x64-0078D4?logo=windows&logoColor=white" alt="Windows" /></a>
   <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/badge/macOS-ARM64-000000?logo=apple&logoColor=white" alt="macOS ARM64" /></a>
   <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/badge/macOS-x64-666666?logo=apple&logoColor=white" alt="macOS x64" /></a>
+  <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black" alt="Linux" /></a>
   <a href="https://get.microsoft.com/installer/download/9n6623x973jv?referrer=appbadge"><img src="https://img.shields.io/badge/微软商店-MarkerOn-0078D4?logo=microsoftstore&logoColor=white" alt="Microsoft Store" /></a>
 </p>
 
@@ -42,9 +46,17 @@ winget install --id 9N6623X973JV --source msstore
 
 > 官方下载渠道为 GitHub Releases 和微软商店。第三方镜像或网盘可能版本滞后，或存在被重新打包的风险。
 
-> 启动后应用静默运行在 **系统托盘**，不会弹出任何窗口。
+## 快速开始
+
+1. **安装并启动** — MarkerOn 在 **系统托盘** 静默运行，不会弹出窗口。
+2. **进入标注模式** — 按 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>（macOS 为 <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>）。
+3. **绘画与穿透** — 数字键切换工具；按 <kbd>X</kbd> 可在保留标注的同时操作下层应用；按 <kbd>Esc</kbd> 退出。
+
+> **刚上手？** 按 <kbd>Space</kbd> 呼出工具栏。完整列表见 [快捷键一览](#快捷键一览)。
 
 ## 功能一览
+
+> 面向课堂演示、会议讲解、录屏批注的轻量级、快捷键优先屏幕标注工具。
 
 - **随处标注** — 在任何应用上方绘制，覆盖全屏包括任务栏
 - **8 种工具** — 画笔、荧光笔、箭头、矩形、椭圆、直线、橡皮擦、文字
@@ -54,6 +66,12 @@ winget install --id 9N6623X973JV --source msstore
 - **保留标注** — 可在「白板与内容」中开启退出后保留；下次进入自动恢复
 - **白板模式** — 可设为默认进入白板，或按 <kbd>W</kbd> 切换；内容与切换行为均在「白板与内容」中配置
 - **白板复制** — 在白板模式下按 <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>C</kbd> 可复制当前白板为图片
+
+<p align="center">
+  <img src="assets/click-through-mode.gif" width="720" alt="穿透模式演示 — 在屏幕上绘画，按 X 后可在保留标注的同时操作下层应用" />
+  <br />
+  <em>随处绘画，按 <kbd>X</kbd> 穿透到下层应用操作，标注不丢失，讲解不中断。</em>
+</p>
 
 <table>
 <tr>
@@ -98,7 +116,7 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 | 呼出工具栏 | <kbd>Space</kbd> | <kbd>Space</kbd> |
 | 穿透模式（绘制中） | <kbd>X</kbd> | <kbd>X</kbd> |
 | 工具栏常驻 / 布局 | 设置 → 常规 | 设置 → 常规 |
-| 复制屏幕 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
+| 复制屏幕 / 白板 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | 白板模式切换 | <kbd>W</kbd> | <kbd>W</kbd> |
 | 撤销 / 重做 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
 | 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮（画笔与形状共用；荧光笔/橡皮擦/文字各自独立） |
@@ -155,18 +173,25 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 
 ## 设置
 
-- **工具栏显示** — 按 <kbd>Space</kbd> 呼出，或常驻显示（常驻时 Space 不再切换）；独立浮动工具栏窗口，含绘制 / 穿透切换按钮；点「更多」展开完整选项
-- **穿透模式** — 鼠标事件穿透到下层应用；可在工具栏切换，或用 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> / <kbd>X</kbd>（白板模式下不可用）
+在 **设置 → 常规** 中可配置更多选项（工具栏显示、穿透模式、线宽等见 [功能一览](#功能一览)）：
+
 - **白板与内容** — 默认进入（屏幕标注 / 白板）、退出标注后保留、按 <kbd>W</kbd> 切换时保留
 - **元素拖拽** — 关闭、悬停拖动，或按住 <kbd>Ctrl</kbd>/<kbd>Command</kbd> 才拖动（橡皮擦工具下不触发）
-- **橡皮擦模式** — 轨迹擦除（局部）或对象擦除（划过删除整段元素）；使用橡皮擦时不触发元素拖拽
-- **线宽** — <kbd>Ctrl</kbd>/<kbd>Command</kbd> + 滚轮或工具栏调节；画笔与形状共用，荧光笔/橡皮擦/文字各自独立
+- **橡皮擦模式** — 轨迹擦除（局部）或对象擦除（划过删除整段元素）
 - **吸附角度步进** — 按住 <kbd>Alt</kbd> 绘制直线时的吸附角度间隔
 - **开机自动启动** — 系统启动时自动在后台运行
 
+## 反馈与 Issue
+
+- **报 Bug：** 设置 → **诊断** → 导出报告，再到 [GitHub Issues](https://github.com/ifer47/markeron/issues) 提交
+- **隐私政策：** [PRIVACY.md](./PRIVACY.md)
+
 ## 开发构建
 
+详见 [CONTRIBUTING.md](./CONTRIBUTING.md)（Node 24、Rust、各平台系统依赖及完整流程）。
+
 ```bash
+nvm use    # Node 24.15.0
 npm install
 npm run dev
 npm run build
@@ -190,6 +215,7 @@ markeron/
 ├── src-tauri/
 │   ├── src/
 │   │   ├── overlay.rs           # 标注会话状态、工具栏窗口、穿透模式
+│   │   ├── diagnostics.rs       # 诊断报告导出
 │   │   └── lib.rs               # Rust 后端 — 托盘、快捷键、IPC
 │   └── tauri.conf.json          # Tauri 配置文件
 │
@@ -198,7 +224,8 @@ markeron/
 │   │   ├── DrawingOverlay.vue   # 绘图覆盖层（Canvas + 交互）
 │   │   ├── ToolbarWindow.vue    # 独立工具栏窗口
 │   │   ├── ToolToolbar.vue      # 标注模式工具面板（工具 / 颜色 / 线宽）
-│   │   ├── SettingsView.vue     # 设置窗口（快捷键配置 / 侧边栏布局）
+│   │   ├── SettingsView.vue     # 设置窗口（标签页 / 侧边栏布局）
+│   │   ├── settings/            # 常规、快捷键、帮助、诊断、关于等标签页
 │   │   └── TextBox.vue          # 内联文字输入框
 │   ├── composables/
 │   │   ├── useDrawing.ts        # 绘图引擎（画笔、形状、文字、撤销重做）
@@ -215,6 +242,10 @@ markeron/
 ```
 
 </details>
+
+## 赞助者
+
+MarkerOn 免费且开源。[在爱发电赞助](https://afdian.com/a/markeron) 可支持项目持续维护。
 
 ## 许可证
 
