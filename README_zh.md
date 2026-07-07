@@ -2,6 +2,9 @@
   <img src=".github/assets/icon.png" width="80" height="80" alt="MarkerOn icon" />
   <h1>MarkerOn</h1>
   <p>
+    <a href="./README.md">English</a>
+  </p>
+  <p>
     <a href="https://github.com/ifer47/markeron/actions/workflows/ci.yml"><img src="https://github.com/ifer47/markeron/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
     <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/github/v/tag/ifer47/markeron?label=latest&color=blue" alt="Release" /></a>
     <a href="https://github.com/ifer47/markeron/releases"><img src="https://img.shields.io/github/downloads/ifer47/markeron/total" alt="Downloads" /></a>
@@ -10,15 +13,9 @@
     <a href="https://markeron.cn/"><img src="https://img.shields.io/badge/网站-文档-0ea5e9" alt="网站" /></a>
     <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="爱发电赞助" /></a>
   </p>
-  <p><strong>轻量级屏幕标注工具</strong>（~1.5 MB）— 按下快捷键（<strong>快捷键优先</strong>），随时在桌面上自由绘画、标注。适用于课堂演示 / 会议讲解 / 录屏批注。</p>
-  <p>
-    <strong>免费开源。</strong>如果 MarkerOn 在你的演示、教学或会议中帮到了你，欢迎
-    <a href="https://afdian.com/a/markeron"><strong>在爱发电赞助</strong></a>，每一份支持都有助于项目的持续维护。
-  </p>
-  <p>
-    <a href="./README.md">English</a>
-  </p>
+  <p><strong>轻量级屏幕标注工具</strong>（~1.5 MB）— 按下快捷键（<strong>快捷键优先</strong>），随时在桌面上自由绘画、标注。适用于课堂演示 / 会议讲解 / 录屏批注。<strong>免费开源。</strong>如果 MarkerOn 在你的演示、教学或会议中帮到了你，欢迎 <a href="https://afdian.com/a/markeron"><strong>在爱发电赞助</strong></a>，每一份支持都有助于项目的持续维护。</p>
 </div>
+
 
 <p align="center">
   <img src="assets/MarkerOn.png" width="720" alt="MarkerOn" />
