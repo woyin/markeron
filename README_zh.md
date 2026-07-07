@@ -56,8 +56,7 @@ winget install --id 9N6623X973JV --source msstore
 
 ## 功能一览
 
-> 面向课堂演示、会议讲解、录屏批注的轻量级、快捷键优先屏幕标注工具。
-
+- **轻量高效** — 安装包仅 ~1.5 MB（Rust + Canvas），内存占用极低，不驻留后台进程
 - **随处标注** — 在任何应用上方绘制，覆盖全屏包括任务栏
 - **8 种工具** — 画笔、荧光笔、箭头、矩形、椭圆、直线、橡皮擦、文字
 - **灵活工具栏** — 按 <kbd>Space</kbd> 呼出，或在设置中**常驻显示**；紧凑面板，点「更多」展开完整选项，面板内可撤销、复制、切换白板；**独立浮动窗口**，含绘制 / 穿透模式切换按钮
@@ -83,10 +82,6 @@ winget install --id 9N6623X973JV --source msstore
 </td>
 </tr>
 </table>
-
-## 轻量高效
-
-MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占用极低，不驻留后台进程。按下快捷键即刻响应，标注绘制丝滑流畅，几乎不消耗系统资源，让你专注于内容本身。
 
 ## 快捷键一览
 
@@ -153,33 +148,26 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 | <kbd>Q</kbd> / <kbd>E</kbd> | 上一个 / 下一个颜色 |
 | 鼠标右键 | 在光标处弹出快速选色盘 |
 
-#### 白板模式
-
-| 操作 | 功能 |
-| :--- | :--- |
-| <kbd>W</kbd> | 切换白板模式 |
-| <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>Command</kbd> + <kbd>C</kbd> | 将当前白板复制为图片 |
-| 设置项 | 「常规 → 白板与内容」：默认进入、退出后保留、按 <kbd>W</kbd> 切换时是否保留 |
-
 #### 其他
 
 | 功能 | Windows | macOS |
 | :--- | :--- | :--- |
-| 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮 |
 | 重做（备用） | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> |
-| 切换窗口并退出 | <kbd>Alt</kbd> + <kbd>Tab</kbd> | <kbd>Command</kbd> + <kbd>Tab</kbd> |
 
 </details>
 
-## 设置
+<details>
+<summary><strong>更多设置</strong></summary>
 
-在 **设置 → 常规** 中可配置更多选项（工具栏显示、穿透模式、线宽等见 [功能一览](#功能一览)）：
+在 **设置 → 常规** 中可配置（工具栏显示、穿透模式、线宽等见 [功能一览](#功能一览)）：
 
 - **白板与内容** — 默认进入（屏幕标注 / 白板）、退出标注后保留、按 <kbd>W</kbd> 切换时保留
 - **元素拖拽** — 关闭、悬停拖动，或按住 <kbd>Ctrl</kbd>/<kbd>Command</kbd> 才拖动（橡皮擦工具下不触发）
 - **橡皮擦模式** — 轨迹擦除（局部）或对象擦除（划过删除整段元素）
 - **吸附角度步进** — 按住 <kbd>Alt</kbd> 绘制直线时的吸附角度间隔
 - **开机自动启动** — 系统启动时自动在后台运行
+
+</details>
 
 ## 反馈与 Issue
 
@@ -188,65 +176,4 @@ MarkerOn 基于 Rust + Canvas 构建，安装包仅 ~1.5 MB，运行时内存占
 
 ## 开发构建
 
-详见 [CONTRIBUTING.md](./CONTRIBUTING.md)（Node 24、Rust、各平台系统依赖及完整流程）。
-
-```bash
-nvm use    # Node 24.15.0
-npm install
-npm run dev
-npm run build
-```
-
-## 技术栈
-
-| 技术 | 用途 |
-| :--- | :--- |
-| **Tauri v2** | 桌面应用框架 — Rust 后端、系统托盘、全局快捷键、透明置顶窗口 |
-| **Vue 3** | 渲染层 UI 框架 |
-| **Vite** | 极速构建与热更新 |
-| **TypeScript** | 完整类型支持 |
-| **Canvas API** | 高性能绘图引擎 |
-
-<details>
-<summary><strong>项目结构</strong></summary>
-
-```
-markeron/
-├── src-tauri/
-│   ├── src/
-│   │   ├── overlay.rs           # 标注会话状态、工具栏窗口、穿透模式
-│   │   ├── diagnostics.rs       # 诊断报告导出
-│   │   └── lib.rs               # Rust 后端 — 托盘、快捷键、IPC
-│   └── tauri.conf.json          # Tauri 配置文件
-│
-├── src/
-│   ├── components/
-│   │   ├── DrawingOverlay.vue   # 绘图覆盖层（Canvas + 交互）
-│   │   ├── ToolbarWindow.vue    # 独立工具栏窗口
-│   │   ├── ToolToolbar.vue      # 标注模式工具面板（工具 / 颜色 / 线宽）
-│   │   ├── SettingsView.vue     # 设置窗口（标签页 / 侧边栏布局）
-│   │   ├── settings/            # 常规、快捷键、帮助、诊断、关于等标签页
-│   │   └── TextBox.vue          # 内联文字输入框
-│   ├── composables/
-│   │   ├── useDrawing.ts        # 绘图引擎（画笔、形状、文字、撤销重做）
-│   │   └── overlayBridge.ts     # 覆盖层 ↔ 工具栏跨窗口事件
-│   ├── types/
-│   │   └── app.d.ts             # TypeScript 类型声明
-│   ├── App.vue                  # 根组件
-│   ├── main.ts                  # 渲染进程入口
-│   └── style.css                # 全局样式
-│
-├── index.html                   # HTML 入口
-├── vite.config.ts               # Vite 配置
-└── package.json
-```
-
-</details>
-
-## 赞助者
-
-MarkerOn 免费且开源。[在爱发电赞助](https://afdian.com/a/markeron) 可支持项目持续维护。
-
-## 许可证
-
-[MIT](./LICENSE)
+详见 [CONTRIBUTING.md](./CONTRIBUTING.md)（环境依赖、搭建与完整流程）。**技术栈：** Tauri v2 · Vue 3 · Vite · TypeScript · Canvas API

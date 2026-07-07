@@ -57,8 +57,7 @@ winget install --id 9N6623X973JV --source msstore
 
 ## Features
 
-> A lightweight, keyboard-first screen annotation tool for live demos, teaching, meetings, and recordings.
-
+- **Lightweight & fast** — ~1.5 MB installer (Rust + Canvas), minimal memory, no background daemons
 - **Annotate anywhere** — draw over any app, including the taskbar
 - **8 tools** — pen, highlighter, arrow, rectangle, ellipse, line, eraser, text
 - **Flexible toolbar** — press <kbd>Space</kbd> to toggle, or enable **always-on** in Settings; compact panel with **More** to expand, undo, copy, and whiteboard actions in-panel; **independent floating window** with drawing / click-through toggles
@@ -84,10 +83,6 @@ winget install --id 9N6623X973JV --source msstore
 </td>
 </tr>
 </table>
-
-## Lightweight & Fast
-
-Built with Rust + Canvas, MarkerOn has an installer of just ~1.5 MB and a minimal memory footprint — no background daemons, no bloat. It responds instantly to your hotkey and renders annotations at full frame rate while consuming nearly zero system resources.
 
 ## Keyboard Shortcuts
 
@@ -154,33 +149,26 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | <kbd>Q</kbd> / <kbd>E</kbd> | Previous / Next color |
 | Right-click | Open quick color picker at cursor |
 
-#### Whiteboard Mode
-
-| Action | Effect |
-| :--- | :--- |
-| <kbd>W</kbd> | Toggle whiteboard mode |
-| <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>Command</kbd> + <kbd>C</kbd> | Copy the current whiteboard as an image |
-| Settings | **General → Whiteboard & content**: default entry, keep after exit, keep on <kbd>W</kbd> toggle |
-
 #### Other
 
 | Action | Windows | macOS |
 | :--- | :--- | :--- |
-| Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll |
 | Redo (alt) | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> |
-| Switch window & exit | <kbd>Alt</kbd> + <kbd>Tab</kbd> | <kbd>Command</kbd> + <kbd>Tab</kbd> |
 
 </details>
 
-## Settings
+<details>
+<summary><strong>Advanced settings</strong></summary>
 
-Advanced options in **Settings → General** (toolbar display, click-through, and stroke width are also there — see [Features](#features)):
+In **Settings → General** (toolbar display, click-through, and stroke width — see [Features](#features)):
 
 - **Whiteboard & content** — default entry (screen / whiteboard), keep after exit, keep on <kbd>W</kbd> toggle
 - **Element dragging** — off, hover to drag, or hold <kbd>Ctrl</kbd>/<kbd>Command</kbd> to drag (disabled while eraser is selected)
 - **Eraser mode** — stroke (local erase) or object (delete whole elements when passing over)
 - **Angle snap step** — snap interval for straight lines drawn with <kbd>Alt</kbd>
 - **Auto start** — launch the app automatically at system startup
+
+</details>
 
 ## Feedback & Issues
 
@@ -189,65 +177,4 @@ Advanced options in **Settings → General** (toolbar display, click-through, an
 
 ## Development
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for prerequisites (Node 24, Rust, platform dependencies) and the full workflow.
-
-```bash
-nvm use    # Node 24.15.0
-npm install
-npm run dev
-npm run build
-```
-
-## Tech Stack
-
-| Technology | Role |
-| :--- | :--- |
-| **Tauri v2** | Desktop framework — Rust backend, system tray, global shortcuts, transparent always-on-top window |
-| **Vue 3** | Frontend UI framework |
-| **Vite** | Fast bundling and HMR |
-| **TypeScript** | Full type safety |
-| **Canvas API** | High-performance drawing engine |
-
-<details>
-<summary><strong>Project structure</strong></summary>
-
-```
-markeron/
-├── src-tauri/
-│   ├── src/
-│   │   ├── overlay.rs           # Overlay session state, toolbar window, click-through
-│   │   ├── diagnostics.rs       # Diagnostic report export
-│   │   └── lib.rs               # Rust backend — tray, shortcuts, IPC
-│   └── tauri.conf.json          # Tauri configuration
-│
-├── src/
-│   ├── components/
-│   │   ├── DrawingOverlay.vue   # Drawing overlay (Canvas + interactions)
-│   │   ├── ToolbarWindow.vue    # Standalone toolbar window host
-│   │   ├── ToolToolbar.vue      # Annotation toolbar (tool / color / stroke)
-│   │   ├── SettingsView.vue     # Settings window (tabs / sidebar layout)
-│   │   ├── settings/            # General, Shortcuts, Help, Diagnostics, About tabs
-│   │   └── TextBox.vue          # Inline text input
-│   ├── composables/
-│   │   ├── useDrawing.ts        # Drawing engine (pen, shapes, text, undo/redo)
-│   │   └── overlayBridge.ts     # Cross-window overlay ↔ toolbar events
-│   ├── types/
-│   │   └── app.d.ts             # TypeScript type declarations
-│   ├── App.vue                  # Root component
-│   ├── main.ts                  # Renderer entry point
-│   └── style.css                # Global styles
-│
-├── index.html                   # HTML entry
-├── vite.config.ts               # Vite configuration
-└── package.json
-```
-
-</details>
-
-## Sponsors
-
-MarkerOn is free and open source. [Sponsor on 爱发电 (Afdian)](https://afdian.com/a/markeron) to support ongoing maintenance.
-
-## License
-
-[MIT](./LICENSE)
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for prerequisites, setup, and the full workflow. **Stack:** Tauri v2 · Vue 3 · Vite · TypeScript · Canvas API
