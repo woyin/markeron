@@ -11,6 +11,10 @@
     <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="爱发电赞助" /></a>
   </p>
   <p>
+    <strong>免费开源。</strong>如果 MarkerOn 在你的演示、教学或会议中帮到了你，欢迎
+    <a href="https://afdian.com/a/markeron"><strong>在爱发电赞助</strong></a>，每一份支持都有助于项目的持续维护。
+  </p>
+  <p>
     <a href="./README.md">English</a>
   </p>
 </div>
@@ -211,10 +215,6 @@ markeron/
 ```
 
 </details>
-
-## 支持开发
-
-MarkerOn 免费且开源。如果它在你的演示、教学或会议中帮到了你，欢迎通过 [爱发电](https://afdian.com/a/markeron) 赞助，每一份支持都有助于项目的持续维护。
 
 ## 许可证
 
