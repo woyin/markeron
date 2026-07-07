@@ -19,6 +19,7 @@
     "global-shortcut:allow-is-registered",
     "autostart:default",
     "opener:default",
+    "dialog:default",
     "updater:default",
     "process:allow-restart"
   ]

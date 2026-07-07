@@ -26,7 +26,10 @@ tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 thiserror = "2"
 tracing = "0.1"
+tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tauri-plugin-dialog = "2"
+time = { version = "0.3", features = ["formatting", "macros"] }
 ctrlc = "3"
 xcap = "0.9"
 arboard = { version = "3", features = ["image-data"] }

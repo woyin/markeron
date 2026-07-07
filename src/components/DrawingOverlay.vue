@@ -28,6 +28,7 @@ import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInt
 import { isDragEnabled, resolveDragMode, type DragMode } from '../utils/dragMode'
 import { isToolbarPinned, resolveToolbarVisibility, type ToolbarVisibility } from '../utils/toolbarSettings'
 import { resolveDefaultEntryMode, shouldClearWhiteboardOnEntry, type DefaultEntryMode } from '../utils/entryMode'
+import { logDiagnostic } from '../utils/diagnosticEvents'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
 import { useI18n } from '../i18n'
 
@@ -806,6 +807,7 @@ function onPointerMove(e: PointerEvent) {
 function onPointerUp(e: PointerEvent) {
   if (capturedPointerId !== null && e.pointerId !== capturedPointerId) return
   if (capturedPointerId === null && !isDrawing.value && !isDragging) return
+  const wasDrawing = isDrawing.value
   releaseCapturedPointer()
 
   if (isDragging) {
@@ -816,6 +818,14 @@ function onPointerUp(e: PointerEvent) {
   }
 
   endDraw()
+  if (wasDrawing) {
+    logDiagnostic('pointer', 'stroke end', {
+      pointerType: e.pointerType,
+      button: e.button,
+      pressure: e.pressure,
+      pointerId: e.pointerId,
+    })
+  }
   if (toolBeforeModifier !== null) {
     currentTool.value = toolBeforeModifier as Tool
     toolBeforeModifier = null
@@ -874,8 +884,12 @@ const onKeyDown = createKeyDownHandler(
     togglePenetrationMode,
     enterWhiteboardMode,
     exitWhiteboardMode,
-    copyScreen,
-    copyWhiteboard,
+    copyScreen: () => {
+      void copyScreen('keyboard')
+    },
+    copyWhiteboard: () => {
+      void copyWhiteboard('keyboard')
+    },
     toggleToolbarPopupVisible,
     commitCurrentTextBox,
   },
@@ -1303,9 +1317,9 @@ async function toggleWhiteboardFromToolbar() {
 
 function copyFromToolbar() {
   if (whiteboardMode.value) {
-    copyWhiteboard()
+    void copyWhiteboard('toolbar')
   } else {
-    copyScreen()
+    void copyScreen('toolbar')
   }
 }
 
@@ -1314,8 +1328,9 @@ function onPointerLeave(e: PointerEvent) {
   onPointerUp(e)
 }
 
-async function copyScreen() {
+async function copyScreen(reason = 'unknown') {
   if (isCopying) return
+  logDiagnostic('copy', 'copyScreen invoked', { reason })
   isCopying = true
   const restoreToolbar = toolbarPinned.value || showToolbarPopup.value
   try {
@@ -1334,6 +1349,7 @@ async function copyScreen() {
       requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 32))),
     )
     await invoke('copy_screen')
+    logDiagnostic('copy', 'clipboard tip shown', { type: 'screen', reason })
     showTip(t('overlay.copiedToClipboard'))
   } catch (err) {
     console.error('Copy screen failed:', err)
@@ -1351,14 +1367,16 @@ async function copyScreen() {
   }
 }
 
-async function copyWhiteboard() {
+async function copyWhiteboard(reason = 'unknown') {
   if (isCopying) return
   const dataUrl = exportAsDataURL('#FFFFFF')
   if (!dataUrl) return
 
+  logDiagnostic('copy', 'copyWhiteboard invoked', { reason })
   isCopying = true
   try {
     await invoke('copy_whiteboard', { dataUrl })
+    logDiagnostic('copy', 'clipboard tip shown', { type: 'whiteboard', reason })
     showTip(t('overlay.copiedToClipboard'))
   } catch (err) {
     console.error('Copy whiteboard failed:', err)

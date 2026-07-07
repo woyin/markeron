@@ -5,6 +5,10 @@ import { useUpdater } from '../../composables/useUpdater'
 
 const { t } = useI18n()
 
+const emit = defineEmits<{
+  'open-diagnostics': []
+}>()
+
 const { status, newVersion, progress, checkForUpdate, downloadAndInstall } = useUpdater()
 
 async function openUrl(url: string) {
@@ -105,10 +109,27 @@ async function openUrl(url: string) {
         </span>
       </button>
       <button
-        class="w-full flex items-center justify-between px-4 py-3 settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-none"
+        class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
         @click="openUrl('https://github.com/ifer47/markeron/issues')"
       >
         <span class="text-[12px] settings-text-muted">{{ t('about.feedback') }}</span>
+        <svg
+          class="w-3.5 h-3.5 settings-text-dim"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+      <button
+        class="w-full flex items-center justify-between px-4 py-3 settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-none"
+        @click="emit('open-diagnostics')"
+      >
+        <span class="text-[12px] settings-text-muted">{{ t('about.diagnostics') }}</span>
         <svg
           class="w-3.5 h-3.5 settings-text-dim"
           viewBox="0 0 24 24"

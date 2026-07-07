@@ -1,6 +1,7 @@
 mod clipboard;
 mod commands;
 mod config;
+mod diagnostics;
 mod error;
 mod i18n;
 #[cfg(target_os = "macos")]
@@ -86,15 +87,6 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
 }
 
 pub fn run() {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "markeron=info".parse().unwrap()),
-        )
-        .init();
-
-    info!("Starting MarkerOn");
-
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(win) = app.get_webview_window("settings") {
@@ -107,6 +99,7 @@ pub fn run() {
         ))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(AppState {
@@ -114,6 +107,7 @@ pub fn run() {
             overlay_mode: Mutex::new(overlay::OverlayMode::Hidden),
             suppress_penetration_until: Mutex::new(None),
             whiteboard_mode: Mutex::new(false),
+            diagnostic_events: Mutex::new(Vec::new()),
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_config,
@@ -134,11 +128,17 @@ pub fn run() {
             commands::raise_toolbar,
             commands::set_whiteboard_mode,
             commands::open_url,
+            diagnostics::export_diagnostics,
+            diagnostics::open_github_issue_report,
+            diagnostics::append_diagnostic_event,
             clipboard::copy_screen,
             clipboard::copy_whiteboard,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
+            let log_guard = diagnostics::init_tracing(&handle)?;
+            app.manage(log_guard);
+            info!("Starting MarkerOn");
 
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);

@@ -10,6 +10,7 @@ import { resolveAutoStart } from '../utils/autoStart'
 import { isMacOS } from '../utils/platform'
 import { useI18n, syncLocaleFromConfig } from '../i18n'
 import GeneralTab from './settings/GeneralTab.vue'
+import DiagnosticsTab from './settings/DiagnosticsTab.vue'
 import AboutTab from './settings/AboutTab.vue'
 
 const { t } = useI18n()
@@ -32,9 +33,11 @@ const defaultShortcutStrings = computed(() =>
 )
 
 const hashTab = window.location.hash.split('/')[1]
-const activeTab = ref(hashTab && ['general', 'shortcuts', 'help', 'about'].includes(hashTab) ? hashTab : 'general')
+const activeTab = ref(
+  hashTab && ['general', 'shortcuts', 'help', 'diagnostics', 'about'].includes(hashTab) ? hashTab : 'general',
+)
 
-const tabIds = ['general', 'shortcuts', 'help', 'about'] as const
+const tabIds = ['general', 'shortcuts', 'help', 'diagnostics', 'about'] as const
 const tabs = computed(() => tabIds.map((id) => ({ id, label: t(`settings.tabs.${id}`) })))
 
 const shortcuts = reactive<AppConfig['shortcuts']>({
@@ -269,6 +272,22 @@ onUnmounted(() => {
             <circle cx="12" cy="12" r="10" />
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
             <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <svg
+            v-else-if="tab.id === 'diagnostics'"
+            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
           </svg>
           <svg
             v-else-if="tab.id === 'about'"
@@ -678,7 +697,9 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <AboutTab v-else-if="activeTab === 'about'" />
+      <DiagnosticsTab v-else-if="activeTab === 'diagnostics'" />
+
+      <AboutTab v-else-if="activeTab === 'about'" @open-diagnostics="activeTab = 'diagnostics'" />
     </div>
   </div>
 </template>

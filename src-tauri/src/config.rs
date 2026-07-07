@@ -226,6 +226,8 @@ pub struct AppState {
     pub suppress_penetration_until: Mutex<Option<std::time::Instant>>,
     /// Frontend whiteboard mode — penetration is screen-overlay only.
     pub whiteboard_mode: Mutex<bool>,
+    /// Cross-window diagnostic ring buffer (overlay + settings are separate webviews).
+    pub diagnostic_events: Mutex<Vec<crate::diagnostics::DiagnosticEvent>>,
 }
 
 /// Lock a mutex with poison recovery — if a thread panicked while holding

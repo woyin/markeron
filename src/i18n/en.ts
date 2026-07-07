@@ -72,6 +72,7 @@ export default {
       general: 'General',
       shortcuts: 'Shortcuts',
       help: 'Help',
+      diagnostics: 'Diagnostics',
       about: 'About',
     },
     shortcutLabels: {
@@ -208,6 +209,7 @@ export default {
     author: 'Author',
     license: 'License',
     feedback: 'Feedback',
+    diagnostics: 'Diagnostics & logs',
     checkUpdate: 'Check for updates',
     checking: 'Checking...',
     updateAvailable: 'New version v{version} available',
@@ -215,6 +217,26 @@ export default {
     upToDate: 'Already up to date',
     updateError: 'Check failed, try again later',
     installAndRestart: 'Install & Restart',
+  },
+  diagnostics: {
+    title: 'Diagnostics',
+    intro:
+      'When something goes wrong, export a diagnostic bundle so developers can investigate without guessing. Reproduce the issue in annotation mode first, then export or open a GitHub issue.',
+    privacyNotice:
+      'Logs contain only technical data and settings — no account info, file contents, or drawing content.',
+    descriptionTitle: 'Problem description',
+    descriptionPlaceholder:
+      'Describe what happened and how to reproduce (optional). Example: repeated “Copied to clipboard” toast after each pen stroke on macOS trackpad.',
+    export: 'Export to local',
+    exporting: 'Exporting...',
+    exportSuccess: 'Saved to {path}',
+    exportFailed: 'Export failed, please try again',
+    reportGithub: 'Open GitHub issue',
+    reporting: 'Opening...',
+    issueOpened:
+      'GitHub issue page opened. Export JSON first if needed, then drag the file into the issue editor before submitting.',
+    issueFailed: 'Could not open GitHub, please try again',
+    defaultIssueTitle: 'Bug report',
   },
   tray: {
     settings: 'Settings',
