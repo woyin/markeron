@@ -1,7 +1,6 @@
 <div align="center">
   <img src=".github/assets/icon.png" width="80" height="80" alt="MarkerOn icon" />
   <h1>MarkerOn</h1>
-  <p><strong>Lightweight screen annotation tool</strong> (~1.5 MB) — press a hotkey (<strong>keyboard-first</strong>) to instantly draw, highlight, and annotate anywhere on your desktop. Built for demos, teaching, meetings, and screen recording.</p>
   <p>
     <a href="https://github.com/ifer47/markeron/actions/workflows/ci.yml"><img src="https://github.com/ifer47/markeron/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
     <a href="https://github.com/ifer47/markeron/releases/latest"><img src="https://img.shields.io/github/v/tag/ifer47/markeron?label=latest&color=blue" alt="Release" /></a>
@@ -11,6 +10,7 @@
     <a href="https://markeron.cn/"><img src="https://img.shields.io/badge/website-docs-0ea5e9" alt="Website" /></a>
     <a href="https://afdian.com/a/markeron"><img src="https://img.shields.io/badge/爱发电-赞助-946ce6" alt="Sponsor on 爱发电" /></a>
   </p>
+  <p><strong>Lightweight screen annotation tool</strong> (~1.5 MB) — press a hotkey (<strong>keyboard-first</strong>) to instantly draw, highlight, and annotate anywhere on your desktop. Built for demos, teaching, meetings, and screen recording.</p>
   <p>
     <strong>Free &amp; open source.</strong> If MarkerOn saves you time in demos, teaching, or meetings,
     <a href="https://afdian.com/a/markeron"><strong>sponsor on 爱发电 (Afdian)</strong></a>
