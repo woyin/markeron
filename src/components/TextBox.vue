@@ -61,7 +61,7 @@ function restoreBlockCaret() {
   if (!supportsBlockCaret) return
   const el = textareaRef.value
   if (!el) return
-  el.style.caretShape = 'block'
+  el.style.setProperty('caret-shape', 'block')
 }
 
 function autoResize() {
