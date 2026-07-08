@@ -63,12 +63,6 @@ winget install --id 9N6623X973JV --source msstore
 - **白板模式** — 可设为默认进入白板，或按 <kbd>W</kbd> 切换；内容与切换行为均在「白板与内容」中配置
 - **白板复制** — 在白板模式下按 <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>C</kbd> 可复制当前白板为图片
 
-<p align="center">
-  <img src="assets/click-through-mode.gif" width="720" alt="穿透模式演示 — 在屏幕上绘画，按 X 后可在保留标注的同时操作下层应用" />
-  <br />
-  <em>随处绘画，按 <kbd>X</kbd> 穿透到下层应用操作，标注不丢失，讲解不中断。</em>
-</p>
-
 <table>
 <tr>
 <td width="50%">

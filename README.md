@@ -63,12 +63,6 @@ winget install --id 9N6623X973JV --source msstore
 - **Whiteboard mode** — set default entry to whiteboard, or press <kbd>W</kbd> to toggle; content rules are in **Whiteboard & content** settings
 - **Whiteboard copy** — copy the whiteboard as an image with <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>C</kbd>
 
-<p align="center">
-  <img src="assets/click-through-mode.gif" width="720" alt="Click-through mode demo — draw on screen, press X, then interact with apps below while annotations stay visible" />
-  <br />
-  <em>Draw anywhere, press <kbd>X</kbd> to click through to apps below, then keep explaining without losing your marks.</em>
-</p>
-
 <table>
 <tr>
 <td width="50%">
