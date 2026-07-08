@@ -539,7 +539,7 @@
 }
 
 .textbox-placeholder-hint {
-  padding-left: calc(0.125rem + 1ch);
+  padding-left: calc(0.125rem + 1ch + 0.25em);
   color: var(--textbox-placeholder-color, rgba(255, 255, 255, 0.55));
   text-shadow:
     0 0 3px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5)),
