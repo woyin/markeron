@@ -21,7 +21,7 @@
       'meta.description':
         'MarkerOn is a lightweight open-source screen annotation tool with click-through mode, whiteboard mode, and keyboard-first drawing for Windows, macOS, and Linux.',
       'meta.keywords':
-        'screen annotation tool, ZoomIt alternative, Epic Pen alternative, desktop whiteboard, Tauri app, screen drawing',
+        'screen annotation tool, desktop drawing overlay, click-through annotation, desktop whiteboard, Tauri app, screen drawing',
       'meta.ogTitle': 'MarkerOn - Lightweight Screen Annotation Tool',
       'meta.ogDescription':
         'Draw, highlight, and annotate anywhere on your desktop. Click-through mode keeps annotations visible while you interact with apps below.',
@@ -100,10 +100,11 @@
       'bottom.sourceDesc': 'MIT licensed on GitHub',
       'bottom.sponsorTitle': 'Sponsor on Afdian',
       'bottom.sponsorDesc': 'Help keep MarkerOn maintained',
-      'bottom.faq1Title': 'Is MarkerOn a ZoomIt alternative?',
-      'bottom.faq1Desc': 'Keyboard-first annotation and click-through drawing. Use Magnifier if you need zoom.',
-      'bottom.faq2Title': 'Epic Pen-style click-through?',
-      'bottom.faq2Desc': 'Marks stay visible while you click, scroll, and type in apps below.',
+      'bottom.faq1Title': 'What is MarkerOn for?',
+      'bottom.faq1Desc':
+        'Live screen annotation for demos, teaching, and meetings — keyboard-first tools and click-through mode built in.',
+      'bottom.faq2Title': 'How does click-through mode work?',
+      'bottom.faq2Desc': `Toggle from the toolbar, with ${clickThroughCombo} (global), or press <kbd>X</kbd> while drawing. Marks stay visible while you click, scroll, and type in apps below.`,
       'bottom.faq3Title': 'Account or cloud upload?',
       'bottom.faq3Desc': 'No. Local-first, open source, and account-free.',
       'footer.license': 'MarkerOn is open source under the MIT License.',
@@ -115,7 +116,7 @@
       'meta.description':
         'MarkerOn 是一款轻量级开源屏幕标注工具，支持穿透模式、白板模式与快捷键优先绘制，适用于 Windows、macOS 和 Linux。',
       'meta.keywords':
-        '屏幕标注工具, ZoomIt 替代, Epic Pen 替代, 桌面白板, Tauri 应用, 屏幕绘画',
+        '屏幕标注工具, 桌面标注, 穿透模式, 桌面白板, Tauri 应用, 屏幕绘画',
       'meta.ogTitle': 'MarkerOn - 轻量级屏幕标注工具',
       'meta.ogDescription':
         '在桌面任意位置绘画、高亮与标注。穿透模式下标注保持可见，同时可操作下层应用。',
@@ -193,10 +194,10 @@
       'bottom.sourceDesc': 'GitHub 开源，MIT 协议',
       'bottom.sponsorTitle': '爱发电赞助',
       'bottom.sponsorDesc': '支持项目持续维护',
-      'bottom.faq1Title': 'MarkerOn 能替代 ZoomIt 吗？',
-      'bottom.faq1Desc': '侧重快速标注、快捷键与穿透绘制。需要放大时可配合系统放大镜。',
-      'bottom.faq2Title': '有 Epic Pen 式穿透吗？',
-      'bottom.faq2Desc': '标注保持可见，同时可点击、滚动并在下层应用中输入。',
+      'bottom.faq1Title': 'MarkerOn 适合什么场景？',
+      'bottom.faq1Desc': '演示、教学、会议与录屏时的屏幕标注，内置快捷键工具与穿透模式。',
+      'bottom.faq2Title': '穿透模式怎么用？',
+      'bottom.faq2Desc': `在工具栏切换，或按 ${clickThroughCombo}（全局）、绘制中按 <kbd>X</kbd>。标注保持可见，同时可点击、滚动并在下层应用中输入。`,
       'bottom.faq3Title': '需要账号或上传截图吗？',
       'bottom.faq3Desc': '不需要。本地优先、开源、无需账号。',
       'footer.license': 'MarkerOn 基于 MIT 协议开源。',
