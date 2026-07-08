@@ -8,6 +8,7 @@
   --red: #f04438;
   --blue: #1264ff;
   --green: #12835f;
+  --purple: #946ce6;
   --yellow: #f6c343;
   --night: #101114;
   --night-2: #17191f;
@@ -737,6 +738,10 @@ a.info-card:hover {
   border-left-color: var(--green);
 }
 
+.info-card-purple {
+  border-left-color: var(--purple);
+}
+
 .info-card-title {
   grid-column: 1;
   grid-row: 1;
@@ -772,6 +777,12 @@ a.info-card:hover {
   gap: 16px;
   padding-block: 20px;
   font-size: 14px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
 }
 
 .site-footer a {

@@ -98,6 +98,8 @@
       'bottom.storeDesc': 'Windows install and updates',
       'bottom.sourceTitle': 'Source Code',
       'bottom.sourceDesc': 'MIT licensed on GitHub',
+      'bottom.sponsorTitle': 'Sponsor on Afdian',
+      'bottom.sponsorDesc': 'Help keep MarkerOn maintained',
       'bottom.faq1Title': 'Is MarkerOn a ZoomIt alternative?',
       'bottom.faq1Desc': 'Keyboard-first annotation and click-through drawing. Use Magnifier if you need zoom.',
       'bottom.faq2Title': 'Epic Pen-style click-through?',
@@ -105,6 +107,7 @@
       'bottom.faq3Title': 'Account or cloud upload?',
       'bottom.faq3Desc': 'No. Local-first, open source, and account-free.',
       'footer.license': 'MarkerOn is open source under the MIT License.',
+      'footer.sponsor': 'Support development',
       'footer.feedback': 'Feedback and issues',
     },
     'zh-CN': {
@@ -188,6 +191,8 @@
       'bottom.storeDesc': 'Windows 安装与更新',
       'bottom.sourceTitle': '源代码',
       'bottom.sourceDesc': 'GitHub 开源，MIT 协议',
+      'bottom.sponsorTitle': '爱发电赞助',
+      'bottom.sponsorDesc': '支持项目持续维护',
       'bottom.faq1Title': 'MarkerOn 能替代 ZoomIt 吗？',
       'bottom.faq1Desc': '侧重快速标注、快捷键与穿透绘制。需要放大时可配合系统放大镜。',
       'bottom.faq2Title': '有 Epic Pen 式穿透吗？',
@@ -195,6 +200,7 @@
       'bottom.faq3Title': '需要账号或上传截图吗？',
       'bottom.faq3Desc': '不需要。本地优先、开源、无需账号。',
       'footer.license': 'MarkerOn 基于 MIT 协议开源。',
+      'footer.sponsor': '赞助开发',
       'footer.feedback': '反馈与 Issue',
     },
   };
