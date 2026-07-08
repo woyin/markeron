@@ -55,6 +55,12 @@ export function resolveAutoTextOutlineColor(textColor: string): string {
   return luminance > 0.45 ? '#000000' : '#FFFFFF'
 }
 
+export function hexColorToRgba(color: string, alpha: number): string {
+  const rgb = parseHexColor(color)
+  if (!rgb) return `rgba(128, 128, 128, ${alpha})`
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`
+}
+
 export function createDefaultTextOutline(): TextOutlineStyle {
   return { ...DEFAULT_TEXT_OUTLINE }
 }

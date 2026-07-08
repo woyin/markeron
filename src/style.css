@@ -528,6 +528,27 @@
   font-weight: 600;
 }
 
+.textbox-input {
+  overflow: hidden;
+}
+
+.textbox-input--block-caret {
+  caret-shape: block;
+  overflow-x: visible;
+  overflow-y: hidden;
+}
+
+.textbox-placeholder-hint {
+  padding-left: calc(0.125rem + 1ch);
+  color: var(--textbox-placeholder-color, rgba(255, 255, 255, 0.55));
+  text-shadow:
+    0 0 3px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5)),
+    0 0 1px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5));
+}
+
 .textbox-input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--textbox-placeholder-color, rgba(255, 255, 255, 0.55));
+  text-shadow:
+    0 0 3px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5)),
+    0 0 1px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5));
 }
