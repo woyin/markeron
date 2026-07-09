@@ -205,7 +205,6 @@ export default {
     license: '开源协议',
     feedback: '反馈问题',
     sponsor: '赞助开发',
-    diagnostics: '应用诊断',
     checkUpdate: '检查更新',
     checking: '正在检查...',
     updateAvailable: '发现新版本 v{version}',

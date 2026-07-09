@@ -699,7 +699,7 @@ onUnmounted(() => {
 
       <DiagnosticsTab v-else-if="activeTab === 'diagnostics'" />
 
-      <AboutTab v-else-if="activeTab === 'about'" @open-diagnostics="activeTab = 'diagnostics'" />
+      <AboutTab v-else-if="activeTab === 'about'" />
     </div>
   </div>
 </template>

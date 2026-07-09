@@ -210,7 +210,6 @@ export default {
     license: 'License',
     feedback: 'Feedback',
     sponsor: 'Support development',
-    diagnostics: 'Diagnostics & logs',
     checkUpdate: 'Check for updates',
     checking: 'Checking...',
     updateAvailable: 'New version v{version} available',
