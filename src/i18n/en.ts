@@ -75,6 +75,13 @@ export default {
       diagnostics: 'Diagnostics',
       about: 'About',
     },
+    sidebarOpenSource: 'OSS',
+    creditsRoll: {
+      title: 'Credits',
+      sponsorsEmpty: 'Every supporter on Afdian',
+      sponsorAmount: '¥{amount}',
+      closing: 'Thank you for your support',
+    },
     shortcutLabels: {
       toggleDrawing: 'Toggle annotation',
       clearDrawing: 'Clear annotations',

@@ -75,6 +75,13 @@ export default {
       diagnostics: '应用诊断',
       about: '关于',
     },
+    sidebarOpenSource: '开源',
+    creditsRoll: {
+      title: '致谢',
+      sponsorsEmpty: '爱发电上的每一位赞助者',
+      sponsorAmount: '¥{amount}',
+      closing: '感谢每一份支持',
+    },
     shortcutLabels: {
       toggleDrawing: '开始标注',
       clearDrawing: '清除标注',

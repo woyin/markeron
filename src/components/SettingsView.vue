@@ -12,9 +12,9 @@ import { useI18n, syncLocaleFromConfig } from '../i18n'
 import GeneralTab from './settings/GeneralTab.vue'
 import DiagnosticsTab from './settings/DiagnosticsTab.vue'
 import AboutTab from './settings/AboutTab.vue'
+import SettingsSidebarFooter from './settings/SettingsSidebarFooter.vue'
 
 const { t } = useI18n()
-const APP_VERSION = __APP_VERSION__
 
 const modLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
 
@@ -205,7 +205,7 @@ onUnmounted(() => {
 <template>
   <div class="flex h-full w-full font-text text-white select-none overflow-hidden">
     <!-- Sidebar -->
-    <div class="w-[154px] shrink-0 bg-[#161618] flex flex-col ui-divider-v">
+    <div class="relative z-10 w-[154px] shrink-0 bg-[#161618] flex flex-col ui-divider-v">
       <div class="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <svg class="w-7 h-7 shrink-0" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -307,7 +307,7 @@ onUnmounted(() => {
         </button>
       </nav>
 
-      <p class="mt-auto pl-5 pb-4 text-[10.5px] settings-text-faint font-mono tracking-wider">v{{ APP_VERSION }}</p>
+      <SettingsSidebarFooter />
     </div>
 
     <!-- Content -->
