@@ -19,11 +19,13 @@ if (!tag || !mergedLatestPath) {
 }
 
 const repo = process.env.GH_REPO || 'ifer47/markeron'
+const GH_MAX_BUFFER = 10 * 1024 * 1024
 
 function gh(args, { json = true, allowFail = false } = {}) {
   const result = spawnSync('gh', args, {
     encoding: 'utf8',
     env: process.env,
+    maxBuffer: GH_MAX_BUFFER,
   })
   if (result.status !== 0 && !allowFail) {
     const err = (result.stderr || result.stdout || '').trim()
@@ -34,9 +36,37 @@ function gh(args, { json = true, allowFail = false } = {}) {
   return out ? JSON.parse(out) : null
 }
 
+function listReleasesForTag(tagName) {
+  const result = spawnSync(
+    'gh',
+    [
+      'api',
+      `repos/${repo}/releases`,
+      '--paginate',
+      '--jq',
+      `.[] | select(.tag_name == "${tagName}")`,
+    ],
+    {
+      encoding: 'utf8',
+      env: process.env,
+      maxBuffer: GH_MAX_BUFFER,
+    },
+  )
+  if (result.status !== 0) {
+    const err = (result.stderr || result.stdout || '').trim()
+    throw new Error(`gh api releases (tag=${tagName}) failed: ${err}`)
+  }
+
+  return (result.stdout ?? '')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+}
+
 async function downloadAsset(asset, dest) {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
-  const url = asset.url || asset.browser_download_url
+  const url = asset.browser_download_url || asset.url
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' } : {},
     redirect: 'follow',
@@ -45,7 +75,7 @@ async function downloadAsset(asset, dest) {
   await pipeline(res.body, createWriteStream(dest))
 }
 
-const releases = gh(['api', `repos/${repo}/releases`, '--paginate']).filter((r) => r.tag_name === tag)
+const releases = listReleasesForTag(tag)
 if (!releases.length) {
   console.error(`No releases found for tag ${tag}`)
   process.exit(1)
@@ -58,7 +88,9 @@ releases.sort((a, b) => {
 
 const primary = releases[0]
 const duplicates = releases.slice(1)
-console.log(`Primary release #${primary.id} (${primary.draft ? 'draft' : 'published'}, ${primary.assets.length} assets)`)
+console.log(
+  `Primary release #${primary.id} (${primary.draft ? 'draft' : 'published'}, ${primary.assets.length} assets)`,
+)
 
 const primaryNames = new Set(primary.assets.map((a) => a.name))
 const tmp = mkdtempSync(join(tmpdir(), 'markeron-release-'))
