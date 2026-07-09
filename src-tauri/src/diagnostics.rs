@@ -272,10 +272,10 @@ pub fn issue_body_from_bundle(bundle: &DiagnosticBundle) -> String {
         ),
         String::new(),
         "## 诊断包 / Diagnostics".to_string(),
-        "1. 在 MarkerOn 中：**设置 → 应用诊断 → 导出到本地**，保存 JSON 文件。".to_string(),
+        "1. 在 MarkerOn 中：**设置 → 应用诊断 → 导出日志**，保存 JSON 文件。".to_string(),
         "2. 在本 Issue 编辑框中 **拖拽该 JSON 文件**（或粘贴）作为附件，再点击 Submit。".to_string(),
         String::new(),
-        "1. In MarkerOn: **Settings → Diagnostics → Export to local**, save the JSON file.".to_string(),
+        "1. In MarkerOn: **Settings → Diagnostics → Export logs**, save the JSON file.".to_string(),
         "2. **Drag the JSON file** into this issue editor (or paste) as an attachment, then click Submit.".to_string(),
     ];
     if !bundle.frontend_events.is_empty() {

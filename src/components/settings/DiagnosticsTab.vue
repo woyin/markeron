@@ -69,24 +69,22 @@ async function openGithubIssue() {
       </p>
     </div>
 
-    <div class="settings-card mb-4">
-      <div class="px-4 py-3">
-        <label class="block text-[12.5px] font-medium settings-text-label mb-2" for="diag-description">
-          {{ t('diagnostics.descriptionTitle') }}
-        </label>
-        <div class="relative">
-          <textarea
-            id="diag-description"
-            v-model="description"
-            :maxlength="maxDescription"
-            rows="4"
-            class="diag-textarea w-full resize-none rounded-lg px-3 py-2.5 text-[12px] settings-text-value outline-none transition-colors"
-            :placeholder="t('diagnostics.descriptionPlaceholder')"
-          />
-          <span class="absolute right-2.5 bottom-2 text-[10px] settings-text-faint font-mono">
-            {{ charCount }}/{{ maxDescription }}
-          </span>
-        </div>
+    <div class="mb-4">
+      <label class="block text-[12.5px] font-medium settings-text-label mb-2" for="diag-description">
+        {{ t('diagnostics.descriptionTitle') }}
+      </label>
+      <div class="relative">
+        <textarea
+          id="diag-description"
+          v-model="description"
+          :maxlength="maxDescription"
+          rows="4"
+          class="diag-textarea w-full resize-none rounded-lg px-3 py-2.5 text-[12px] settings-text-value outline-none transition-colors"
+          :placeholder="t('diagnostics.descriptionPlaceholder')"
+        />
+        <span class="absolute right-2.5 bottom-2 text-[10px] settings-text-faint font-mono">
+          {{ charCount }}/{{ maxDescription }}
+        </span>
       </div>
     </div>
 
@@ -94,16 +92,16 @@ async function openGithubIssue() {
       <button
         class="settings-btn-accent-primary px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer disabled:opacity-50"
         :disabled="exporting || reporting"
-        @click="exportDiagnostics"
+        @click="openGithubIssue"
       >
-        {{ exporting ? t('diagnostics.exporting') : t('diagnostics.export') }}
+        {{ reporting ? t('diagnostics.reporting') : t('diagnostics.reportGithub') }}
       </button>
       <button
         class="settings-btn-accent-outline px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer disabled:opacity-50"
         :disabled="exporting || reporting"
-        @click="openGithubIssue"
+        @click="exportDiagnostics"
       >
-        {{ reporting ? t('diagnostics.reporting') : t('diagnostics.reportGithub') }}
+        {{ exporting ? t('diagnostics.exporting') : t('diagnostics.export') }}
       </button>
     </div>
 

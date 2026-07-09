@@ -228,7 +228,7 @@ export default {
     descriptionTitle: 'Problem description',
     descriptionPlaceholder:
       'Describe what happened and how to reproduce (optional). Example: repeated “Copied to clipboard” toast after each pen stroke on macOS trackpad.',
-    export: 'Export to local',
+    export: 'Export logs',
     exporting: 'Exporting...',
     exportSuccess: 'Saved to {path}',
     exportFailed: 'Export failed, please try again',
