@@ -369,6 +369,11 @@ let isDragging = false
 let dragStartX = 0
 let dragStartY = 0
 let capturedPointerId: number | null = null
+// Timestamp (ms) of the most recent stroke end. Used to suppress spurious
+// keyboard-copy events that some macOS input devices emit right after pen-up
+// (see issue #22): a ⌘C keydown arrives ~100ms after every stroke end.
+let lastStrokeEndAt = 0
+const COPY_AFTER_STROKE_SUPPRESS_MS = 300
 let lastPointerX = 0
 let lastPointerY = 0
 let lastScreenX = 0
@@ -750,6 +755,7 @@ function finishActivePointerInteraction() {
     endDrag()
   } else if (isDrawing.value) {
     endDraw()
+    lastStrokeEndAt = Date.now()
     if (toolBeforeModifier !== null) {
       currentTool.value = toolBeforeModifier as Tool
       toolBeforeModifier = null
@@ -892,6 +898,7 @@ function onPointerUp(e: PointerEvent) {
 
   endDraw()
   if (wasDrawing) {
+    lastStrokeEndAt = Date.now()
     logDiagnostic('pointer', 'stroke end', {
       pointerType: e.pointerType,
       button: e.button,
@@ -1452,6 +1459,10 @@ function onPointerLeave(e: PointerEvent) {
 }
 
 async function copyScreen(reason = 'unknown') {
+  if (reason === 'keyboard' && Date.now() - lastStrokeEndAt < COPY_AFTER_STROKE_SUPPRESS_MS) {
+    logDiagnostic('copy', 'copyScreen skipped', { reason, cause: 'stroke-just-ended' }, 'warn')
+    return
+  }
   if (isCopying) {
     logDiagnostic('copy', 'copyScreen skipped', { reason, cause: 'already-copying' }, 'warn')
     return
@@ -1495,6 +1506,10 @@ async function copyScreen(reason = 'unknown') {
 }
 
 async function copyWhiteboard(reason = 'unknown') {
+  if (reason === 'keyboard' && Date.now() - lastStrokeEndAt < COPY_AFTER_STROKE_SUPPRESS_MS) {
+    logDiagnostic('copy', 'copyWhiteboard skipped', { reason, cause: 'stroke-just-ended' }, 'warn')
+    return
+  }
   if (isCopying) {
     logDiagnostic('copy', 'copyWhiteboard skipped', { reason, cause: 'already-copying' }, 'warn')
     return
