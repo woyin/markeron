@@ -227,7 +227,17 @@ pub fn raise_toolbar(app: AppHandle) {
     crate::overlay::raise_toolbar_above_overlay(&app);
 }
 
-const ALLOWED_URL_PREFIXES: &[&str] = &["https://github.com/", "https://apps.microsoft.com/"];
+const ALLOWED_URL_PREFIXES: &[&str] = &[
+    "https://github.com/",
+    "https://apps.microsoft.com/",
+    "https://afdian.com/",
+];
+
+fn is_allowed_open_url(url: &str) -> bool {
+    ALLOWED_URL_PREFIXES
+        .iter()
+        .any(|prefix| url.starts_with(prefix))
+}
 
 #[tauri::command]
 pub fn reveal_settings_window(app: AppHandle) {
@@ -236,10 +246,7 @@ pub fn reveal_settings_window(app: AppHandle) {
 
 #[tauri::command]
 pub fn open_url(app: AppHandle, url: String) -> AppResult<()> {
-    if !ALLOWED_URL_PREFIXES
-        .iter()
-        .any(|prefix| url.starts_with(prefix))
-    {
+    if !is_allowed_open_url(&url) {
         warn!("Blocked open_url for untrusted URL: {}", url);
         return Err(AppError::Other("URL not allowed".into()));
     }
@@ -266,5 +273,26 @@ mod tests {
         let errors = duplicate_shortcut_errors(&shortcuts);
         assert_eq!(errors.len(), 1);
         assert!(errors[0].contains("Duplicate shortcut"));
+    }
+
+    #[test]
+    fn open_url_allowlist_permits_known_destinations() {
+        assert!(is_allowed_open_url("https://github.com/ifer47/markeron"));
+        assert!(is_allowed_open_url(
+            "https://github.com/ifer47/markeron/issues"
+        ));
+        assert!(is_allowed_open_url("https://afdian.com/a/markeron"));
+        assert!(is_allowed_open_url(
+            "https://apps.microsoft.com/store/detail/markeron/9P123"
+        ));
+    }
+
+    #[test]
+    fn open_url_allowlist_blocks_untrusted_destinations() {
+        assert!(!is_allowed_open_url("https://example.com/"));
+        assert!(!is_allowed_open_url("http://github.com/ifer47/markeron"));
+        assert!(!is_allowed_open_url(
+            "https://afdian.com.evil.com/a/markeron"
+        ));
     }
 }
