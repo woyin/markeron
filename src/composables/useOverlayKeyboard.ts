@@ -5,11 +5,13 @@ import { logActionEvent } from '../utils/diagnosticEvents'
 
 const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'line', 'eraser']
 
-/** Block keyboard copy briefly after pointer up — macOS may emit spurious Mod+C after pen-up (issue #22). */
-const KEYBOARD_COPY_AFTER_POINTER_MS = 800
-let lastPointerInteractionEndedAt = 0
+/** True while pointer is down for draw/drag — modifier keys serve drawing, not copy. */
+let pointerGestureActive = false
 
-/** Tracks whether Ctrl/Command was physically pressed before a copy chord (issue #22). */
+/**
+ * True only after a physical Meta/Control keydown while the pointer is idle.
+ * Spurious macOS Mod+C after pen-up sends C with metaKey but no prior Meta keydown (issue #22).
+ */
 let copyModifierPhysicallyDown = false
 
 export interface KeyboardContext {
@@ -49,7 +51,7 @@ function modDown(e: KeyboardEvent): boolean {
 }
 
 export function trackCopyModifierKeyDown(e: KeyboardEvent): void {
-  if (e.key === 'Control' || e.key === 'Meta') {
+  if ((e.key === 'Control' || e.key === 'Meta') && !pointerGestureActive) {
     copyModifierPhysicallyDown = true
   }
 }
@@ -62,21 +64,18 @@ export function trackCopyModifierKeyUp(e: KeyboardEvent): void {
 
 export function resetCopyModifierState(): void {
   copyModifierPhysicallyDown = false
+  pointerGestureActive = false
 }
 
-/** Pointer draw/drag uses the same modifier keys — disarm copy until modifier is released. */
+/** Pointer down: modifier keys are reserved for draw/drag until pointer up. */
 export function invalidateCopyModifierForPointerInteraction(): void {
   copyModifierPhysicallyDown = false
+  pointerGestureActive = true
 }
 
-/** Call when a pointer draw/drag gesture ends (stroke end, element drag end, abort). */
+/** Pointer up: gesture ends; copy modifier must be freshly pressed (no timer). */
 export function markPointerInteractionEnded(): void {
-  lastPointerInteractionEndedAt = Date.now()
-}
-
-/** For tests: override last pointer-end timestamp. */
-export function setLastPointerInteractionEndedAt(ts: number): void {
-  lastPointerInteractionEndedAt = ts
+  pointerGestureActive = false
 }
 
 /** For tests: read whether copy modifier is considered physically held. */
@@ -84,13 +83,17 @@ export function isCopyModifierPhysicallyDown(): boolean {
   return copyModifierPhysicallyDown
 }
 
+/** For tests: read pointer gesture state. */
+export function isPointerGestureActive(): boolean {
+  return pointerGestureActive
+}
+
 function shouldTriggerKeyboardCopy(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!ctx.keyboardCopyEnabled.value) return false
-  if (ctx.isDrawing.value) return false
-  if (Date.now() - lastPointerInteractionEndedAt < KEYBOARD_COPY_AFTER_POINTER_MS) return false
+  if (ctx.isDrawing.value || pointerGestureActive) return false
   if (!modDown(e) || e.shiftKey) return false
   if (e.key !== 'c' && e.key !== 'C') return false
-  return true
+  return copyModifierPhysicallyDown
 }
 
 function triggerKeyboardCopy(ctx: KeyboardContext, actions: KeyboardActions): void {
@@ -204,7 +207,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Copy whiteboard / screen — requires setting enabled + physical modifier press (issue #22)
+    // Copy: setting on + idle pointer + physical Mod keydown before C (issue #22)
     if (shouldTriggerKeyboardCopy(e, ctx)) {
       e.preventDefault()
       triggerKeyboardCopy(ctx, actions)

@@ -4,7 +4,7 @@ import {
   createKeyDownHandler,
   resetCopyModifierState,
   invalidateCopyModifierForPointerInteraction,
-  setLastPointerInteractionEndedAt,
+  markPointerInteractionEnded,
   type KeyboardContext,
   type KeyboardActions,
 } from './useOverlayKeyboard'
@@ -69,6 +69,7 @@ function key(key: string, mods: Partial<KeyboardEvent> = {}): KeyboardEvent {
 }
 
 function copyChord(handler: (e: KeyboardEvent) => void, mods: Partial<KeyboardEvent> = { ctrlKey: true }) {
+  handler(key('Control', mods))
   handler(key('c', mods))
 }
 
@@ -79,7 +80,6 @@ describe('useOverlayKeyboard', () => {
 
   beforeEach(() => {
     resetCopyModifierState()
-    setLastPointerInteractionEndedAt(0)
     ctx = createContext()
     actions = createActions()
     handler = createKeyDownHandler(ctx, actions)
@@ -235,9 +235,14 @@ describe('useOverlayKeyboard', () => {
   })
 
   describe('copy screen', () => {
-    it('Ctrl+C triggers copy when pointer idle', () => {
+    it('Ctrl+C triggers copy after physical modifier press while pointer idle', () => {
       copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
+    })
+
+    it('C with ctrlKey but no prior modifier keydown does not copy (issue #22)', () => {
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
     it('Ctrl+C works even when toolbar popup is open (before popup check)', () => {
@@ -252,9 +257,10 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
-    it('does not copy shortly after pointer interaction ended', () => {
-      setLastPointerInteractionEndedAt(Date.now())
-      copyChord(handler)
+    it('does not copy during pointer gesture even if modifier was pressed before', () => {
+      handler(key('Control'))
+      invalidateCopyModifierForPointerInteraction()
+      handler(key('c', { ctrlKey: true }))
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
@@ -264,11 +270,20 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
-    it('invalidateCopyModifierForPointerInteraction is safe to call during draw', () => {
+    it('can copy immediately after pointer up once modifier is pressed again', () => {
       handler(key('Control'))
       invalidateCopyModifierForPointerInteraction()
-      setLastPointerInteractionEndedAt(Date.now())
-      copyChord(handler)
+      markPointerInteractionEnded()
+      handler(key('Control'))
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(1)
+    })
+
+    it('does not copy after pointer up if modifier still held from before draw', () => {
+      handler(key('Control'))
+      invalidateCopyModifierForPointerInteraction()
+      markPointerInteractionEnded()
+      handler(key('c', { ctrlKey: true }))
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
   })
@@ -323,9 +338,8 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.copyScreen).toHaveLength(1)
     })
 
-    it('Ctrl+C does not copy in quick color mode right after pointer end', () => {
-      setLastPointerInteractionEndedAt(Date.now())
-      copyChord(handler)
+    it('spurious C with ctrlKey only does not copy in quick color mode', () => {
+      handler(key('c', { ctrlKey: true }))
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
   })
