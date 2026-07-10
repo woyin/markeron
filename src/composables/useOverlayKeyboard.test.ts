@@ -3,6 +3,8 @@ import { ref, type Ref } from 'vue'
 import {
   createKeyDownHandler,
   resetCopyModifierState,
+  invalidateCopyModifierForPointerInteraction,
+  setLastPointerInteractionEndedAt,
   type KeyboardContext,
   type KeyboardActions,
 } from './useOverlayKeyboard'
@@ -67,7 +69,6 @@ function key(key: string, mods: Partial<KeyboardEvent> = {}): KeyboardEvent {
 }
 
 function copyChord(handler: (e: KeyboardEvent) => void, mods: Partial<KeyboardEvent> = { ctrlKey: true }) {
-  handler(key('Control', mods))
   handler(key('c', mods))
 }
 
@@ -78,6 +79,7 @@ describe('useOverlayKeyboard', () => {
 
   beforeEach(() => {
     resetCopyModifierState()
+    setLastPointerInteractionEndedAt(0)
     ctx = createContext()
     actions = createActions()
     handler = createKeyDownHandler(ctx, actions)
@@ -233,14 +235,9 @@ describe('useOverlayKeyboard', () => {
   })
 
   describe('copy screen', () => {
-    it('Ctrl+C triggers copy after physical modifier press', () => {
+    it('Ctrl+C triggers copy when pointer idle', () => {
       copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
-    })
-
-    it('Ctrl+C without prior modifier press does not copy (issue #22)', () => {
-      handler(key('c', { ctrlKey: true }))
-      expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
     it('Ctrl+C works even when toolbar popup is open (before popup check)', () => {
@@ -251,6 +248,26 @@ describe('useOverlayKeyboard', () => {
 
     it('does not copy when keyboard copy setting is disabled', () => {
       ctx.keyboardCopyEnabled.value = false
+      copyChord(handler)
+      expect(actions.calls.copyScreen).toHaveLength(0)
+    })
+
+    it('does not copy shortly after pointer interaction ended', () => {
+      setLastPointerInteractionEndedAt(Date.now())
+      copyChord(handler)
+      expect(actions.calls.copyScreen).toHaveLength(0)
+    })
+
+    it('does not copy while drawing is active', () => {
+      ctx.isDrawing.value = true
+      copyChord(handler)
+      expect(actions.calls.copyScreen).toHaveLength(0)
+    })
+
+    it('invalidateCopyModifierForPointerInteraction is safe to call during draw', () => {
+      handler(key('Control'))
+      invalidateCopyModifierForPointerInteraction()
+      setLastPointerInteractionEndedAt(Date.now())
       copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
@@ -301,13 +318,14 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.toggleToolbarPopupVisible).toHaveLength(1)
     })
 
-    it('Ctrl+C copies screen in quick color mode after modifier press', () => {
+    it('Ctrl+C copies screen in quick color mode when pointer idle', () => {
       copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
     })
 
-    it('Ctrl+C without modifier press does not copy in quick color mode', () => {
-      handler(key('c', { ctrlKey: true }))
+    it('Ctrl+C does not copy in quick color mode right after pointer end', () => {
+      setLastPointerInteractionEndedAt(Date.now())
+      copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
   })

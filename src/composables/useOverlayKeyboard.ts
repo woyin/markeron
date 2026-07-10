@@ -5,6 +5,10 @@ import { logActionEvent } from '../utils/diagnosticEvents'
 
 const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'line', 'eraser']
 
+/** Block keyboard copy briefly after pointer up — macOS may emit spurious Mod+C after pen-up (issue #22). */
+const KEYBOARD_COPY_AFTER_POINTER_MS = 800
+let lastPointerInteractionEndedAt = 0
+
 /** Tracks whether Ctrl/Command was physically pressed before a copy chord (issue #22). */
 let copyModifierPhysicallyDown = false
 
@@ -60,6 +64,21 @@ export function resetCopyModifierState(): void {
   copyModifierPhysicallyDown = false
 }
 
+/** Pointer draw/drag uses the same modifier keys — disarm copy until modifier is released. */
+export function invalidateCopyModifierForPointerInteraction(): void {
+  copyModifierPhysicallyDown = false
+}
+
+/** Call when a pointer draw/drag gesture ends (stroke end, element drag end, abort). */
+export function markPointerInteractionEnded(): void {
+  lastPointerInteractionEndedAt = Date.now()
+}
+
+/** For tests: override last pointer-end timestamp. */
+export function setLastPointerInteractionEndedAt(ts: number): void {
+  lastPointerInteractionEndedAt = ts
+}
+
 /** For tests: read whether copy modifier is considered physically held. */
 export function isCopyModifierPhysicallyDown(): boolean {
   return copyModifierPhysicallyDown
@@ -67,9 +86,11 @@ export function isCopyModifierPhysicallyDown(): boolean {
 
 function shouldTriggerKeyboardCopy(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (!ctx.keyboardCopyEnabled.value) return false
+  if (ctx.isDrawing.value) return false
+  if (Date.now() - lastPointerInteractionEndedAt < KEYBOARD_COPY_AFTER_POINTER_MS) return false
   if (!modDown(e) || e.shiftKey) return false
   if (e.key !== 'c' && e.key !== 'C') return false
-  return copyModifierPhysicallyDown
+  return true
 }
 
 function triggerKeyboardCopy(ctx: KeyboardContext, actions: KeyboardActions): void {

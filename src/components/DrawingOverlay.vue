@@ -6,7 +6,13 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useDrawing, type Tool, type DrawAction } from '../composables/useDrawing'
 import type { TextOutlineStyle } from '../composables/drawingTypes'
 import { useTooltip } from '../composables/useTooltip'
-import { createKeyDownHandler, trackCopyModifierKeyUp, resetCopyModifierState } from '../composables/useOverlayKeyboard'
+import {
+  createKeyDownHandler,
+  trackCopyModifierKeyUp,
+  resetCopyModifierState,
+  invalidateCopyModifierForPointerInteraction,
+  markPointerInteractionEnded,
+} from '../composables/useOverlayKeyboard'
 import {
   OVERLAY_STATE_EVENT,
   TOOLBAR_ACTION_EVENT,
@@ -125,6 +131,7 @@ function cycleColor(direction: number) {
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   if (!active.value || penetrationMode.value || textBoxPos.value || isDrawing.value) return
+  if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
   hideToolbarPopupForCanvasInteraction()
   quickColorsPos.value = { x: e.clientX, y: e.clientY }
   showQuickColors.value = true
@@ -371,6 +378,10 @@ let isDragging = false
 let dragStartX = 0
 let dragStartY = 0
 let capturedPointerId: number | null = null
+/** Suppress Control+click context menu after Control+drag (macOS maps ctrl+click to right-click). */
+let pointerDownClient: { x: number; y: number } | null = null
+let pointerMovedSinceDown = false
+const CONTEXT_MENU_DRAG_THRESHOLD_PX = 5
 let lastPointerX = 0
 let lastPointerY = 0
 let lastScreenX = 0
@@ -740,6 +751,11 @@ function releaseCapturedPointer() {
   capturedPointerId = null
 }
 
+function resetPointerGestureState() {
+  pointerDownClient = null
+  pointerMovedSinceDown = false
+}
+
 function finishActivePointerInteraction() {
   if (hoverRafId !== null) {
     cancelAnimationFrame(hoverRafId)
@@ -759,11 +775,17 @@ function finishActivePointerInteraction() {
   }
   hoveredActionInfo.value = null
   pointerModDown.value = false
+  markPointerInteractionEnded()
+  resetPointerGestureState()
 }
 
 async function onPointerDown(e: PointerEvent) {
   if (e.button !== 0) return
   if (penetrationMode.value || !active.value || showQuickColors.value) return
+
+  pointerDownClient = { x: e.clientX, y: e.clientY }
+  pointerMovedSinceDown = false
+  invalidateCopyModifierForPointerInteraction()
 
   if (!overlayLayoutReady.value) {
     await scheduleOverlayResize()
@@ -825,6 +847,13 @@ async function onPointerDown(e: PointerEvent) {
 function onPointerMove(e: PointerEvent) {
   lastPointerX = e.clientX
   lastPointerY = e.clientY
+  if (pointerDownClient) {
+    const dx = e.clientX - pointerDownClient.x
+    const dy = e.clientY - pointerDownClient.y
+    if (dx * dx + dy * dy > CONTEXT_MENU_DRAG_THRESHOLD_PX * CONTEXT_MENU_DRAG_THRESHOLD_PX) {
+      pointerMovedSinceDown = true
+    }
+  }
   lastScreenX = e.screenX
   lastScreenY = e.screenY
   pointerScreenKnown = true
@@ -889,6 +918,8 @@ function onPointerUp(e: PointerEvent) {
     isDragging = false
     isMoving.value = false
     endDrag()
+    markPointerInteractionEnded()
+    resetPointerGestureState()
     return
   }
 
@@ -905,6 +936,8 @@ function onPointerUp(e: PointerEvent) {
     currentTool.value = toolBeforeModifier as Tool
     toolBeforeModifier = null
   }
+  markPointerInteractionEnded()
+  resetPointerGestureState()
 }
 
 function abortActivePointerInteraction() {
@@ -924,6 +957,8 @@ function abortActivePointerInteraction() {
   toolBeforeModifier = null
   hoveredActionInfo.value = null
   pointerModDown.value = false
+  markPointerInteractionEnded()
+  resetPointerGestureState()
 }
 
 function onTextCommit() {
