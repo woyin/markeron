@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref, type Ref } from 'vue'
-import { createKeyDownHandler, type KeyboardContext, type KeyboardActions } from './useOverlayKeyboard'
+import {
+  createKeyDownHandler,
+  resetCopyModifierState,
+  type KeyboardContext,
+  type KeyboardActions,
+} from './useOverlayKeyboard'
 import type { Tool } from './drawingTypes'
 
 function createContext(overrides: Partial<KeyboardContext> = {}): KeyboardContext {
@@ -14,6 +19,7 @@ function createContext(overrides: Partial<KeyboardContext> = {}): KeyboardContex
     currentTool: ref<Tool>('pen'),
     whiteboardMode: ref(false),
     isDrawing: ref(false),
+    keyboardCopyEnabled: ref(true),
     lastPointerX: () => 200,
     lastPointerY: () => 200,
     mousePos: ref({ x: 0, y: 0 }),
@@ -60,12 +66,18 @@ function key(key: string, mods: Partial<KeyboardEvent> = {}): KeyboardEvent {
   } as unknown as KeyboardEvent
 }
 
+function copyChord(handler: (e: KeyboardEvent) => void, mods: Partial<KeyboardEvent> = { ctrlKey: true }) {
+  handler(key('Control', mods))
+  handler(key('c', mods))
+}
+
 describe('useOverlayKeyboard', () => {
   let ctx: KeyboardContext
   let actions: ReturnType<typeof createActions>
   let handler: (e: KeyboardEvent) => void
 
   beforeEach(() => {
+    resetCopyModifierState()
     ctx = createContext()
     actions = createActions()
     handler = createKeyDownHandler(ctx, actions)
@@ -221,22 +233,33 @@ describe('useOverlayKeyboard', () => {
   })
 
   describe('copy screen', () => {
-    it('Ctrl+C triggers copy', () => {
-      handler(key('c', { ctrlKey: true }))
+    it('Ctrl+C triggers copy after physical modifier press', () => {
+      copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
+    })
+
+    it('Ctrl+C without prior modifier press does not copy (issue #22)', () => {
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
     it('Ctrl+C works even when toolbar popup is open (before popup check)', () => {
       ctx.showToolbarPopup.value = true
-      handler(key('c', { ctrlKey: true }))
+      copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
+    })
+
+    it('does not copy when keyboard copy setting is disabled', () => {
+      ctx.keyboardCopyEnabled.value = false
+      copyChord(handler)
+      expect(actions.calls.copyScreen).toHaveLength(0)
     })
   })
 
   describe('whiteboard copy', () => {
     it('Ctrl+C copies whiteboard when whiteboard mode is active', () => {
       ctx.whiteboardMode.value = true
-      handler(key('c', { ctrlKey: true }))
+      copyChord(handler)
       expect(actions.calls.copyWhiteboard).toHaveLength(1)
       expect(actions.calls.copyScreen).toHaveLength(0)
     })
@@ -278,9 +301,14 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.toggleToolbarPopupVisible).toHaveLength(1)
     })
 
-    it('Ctrl+C copies screen in quick color mode', () => {
-      handler(key('c', { ctrlKey: true }))
+    it('Ctrl+C copies screen in quick color mode after modifier press', () => {
+      copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
+    })
+
+    it('Ctrl+C without modifier press does not copy in quick color mode', () => {
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(0)
     })
   })
 

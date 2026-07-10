@@ -128,6 +128,9 @@ export default {
     eraserModeObject: '对象擦除',
     eraserModeDesc:
       '轨迹擦除：按路径局部擦除像素（可撤销）。对象擦除：划过图形或文字时删除整个元素（可撤销）。使用橡皮擦时不会触发元素拖拽，即使已开启悬停拖动。',
+    keyboardCopyEnabled: '标注时允许 {modKey}+C 复制',
+    keyboardCopyEnabledDesc:
+      '关闭后，标注模式中无法通过键盘快捷键复制屏幕或白板，请使用工具栏的「复制」按钮。macOS 上部分触控板/数位板会在抬笔后误触发复制，建议保持关闭。',
   },
   toolbar: {
     undo: '撤销',

@@ -6,7 +6,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useDrawing, type Tool, type DrawAction } from '../composables/useDrawing'
 import type { TextOutlineStyle } from '../composables/drawingTypes'
 import { useTooltip } from '../composables/useTooltip'
-import { createKeyDownHandler } from '../composables/useOverlayKeyboard'
+import { createKeyDownHandler, trackCopyModifierKeyUp, resetCopyModifierState } from '../composables/useOverlayKeyboard'
 import {
   OVERLAY_STATE_EVENT,
   TOOLBAR_ACTION_EVENT,
@@ -32,6 +32,7 @@ import { logDiagnostic, logSessionEvent, logActionEvent } from '../utils/diagnos
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { toolbarPopupScreenPosition } from '../utils/toolbarPosition'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
+import { resolveKeyboardCopyEnabled } from '../utils/keyboardCopy'
 import { useI18n } from '../i18n'
 
 const { t } = useI18n()
@@ -364,16 +365,12 @@ const dragMode = ref<DragMode>('off')
 const pointerModDown = ref(false)
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
+const keyboardCopyEnabled = ref(resolveKeyboardCopyEnabled())
 let hoverRafId: number | null = null
 let isDragging = false
 let dragStartX = 0
 let dragStartY = 0
 let capturedPointerId: number | null = null
-// Timestamp (ms) of the most recent stroke end. Used to suppress spurious
-// keyboard-copy events that some macOS input devices emit right after pen-up
-// (see issue #22): a ⌘C keydown arrives ~100ms after every stroke end.
-let lastStrokeEndAt = 0
-const COPY_AFTER_STROKE_SUPPRESS_MS = 300
 let lastPointerX = 0
 let lastPointerY = 0
 let lastScreenX = 0
@@ -755,7 +752,6 @@ function finishActivePointerInteraction() {
     endDrag()
   } else if (isDrawing.value) {
     endDraw()
-    lastStrokeEndAt = Date.now()
     if (toolBeforeModifier !== null) {
       currentTool.value = toolBeforeModifier as Tool
       toolBeforeModifier = null
@@ -898,7 +894,6 @@ function onPointerUp(e: PointerEvent) {
 
   endDraw()
   if (wasDrawing) {
-    lastStrokeEndAt = Date.now()
     logDiagnostic('pointer', 'stroke end', {
       pointerType: e.pointerType,
       button: e.button,
@@ -950,6 +945,7 @@ const onKeyDown = createKeyDownHandler(
     currentTool,
     whiteboardMode,
     isDrawing,
+    keyboardCopyEnabled,
     lastPointerX: () => lastPointerX,
     lastPointerY: () => lastPointerY,
     mousePos,
@@ -1233,6 +1229,7 @@ function syncPointerModFromKey(e: KeyboardEvent) {
 }
 
 function onKeyUp(e: KeyboardEvent) {
+  trackCopyModifierKeyUp(e)
   if (e.key === 'Alt') {
     e.preventDefault()
   }
@@ -1279,6 +1276,7 @@ onMounted(async () => {
     applyEraserModeFromConfig(cfg.general)
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
     whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
+    keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(cfg.general)
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
   } catch (error) {
     console.error('Failed to get initial config:', error)
@@ -1293,6 +1291,7 @@ onMounted(async () => {
       applyEraserModeFromConfig(event.payload.general)
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
+      keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(event.payload.general)
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
     }),
   )
@@ -1431,6 +1430,7 @@ onUnmounted(() => {
     void invoke('set_overlay_ignore_cursor_events', { ignore: false }).catch(() => {})
   }
   unlisteners.forEach((fn) => fn())
+  resetCopyModifierState()
   disposeTooltip()
   destroy()
 })
@@ -1459,10 +1459,6 @@ function onPointerLeave(e: PointerEvent) {
 }
 
 async function copyScreen(reason = 'unknown') {
-  if (reason === 'keyboard' && Date.now() - lastStrokeEndAt < COPY_AFTER_STROKE_SUPPRESS_MS) {
-    logDiagnostic('copy', 'copyScreen skipped', { reason, cause: 'stroke-just-ended' }, 'warn')
-    return
-  }
   if (isCopying) {
     logDiagnostic('copy', 'copyScreen skipped', { reason, cause: 'already-copying' }, 'warn')
     return
@@ -1506,10 +1502,6 @@ async function copyScreen(reason = 'unknown') {
 }
 
 async function copyWhiteboard(reason = 'unknown') {
-  if (reason === 'keyboard' && Date.now() - lastStrokeEndAt < COPY_AFTER_STROKE_SUPPRESS_MS) {
-    logDiagnostic('copy', 'copyWhiteboard skipped', { reason, cause: 'stroke-just-ended' }, 'warn')
-    return
-  }
   if (isCopying) {
     logDiagnostic('copy', 'copyWhiteboard skipped', { reason, cause: 'already-copying' }, 'warn')
     return

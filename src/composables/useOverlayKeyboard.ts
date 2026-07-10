@@ -5,6 +5,9 @@ import { logActionEvent } from '../utils/diagnosticEvents'
 
 const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'line', 'eraser']
 
+/** Tracks whether Ctrl/Command was physically pressed before a copy chord (issue #22). */
+let copyModifierPhysicallyDown = false
+
 export interface KeyboardContext {
   active: Ref<boolean>
   showToolbarPopup: Ref<boolean>
@@ -15,6 +18,7 @@ export interface KeyboardContext {
   currentTool: Ref<Tool>
   whiteboardMode: Ref<boolean>
   isDrawing: Ref<boolean>
+  keyboardCopyEnabled: Ref<boolean>
   lastPointerX: () => number
   lastPointerY: () => number
   mousePos: Ref<{ x: number; y: number }>
@@ -40,9 +44,47 @@ function modDown(e: KeyboardEvent): boolean {
   return e.ctrlKey || (isMacOS() && e.metaKey)
 }
 
+export function trackCopyModifierKeyDown(e: KeyboardEvent): void {
+  if (e.key === 'Control' || e.key === 'Meta') {
+    copyModifierPhysicallyDown = true
+  }
+}
+
+export function trackCopyModifierKeyUp(e: KeyboardEvent): void {
+  if (e.key === 'Control' || e.key === 'Meta') {
+    copyModifierPhysicallyDown = false
+  }
+}
+
+export function resetCopyModifierState(): void {
+  copyModifierPhysicallyDown = false
+}
+
+/** For tests: read whether copy modifier is considered physically held. */
+export function isCopyModifierPhysicallyDown(): boolean {
+  return copyModifierPhysicallyDown
+}
+
+function shouldTriggerKeyboardCopy(e: KeyboardEvent, ctx: KeyboardContext): boolean {
+  if (!ctx.keyboardCopyEnabled.value) return false
+  if (!modDown(e) || e.shiftKey) return false
+  if (e.key !== 'c' && e.key !== 'C') return false
+  return copyModifierPhysicallyDown
+}
+
+function triggerKeyboardCopy(ctx: KeyboardContext, actions: KeyboardActions): void {
+  if (ctx.whiteboardMode.value) {
+    actions.copyWhiteboard()
+  } else {
+    actions.copyScreen()
+  }
+}
+
 export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActions) {
   return function onKeyDown(e: KeyboardEvent) {
     if (!ctx.active.value) return
+
+    trackCopyModifierKeyDown(e)
 
     // Prevent Alt key from triggering system menu focus
     if (e.key === 'Alt') {
@@ -51,7 +93,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
 
     // Quick color palette mode
     if (ctx.showQuickColors.value) {
-      if (modDown(e) && !e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+      if (shouldTriggerKeyboardCopy(e, ctx)) {
         e.preventDefault()
         actions.copyScreen()
       } else if (e.key === 'Escape') {
@@ -141,14 +183,10 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Copy whiteboard / screen
-    if (modDown(e) && !e.shiftKey && (e.key === 'c' || e.key === 'C')) {
+    // Copy whiteboard / screen — requires setting enabled + physical modifier press (issue #22)
+    if (shouldTriggerKeyboardCopy(e, ctx)) {
       e.preventDefault()
-      if (ctx.whiteboardMode.value) {
-        actions.copyWhiteboard()
-      } else {
-        actions.copyScreen()
-      }
+      triggerKeyboardCopy(ctx, actions)
       return
     }
 

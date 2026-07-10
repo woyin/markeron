@@ -46,6 +46,7 @@ const props = defineProps<{
   preserveDrawings: boolean
   whiteboardPreserveDrawings: boolean
   autoStartEnabled: boolean
+  keyboardCopyEnabled: boolean
   angleSnapStep: 15 | 30 | 45
 }>()
 
@@ -56,6 +57,7 @@ const emit = defineEmits<{
   'update:preserveDrawings': [value: boolean]
   'update:whiteboardPreserveDrawings': [value: boolean]
   'update:autoStartEnabled': [value: boolean]
+  'update:keyboardCopyEnabled': [value: boolean]
   'update:angleSnapStep': [value: 15 | 30 | 45]
 }>()
 
@@ -219,6 +221,26 @@ async function toggleWhiteboardPreserveDrawings() {
   }
 }
 
+async function toggleKeyboardCopyEnabled() {
+  const newValue = !props.keyboardCopyEnabled
+  emit('update:keyboardCopyEnabled', newValue)
+  try {
+    const cfg = await invoke<AppConfig>('get_config')
+    if (!cfg.general)
+      cfg.general = {
+        dragMode: props.dragMode,
+        preserveDrawings: false,
+        whiteboardPreserveDrawings: true,
+        angleSnapStep: props.angleSnapStep,
+        keyboardCopyEnabled: newValue,
+      }
+    cfg.general.keyboardCopyEnabled = newValue
+    await invoke('save_general', { general: cfg.general })
+  } catch (error) {
+    console.error('Failed to save keyboard copy setting:', error)
+  }
+}
+
 async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
   if (step === props.angleSnapStep) return
   emit('update:angleSnapStep', step)
@@ -316,6 +338,28 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             />
           </button>
         </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-row">
+          <span class="text-[12.5px] settings-text-label">{{
+            t('settings.keyboardCopyEnabled', { modKey: modKeyLabel })
+          }}</span>
+          <button
+            role="switch"
+            :aria-checked="keyboardCopyEnabled"
+            :aria-label="t('settings.keyboardCopyEnabled', { modKey: modKeyLabel })"
+            class="relative w-8 h-4.5 rounded-full transition-colors duration-200 cursor-pointer border-none p-0 outline-none shadow-inner"
+            :class="keyboardCopyEnabled ? 'settings-toggle-on' : 'settings-toggle-off'"
+            @click="toggleKeyboardCopyEnabled"
+          >
+            <span
+              class="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-md transition-transform duration-200"
+              :class="keyboardCopyEnabled ? 'translate-x-[14px]' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+        <p class="settings-card-desc">{{ t('settings.keyboardCopyEnabledDesc') }}</p>
       </div>
 
       <div class="settings-card">
