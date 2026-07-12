@@ -4,12 +4,12 @@ mod config;
 mod diagnostics;
 mod error;
 mod i18n;
+#[cfg(target_os = "linux")]
+mod linux_cursor;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "macos")]
 mod macos_cursor;
-#[cfg(target_os = "linux")]
-mod linux_cursor;
 mod monitor;
 mod overlay;
 mod shortcuts;

@@ -7,7 +7,11 @@ use tracing::warn;
 ///
 /// tao 0.35.x unwraps an X11-only `GdkWindow` when enabling passthrough; on Wayland that
 /// handle is `None` and the process aborts (markeron #31).
-pub(crate) fn should_skip_ignore_cursor_events(ignore: bool, wayland_display: bool, forced_x11: bool) -> bool {
+pub(crate) fn should_skip_ignore_cursor_events(
+    ignore: bool,
+    wayland_display: bool,
+    forced_x11: bool,
+) -> bool {
     if !ignore {
         return false;
     }
