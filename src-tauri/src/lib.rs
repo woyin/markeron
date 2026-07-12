@@ -8,6 +8,8 @@ mod i18n;
 mod macos;
 #[cfg(target_os = "macos")]
 mod macos_cursor;
+#[cfg(target_os = "linux")]
+mod linux_cursor;
 mod monitor;
 mod overlay;
 mod shortcuts;

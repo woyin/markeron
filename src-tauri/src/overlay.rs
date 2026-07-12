@@ -1,10 +1,20 @@
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 use tracing::{info, warn};
 
 use crate::config::{lock_or_recover, AppState, ToolbarVisibility};
 use crate::diagnostics::log_backend_event;
 use crate::monitor;
 use std::time::{Duration, Instant};
+
+#[cfg(not(target_os = "linux"))]
+fn set_ignore_cursor_events(window: &WebviewWindow, ignore: bool) {
+    window.set_ignore_cursor_events(ignore).ok();
+}
+
+#[cfg(target_os = "linux")]
+fn set_ignore_cursor_events(window: &WebviewWindow, ignore: bool) {
+    crate::linux_cursor::set_ignore_cursor_events(window, ignore);
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OverlayMode {
@@ -142,7 +152,7 @@ pub fn setup_overlay_size(app: &AppHandle) {
                     .ok();
             }
         }
-        window.set_ignore_cursor_events(true).ok();
+        set_ignore_cursor_events(&window, true);
     }
 }
 
@@ -204,7 +214,7 @@ fn create_toolbar_window(app: &AppHandle) {
             #[cfg(target_os = "macos")]
             crate::macos::configure_toolbar_window(&window);
             window.set_always_on_top(true).ok();
-            window.set_ignore_cursor_events(false).ok();
+            set_ignore_cursor_events(&window, false);
         }
         Err(e) => warn!("Failed to create toolbar window: {}", e),
     }
@@ -262,7 +272,7 @@ pub fn set_toolbar_window_visible(app: &AppHandle, visible: bool) {
         if visible {
             window.show().ok();
             window.set_always_on_top(true).ok();
-            window.set_ignore_cursor_events(false).ok();
+            set_ignore_cursor_events(&window, false);
             raise_toolbar_above_overlay(app);
         } else {
             window.hide().ok();
@@ -385,7 +395,7 @@ pub fn deactivate_drawing(app: &AppHandle, state: &AppState) {
     *lock_or_recover(&state.whiteboard_mode) = false;
 
     if let Some(window) = app.get_webview_window("overlay") {
-        window.set_ignore_cursor_events(true).ok();
+        set_ignore_cursor_events(&window, true);
         window.hide().ok();
     }
     hide_toolbar_window(app);
@@ -406,7 +416,7 @@ pub fn activate_drawing(app: &AppHandle, state: &AppState) {
             }
         }
         window.show().ok();
-        window.set_ignore_cursor_events(false).ok();
+        set_ignore_cursor_events(&window, false);
         window.set_always_on_top(true).ok();
         notify_overlay_geometry_changed(app);
     }
@@ -466,7 +476,7 @@ pub fn set_overlay_ignore_cursor_events(app: &AppHandle, state: &AppState, ignor
         return;
     }
     if let Some(window) = app.get_webview_window("overlay") {
-        window.set_ignore_cursor_events(ignore).ok();
+        set_ignore_cursor_events(&window, ignore);
     }
     if ignore {
         raise_toolbar_above_overlay(app);
@@ -484,7 +494,7 @@ pub fn enter_penetration_mode(app: &AppHandle, state: &AppState) {
     set_mode(state, OverlayMode::Penetration);
 
     if let Some(window) = app.get_webview_window("overlay") {
-        window.set_ignore_cursor_events(true).ok();
+        set_ignore_cursor_events(&window, true);
     }
 
     monitor::suspend_drawing_cursor_clip();
@@ -503,7 +513,7 @@ pub fn exit_penetration_mode(app: &AppHandle, state: &AppState) {
     set_mode(state, OverlayMode::Drawing);
 
     if let Some(window) = app.get_webview_window("overlay") {
-        window.set_ignore_cursor_events(false).ok();
+        set_ignore_cursor_events(&window, false);
         window.set_always_on_top(true).ok();
         window.set_focus().ok();
     }
