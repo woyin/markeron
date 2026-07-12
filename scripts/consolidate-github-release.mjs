@@ -64,9 +64,15 @@ function listReleasesForTag(tagName) {
     .map((line) => JSON.parse(line))
 }
 
+function assetDownloadUrl(asset) {
+  // Draft releases expose browser_download_url with untagged-* slugs that 404.
+  // The API asset URL works with GITHUB_TOKEN + Accept: application/octet-stream.
+  return asset.url || asset.browser_download_url
+}
+
 async function downloadAsset(asset, dest) {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
-  const url = asset.browser_download_url || asset.url
+  const url = assetDownloadUrl(asset)
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}`, Accept: 'application/octet-stream' } : {},
     redirect: 'follow',
