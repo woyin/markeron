@@ -68,6 +68,24 @@ fn focus_settings_window(app: &AppHandle, tab: Option<&str>) {
     }
 }
 
+/// Second launch while the app is already running (desktop icon / pinned taskbar /
+/// opening the .app again on macOS). Match tray left-click: toggle annotation.
+///
+/// Previously this only focused the settings window, which no-ops when settings
+/// was never opened — so relaunch appeared to do nothing. `toggle_drawing` is the
+/// same path as the tray and global shortcut; safe on macOS Accessory policy.
+fn on_second_instance(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    log_backend_event(
+        &state,
+        "session",
+        "toggle drawing requested",
+        Some(serde_json::json!({ "reason": "second-instance" })),
+        "info",
+    );
+    toggle_drawing(app);
+}
+
 /// Called from the settings webview after it mounts (window starts hidden to avoid white flash).
 pub fn reveal_settings_window(app: &AppHandle) {
     focus_settings_window(app, None);
@@ -110,7 +128,7 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            focus_settings_window(app, None);
+            on_second_instance(app);
         }))
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,

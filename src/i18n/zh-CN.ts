@@ -152,7 +152,8 @@ export default {
   },
   help: {
     basicUsage: '基本用法',
-    basicDesc1: '启动后应用静默运行在<strong class="text-white/70">系统托盘</strong>，按下全局快捷键即可进入标注模式。',
+    basicDesc1:
+      '启动后应用静默运行在<strong class="text-white/70">系统托盘</strong>，按下全局快捷键即可进入标注模式。应用已在后台时，再次从桌面图标或任务栏启动会切换标注（与点击托盘图标相同）。',
     basicDesc2:
       '标注覆盖全屏（含任务栏）。按 <kbd class="help-kbd">Esc</kbd> 退出标注；按 <kbd class="help-kbd">Ctrl+Shift+X</kbd> 或 <kbd class="help-kbd">X</kbd> 切换穿透模式。默认清除内容，可在「常规 → 白板与内容」中开启退出后保留。',
     globalShortcuts: '全局快捷键',

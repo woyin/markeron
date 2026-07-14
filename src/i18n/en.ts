@@ -155,7 +155,7 @@ export default {
   help: {
     basicUsage: 'Basic Usage',
     basicDesc1:
-      'After launching, the app runs silently in the <strong class="text-white/70">system tray</strong>. Press the global shortcut to enter annotation mode.',
+      'After launching, the app runs silently in the <strong class="text-white/70">system tray</strong>. Press the global shortcut to enter annotation mode. Launching MarkerOn again (desktop icon / taskbar) while it is already running toggles annotation — same as the tray icon.',
     basicDesc2:
       'Annotations cover the full screen (including taskbar). Press <kbd class="help-kbd">Esc</kbd> to exit; use <kbd class="help-kbd">Ctrl+Shift+X</kbd> or <kbd class="help-kbd">X</kbd> to toggle click-through mode. Drawings are cleared by default — enable **Keep after exit** under General → Whiteboard & content to resume later.',
     globalShortcuts: 'Global Shortcuts',
