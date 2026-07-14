@@ -24,7 +24,6 @@ export interface KeyboardContext {
   currentTool: Ref<Tool>
   whiteboardMode: Ref<boolean>
   isDrawing: Ref<boolean>
-  keyboardCopyEnabled: Ref<boolean>
   lastPointerX: () => number
   lastPointerY: () => number
   mousePos: Ref<{ x: number; y: number }>
@@ -89,7 +88,6 @@ export function isPointerGestureActive(): boolean {
 }
 
 function shouldTriggerKeyboardCopy(e: KeyboardEvent, ctx: KeyboardContext): boolean {
-  if (!ctx.keyboardCopyEnabled.value) return false
   if (ctx.isDrawing.value || pointerGestureActive) return false
   if (!modDown(e) || e.shiftKey) return false
   if (e.key !== 'c' && e.key !== 'C') return false
@@ -207,7 +205,7 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Copy: setting on + idle pointer + physical Mod keydown before C (issue #22)
+    // Copy: idle pointer + physical Mod keydown before C (issue #22)
     if (shouldTriggerKeyboardCopy(e, ctx)) {
       e.preventDefault()
       triggerKeyboardCopy(ctx, actions)

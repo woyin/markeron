@@ -20,7 +20,6 @@ export interface AppConfig {
     defaultEntryMode?: DefaultEntryMode
     eraserMode?: EraserMode
     autoStart?: boolean
-    keyboardCopyEnabled?: boolean
   }
 }
 

@@ -33,17 +33,6 @@ fn default_auto_start() -> bool {
     true
 }
 
-fn default_keyboard_copy_enabled() -> bool {
-    #[cfg(target_os = "macos")]
-    {
-        false
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        true
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DragMode {
     #[serde(rename = "off")]
@@ -106,11 +95,6 @@ pub struct GeneralConfig {
     pub eraser_mode: EraserMode,
     #[serde(default = "default_auto_start", rename = "autoStart")]
     pub auto_start: bool,
-    #[serde(
-        default = "default_keyboard_copy_enabled",
-        rename = "keyboardCopyEnabled"
-    )]
-    pub keyboard_copy_enabled: bool,
 }
 
 impl Default for GeneralConfig {
@@ -127,7 +111,6 @@ impl Default for GeneralConfig {
             default_entry_mode: DefaultEntryMode::Screen,
             eraser_mode: EraserMode::Stroke,
             auto_start: default_auto_start(),
-            keyboard_copy_enabled: default_keyboard_copy_enabled(),
         }
     }
 }

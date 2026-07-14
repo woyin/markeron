@@ -44,7 +44,6 @@ import { logDiagnostic, logSessionEvent, logActionEvent } from '../utils/diagnos
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { toolbarPopupScreenPosition } from '../utils/toolbarPosition'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
-import { resolveKeyboardCopyEnabled } from '../utils/keyboardCopy'
 import { useI18n } from '../i18n'
 
 const { t } = useI18n()
@@ -412,7 +411,6 @@ const dragMode = ref<DragMode>('off')
 const pointerModDown = ref(false)
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
-const keyboardCopyEnabled = ref(resolveKeyboardCopyEnabled())
 let hoverRafId: number | null = null
 let isDragging = false
 let dragStartX = 0
@@ -1021,7 +1019,6 @@ const onKeyDown = createKeyDownHandler(
     currentTool,
     whiteboardMode,
     isDrawing,
-    keyboardCopyEnabled,
     lastPointerX: () => lastPointerX,
     lastPointerY: () => lastPointerY,
     mousePos,
@@ -1352,7 +1349,6 @@ onMounted(async () => {
     applyEraserModeFromConfig(cfg.general)
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
     whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
-    keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(cfg.general)
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
   } catch (error) {
     console.error('Failed to get initial config:', error)
@@ -1367,7 +1363,6 @@ onMounted(async () => {
       applyEraserModeFromConfig(event.payload.general)
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
-      keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(event.payload.general)
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
     }),
   )

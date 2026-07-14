@@ -21,7 +21,6 @@ function createContext(overrides: Partial<KeyboardContext> = {}): KeyboardContex
     currentTool: ref<Tool>('pen'),
     whiteboardMode: ref(false),
     isDrawing: ref(false),
-    keyboardCopyEnabled: ref(true),
     lastPointerX: () => 200,
     lastPointerY: () => 200,
     mousePos: ref({ x: 0, y: 0 }),
@@ -249,12 +248,6 @@ describe('useOverlayKeyboard', () => {
       ctx.showToolbarPopup.value = true
       copyChord(handler)
       expect(actions.calls.copyScreen).toHaveLength(1)
-    })
-
-    it('does not copy when keyboard copy setting is disabled', () => {
-      ctx.keyboardCopyEnabled.value = false
-      copyChord(handler)
-      expect(actions.calls.copyScreen).toHaveLength(0)
     })
 
     it('does not copy during pointer gesture even if modifier was pressed before', () => {

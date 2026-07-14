@@ -7,7 +7,6 @@ import { resolveDragMode, type DragMode } from '../utils/dragMode'
 import { resolveDefaultEntryMode, type DefaultEntryMode } from '../utils/entryMode'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
 import { resolveAutoStart } from '../utils/autoStart'
-import { resolveKeyboardCopyEnabled } from '../utils/keyboardCopy'
 import { isMacOS } from '../utils/platform'
 import { useI18n, syncLocaleFromConfig } from '../i18n'
 import GeneralTab from './settings/GeneralTab.vue'
@@ -193,7 +192,6 @@ const defaultEntryMode = ref<DefaultEntryMode>('screen')
 const eraserMode = ref<EraserMode>('stroke')
 const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
-const keyboardCopyEnabled = ref(resolveKeyboardCopyEnabled())
 const angleSnapStep = ref<15 | 30 | 45>(15)
 
 let unlistenSwitchTab: (() => void) | null = null
@@ -209,7 +207,6 @@ onMounted(async () => {
   whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
   angleSnapStep.value = (cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15
   autoStartEnabled.value = resolveAutoStart(cfg.general)
-  keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(cfg.general)
   syncLocaleFromConfig(cfg.general?.locale)
   window.addEventListener('keydown', onKeyDown, true)
 
@@ -219,7 +216,6 @@ onMounted(async () => {
 
   unlistenConfigChanged = await listen<AppConfig>('config-changed', (event) => {
     autoStartEnabled.value = resolveAutoStart(event.payload.general)
-    keyboardCopyEnabled.value = resolveKeyboardCopyEnabled(event.payload.general)
   })
 })
 
@@ -438,7 +434,6 @@ onUnmounted(() => {
         :preserve-drawings="preserveDrawings"
         :whiteboard-preserve-drawings="whiteboardPreserveDrawings"
         :auto-start-enabled="autoStartEnabled"
-        :keyboard-copy-enabled="keyboardCopyEnabled"
         :angle-snap-step="angleSnapStep"
         @update:drag-mode="dragMode = $event"
         @update:default-entry-mode="defaultEntryMode = $event"
@@ -446,7 +441,6 @@ onUnmounted(() => {
         @update:preserve-drawings="preserveDrawings = $event"
         @update:whiteboard-preserve-drawings="whiteboardPreserveDrawings = $event"
         @update:auto-start-enabled="autoStartEnabled = $event"
-        @update:keyboard-copy-enabled="keyboardCopyEnabled = $event"
         @update:angle-snap-step="angleSnapStep = $event"
       />
 

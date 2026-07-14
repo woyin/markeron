@@ -133,9 +133,6 @@ export default {
     eraserModeObject: 'Object',
     eraserModeDesc:
       'Stroke: erase pixels along the drag path (undoable). Object: delete entire shapes or text when you pass over them (undoable). Element dragging is disabled while the eraser is selected, even with hover drag on.',
-    keyboardCopyEnabled: 'Allow {modKey}+C copy in annotation',
-    keyboardCopyEnabledDesc:
-      'When off, screen and whiteboard copy via keyboard shortcut is disabled during annotation — use the toolbar Copy button instead. On macOS, some trackpads and tablets may spuriously trigger copy after pen-up; keeping this off is recommended.',
   },
   toolbar: {
     undo: 'Undo',
