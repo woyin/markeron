@@ -71,7 +71,18 @@ describe('useI18n', () => {
       const { locale, t } = useI18n()
       locale.locale = 'en'
       const result = t('settings.shortcutsConflict', { keys: 'Ctrl+A' })
-      expect(result).toBe('These shortcuts are occupied: Ctrl+A')
+      expect(result).toBe('These shortcuts conflict or are invalid: Ctrl+A')
+    })
+
+    it('formats soft-fail registration warning', () => {
+      const { locale, t } = useI18n()
+      locale.locale = 'en'
+      expect(t('settings.shortcutsSavedPartial', { keys: 'Clear: Ctrl+C' })).toBe(
+        'Saved, but could not register: Clear: Ctrl+C',
+      )
+      locale.locale = 'zh-CN'
+      expect(t('settings.shortcutNotSet')).toBe('未设置')
+      expect(t('settings.shortcutsSavedPartial', { keys: '清除标注: Ctrl+C' })).toContain('已保存')
     })
 
     it('replaces {mod} placeholder in comboRequirement', () => {

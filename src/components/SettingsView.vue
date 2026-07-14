@@ -92,6 +92,16 @@ function onKeyDown(e: KeyboardEvent) {
     return
   }
 
+  // Backspace / Delete with no modifiers clears (unbinds) the shortcut.
+  if ((e.key === 'Backspace' || e.key === 'Delete') && !hasMod) {
+    const action = capturing.value
+    shortcuts[action] = ''
+    capturing.value = null
+    capturedKeys.value = ''
+    void saveShortcuts()
+    return
+  }
+
   const parts: string[] = []
   if (e.ctrlKey) parts.push('Ctrl')
   if (e.altKey) parts.push('Alt')
@@ -115,7 +125,7 @@ function onKeyDown(e: KeyboardEvent) {
   capturedKeys.value = result
   shortcuts[capturing.value] = result
   capturing.value = null
-  saveShortcuts()
+  void saveShortcuts()
 }
 
 async function saveShortcuts() {
@@ -124,7 +134,14 @@ async function saveShortcuts() {
   try {
     const res = await invoke<SaveResult>('save_shortcuts', { shortcuts: { ...shortcuts } })
     if (res.ok) {
-      message.value = { type: 'success', text: t('settings.shortcutsSaved') }
+      if (res.failed?.length) {
+        message.value = {
+          type: 'success',
+          text: t('settings.shortcutsSavedPartial', { keys: res.failed.join(', ') }),
+        }
+      } else {
+        message.value = { type: 'success', text: t('settings.shortcutsSaved') }
+      }
     } else {
       message.value = {
         type: 'error',
@@ -156,7 +173,14 @@ async function resetDefaults() {
     shortcuts.toggleDrawing = d.toggleDrawing
     shortcuts.clearDrawing = d.clearDrawing
     shortcuts.togglePenetration = d.togglePenetration
-    message.value = { type: 'success', text: t('settings.restoredDefaults') }
+    if (res.failed?.length) {
+      message.value = {
+        type: 'success',
+        text: t('settings.shortcutsSavedPartial', { keys: res.failed.join(', ') }),
+      }
+    } else {
+      message.value = { type: 'success', text: t('settings.restoredDefaults') }
+    }
     setTimeout(() => {
       message.value = null
     }, 3000)
@@ -365,9 +389,12 @@ onUnmounted(() => {
                 </button>
               </template>
               <template v-else>
-                <kbd class="ui-kbd--shortcut">
+                <kbd v-if="shortcuts[action]" class="ui-kbd--shortcut">
                   {{ shortcuts[action] }}
                 </kbd>
+                <span v-else class="text-[12px] settings-text-muted min-w-[90px] text-right">
+                  {{ t('settings.shortcutNotSet') }}
+                </span>
                 <button
                   class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn-strong text-[11px] cursor-pointer shadow-sm"
                   @click="startCapture(action)"

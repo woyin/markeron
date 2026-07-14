@@ -17,12 +17,36 @@ fn duplicate_shortcut_errors(shortcuts: &Shortcuts) -> Vec<String> {
     let mut failed = Vec::new();
     for i in 0..actions.len() {
         for j in (i + 1)..actions.len() {
+            // Empty = unbound; multiple unbound shortcuts are allowed.
+            if actions[i].1.is_empty() || actions[j].1.is_empty() {
+                continue;
+            }
             if actions[i].1 == actions[j].1 {
                 failed.push(format!(
                     "Duplicate shortcut: {} and {}",
                     actions[i].0, actions[j].0
                 ));
             }
+        }
+    }
+    failed
+}
+
+/// Non-empty accel that fails to parse is a hard validation error.
+fn invalid_shortcut_errors(shortcuts: &Shortcuts) -> Vec<String> {
+    let s = crate::i18n::strings();
+    let actions = [
+        (s.toggle_drawing, shortcuts.toggle_drawing.as_str()),
+        (s.clear_drawing, shortcuts.clear_drawing.as_str()),
+        (s.toggle_penetration, shortcuts.toggle_penetration.as_str()),
+    ];
+    let mut failed = Vec::new();
+    for (label, accel) in actions {
+        if accel.is_empty() {
+            continue;
+        }
+        if parse_shortcut(accel).is_none() {
+            failed.push(format!("{}: {}", label, accel));
         }
     }
     failed
@@ -67,8 +91,16 @@ pub fn save_shortcuts(
     state: tauri::State<'_, AppState>,
     shortcuts: Shortcuts,
 ) -> SaveResult {
-    let old_config = lock_or_recover(&state.config).clone();
-    let mut failed = Vec::new();
+    // Hard validation: invalid format or in-app duplicates block the whole save.
+    let mut hard_failed = invalid_shortcut_errors(&shortcuts);
+    hard_failed.extend(duplicate_shortcut_errors(&shortcuts));
+
+    if !hard_failed.is_empty() {
+        return SaveResult {
+            ok: false,
+            failed: Some(hard_failed),
+        };
+    }
 
     app.global_shortcut().unregister_all().ok();
 
@@ -79,38 +111,18 @@ pub fn save_shortcuts(
         (s.toggle_penetration, &shortcuts.toggle_penetration),
     ];
 
+    // Soft validation: OS/other-app occupation — still persist config so one
+    // occupied binding cannot block changing or clearing the others.
+    let mut warnings = Vec::new();
     for (label, accel) in &actions {
-        if parse_shortcut(accel).is_none() {
-            failed.push(format!("{}: {}", label, accel));
+        if accel.is_empty() {
+            continue;
         }
-    }
-
-    failed.extend(duplicate_shortcut_errors(&shortcuts));
-
-    if !failed.is_empty() {
-        *lock_or_recover(&state.config) = old_config;
-        register_shortcuts(&app);
-        return SaveResult {
-            ok: false,
-            failed: Some(failed),
-        };
-    }
-
-    for (label, accel) in &actions {
         if let Some(shortcut) = parse_shortcut(accel) {
             if app.global_shortcut().register(shortcut).is_err() {
-                failed.push(format!("{}: {}", label, accel));
+                warnings.push(format!("{}: {}", label, accel));
             }
         }
-    }
-
-    if !failed.is_empty() {
-        *lock_or_recover(&state.config) = old_config;
-        register_shortcuts(&app);
-        return SaveResult {
-            ok: false,
-            failed: Some(failed),
-        };
     }
 
     {
@@ -118,12 +130,24 @@ pub fn save_shortcuts(
         cfg.shortcuts = shortcuts;
         crate::config::save_config(&app, &cfg);
     }
+    // Re-bind from saved config (skips empty / logs OS failures).
     register_shortcuts(&app);
 
-    info!("Shortcuts saved successfully");
-    SaveResult {
-        ok: true,
-        failed: None,
+    if warnings.is_empty() {
+        info!("Shortcuts saved successfully");
+        SaveResult {
+            ok: true,
+            failed: None,
+        }
+    } else {
+        warn!(
+            "Shortcuts saved with OS registration warnings: {:?}",
+            warnings
+        );
+        SaveResult {
+            ok: true,
+            failed: Some(warnings),
+        }
     }
 }
 
@@ -273,6 +297,30 @@ mod tests {
         let errors = duplicate_shortcut_errors(&shortcuts);
         assert_eq!(errors.len(), 1);
         assert!(errors[0].contains("Duplicate shortcut"));
+    }
+
+    #[test]
+    fn duplicate_shortcut_errors_ignores_empty_bindings() {
+        let mut shortcuts = default_shortcuts();
+        shortcuts.clear_drawing = String::new();
+        shortcuts.toggle_penetration = String::new();
+        assert!(duplicate_shortcut_errors(&shortcuts).is_empty());
+    }
+
+    #[test]
+    fn invalid_shortcut_errors_allows_empty() {
+        let mut shortcuts = default_shortcuts();
+        shortcuts.clear_drawing = String::new();
+        assert!(invalid_shortcut_errors(&shortcuts).is_empty());
+    }
+
+    #[test]
+    fn invalid_shortcut_errors_rejects_garbage() {
+        let mut shortcuts = default_shortcuts();
+        shortcuts.clear_drawing = "NotAKey".into();
+        let errors = invalid_shortcut_errors(&shortcuts);
+        assert_eq!(errors.len(), 1);
+        assert!(errors[0].contains("NotAKey"));
     }
 
     #[test]
