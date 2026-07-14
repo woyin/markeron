@@ -1686,7 +1686,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
           opacity="0.8"
         ></path>
       </svg>
-      <!-- Eraser: dashed circle + crosshair -->
+      <!-- Eraser: dashed circle + crosshair (dark halo under white for light/dark pages) -->
       <svg
         v-else-if="currentTool === 'eraser'"
         :width="eraserCursorDiameter"
@@ -1694,6 +1694,16 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
         xmlns="http://www.w3.org/2000/svg"
         style="display: block; overflow: visible"
       >
+        <circle
+          :cx="eraserCursorRadius"
+          :cy="eraserCursorRadius"
+          :r="Math.max(2, eraserCursorRadius - 2)"
+          fill="none"
+          stroke="black"
+          stroke-opacity="0.55"
+          stroke-width="3"
+          stroke-dasharray="3 2"
+        />
         <circle
           :cx="eraserCursorRadius"
           :cy="eraserCursorRadius"
@@ -1708,8 +1718,29 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
           :y1="eraserCursorRadius - 4"
           :x2="eraserCursorRadius"
           :y2="eraserCursorRadius + 4"
+          stroke="black"
+          stroke-opacity="0.55"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+        <line
+          :x1="eraserCursorRadius - 4"
+          :y1="eraserCursorRadius"
+          :x2="eraserCursorRadius + 4"
+          :y2="eraserCursorRadius"
+          stroke="black"
+          stroke-opacity="0.55"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+        <line
+          :x1="eraserCursorRadius"
+          :y1="eraserCursorRadius - 4"
+          :x2="eraserCursorRadius"
+          :y2="eraserCursorRadius + 4"
           stroke="white"
           stroke-width="1"
+          stroke-linecap="round"
         />
         <line
           :x1="eraserCursorRadius - 4"
@@ -1718,6 +1749,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
           :y2="eraserCursorRadius"
           stroke="white"
           stroke-width="1"
+          stroke-linecap="round"
         />
       </svg>
       <!-- Arrow/Rectangle/Ellipse/Line: colored crosshair -->
