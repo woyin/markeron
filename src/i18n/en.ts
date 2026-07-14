@@ -211,7 +211,8 @@ export default {
       'Choose how to move existing elements in General settings: off, hover to drag, or hold Ctrl/Command to drag. Dragging is disabled while the eraser tool is selected.',
     editTextDesc:
       'Double-click existing text to re-edit; in <kbd class="help-kbd">T</kbd> mode, double-click empty area to create new text.',
-    confirmTextDesc: '<kbd class="help-kbd">Ctrl+Enter</kbd> (macOS: <kbd class="help-kbd">⌘+Return</kbd>).',
+    confirmTextDesc:
+      '<kbd class="help-kbd">Ctrl+Enter</kbd> (macOS: <kbd class="help-kbd">⌘+Return</kbd>), or double right-click.',
     dragElement: 'Drag elements',
     editText: 'Edit text',
     confirmText: 'Confirm text',

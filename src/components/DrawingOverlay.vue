@@ -28,6 +28,12 @@ import type { AppConfig } from '../types/app'
 import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth } from '../constants/tools'
 import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
+import {
+  EMPTY_TEXT_RMB_CLICK,
+  TEXT_RMB_DOUBLE_MS,
+  noteTextRmbClick,
+  type TextRmbClickState,
+} from '../utils/textRmbDoubleClick'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS, MAC_HIDDEN_CURSOR, setMacOverlaySystemCursorHidden } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
@@ -119,6 +125,38 @@ const toolTipWidth = tooltip.width
 const showQuickColors = ref(false)
 const quickColorsPos = ref({ x: 0, y: 0 })
 
+/** Double right-click while editing text commits (issue #32). */
+let textRmbClick: TextRmbClickState = { ...EMPTY_TEXT_RMB_CLICK }
+/** Swallow trailing contextmenu after text confirm so the palette does not open. */
+let suppressQuickColorsUntil = 0
+
+function resetTextRmbDoubleClick() {
+  textRmbClick = { ...EMPTY_TEXT_RMB_CLICK }
+}
+
+/**
+ * While a text box is open: first RMB arms a timer; second nearby RMB commits.
+ * Returns true when the event was handled for text editing (do not open quick colors).
+ */
+function handleTextBoxContextMenu(e: MouseEvent): boolean {
+  if (performance.now() < suppressQuickColorsUntil) return true
+  if (!active.value || penetrationMode.value || !textBoxPos.value) return false
+  // macOS maps Control+click to right-click; skip after a Control+drag.
+  if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return true
+
+  const { isDouble, next } = noteTextRmbClick(textRmbClick, e.clientX, e.clientY, performance.now())
+  textRmbClick = next
+  if (!isDouble) return true
+
+  hideToolbarPopupForCanvasInteraction()
+  showQuickColors.value = false
+  commitCurrentTextBox(false)
+  // Double-RMB often delivers an extra contextmenu after the box is gone; block palette briefly.
+  suppressQuickColorsUntil = performance.now() + TEXT_RMB_DOUBLE_MS + 150
+  logActionEvent('text committed', { reason: 'double-right-click' })
+  return true
+}
+
 const quickColorList = COLOR_PALETTE
 
 function cycleColor(direction: number) {
@@ -130,7 +168,9 @@ function cycleColor(direction: number) {
 
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
-  if (!active.value || penetrationMode.value || textBoxPos.value || isDrawing.value) return
+  if (handleTextBoxContextMenu(e)) return
+  if (performance.now() < suppressQuickColorsUntil) return
+  if (!active.value || penetrationMode.value || isDrawing.value) return
   if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
   hideToolbarPopupForCanvasInteraction()
   quickColorsPos.value = { x: e.clientX, y: e.clientY }
@@ -668,6 +708,7 @@ function commitCurrentTextBox(cancel = false) {
     }
     textBoxPos.value = null
     editingOriginalAction.value = null
+    resetTextRmbDoubleClick()
   }
 }
 
@@ -1814,6 +1855,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
       :text-outline="activeTextBoxOutline"
       @commit="onTextCommit"
       @cancel="onTextCancel"
+      @context-menu="onContextMenu"
     />
 
     <Transition name="tooltip-fade">
@@ -1842,7 +1884,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
         v-if="active && showQuickColors && !hideUiForCapture"
         class="fixed inset-0 z-100002"
         @mousedown.self="showQuickColors = false"
-        @contextmenu.prevent="showQuickColors = false"
+        @contextmenu.prevent
       >
         <div
           class="overlay-panel-surface overlay-panel overlay-panel--compact absolute p-2.5"

@@ -208,7 +208,8 @@ export default {
     dragDesc:
       '在「常规」设置中选择元素拖拽方式：关闭、悬停拖动，或按住 Ctrl/Command 才拖动。选中橡皮擦工具时不触发拖拽。',
     editTextDesc: '双击已有文字重新进入编辑模式；<kbd class="help-kbd">T</kbd> 模式下双击空白处新建文字。',
-    confirmTextDesc: '<kbd class="help-kbd">Ctrl+Enter</kbd>（macOS 为 <kbd class="help-kbd">⌘+Return</kbd>）。',
+    confirmTextDesc:
+      '<kbd class="help-kbd">Ctrl+Enter</kbd>（macOS 为 <kbd class="help-kbd">⌘+Return</kbd>），或双击鼠标右键。',
     dragElement: '拖拽元素',
     editText: '编辑文字',
     confirmText: '确认文字',

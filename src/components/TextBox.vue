@@ -19,6 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   commit: [text: string, x: number, y: number, width: number, fontSize: number]
   cancel: []
+  contextMenu: [event: MouseEvent]
 }>()
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -123,6 +124,12 @@ function onKeyDown(e: KeyboardEvent) {
   }
 }
 
+function onContextMenu(e: MouseEvent) {
+  e.preventDefault()
+  e.stopPropagation()
+  emit('contextMenu', e)
+}
+
 function onWheel(e: WheelEvent) {
   e.preventDefault()
   e.stopPropagation()
@@ -184,6 +191,7 @@ defineExpose({ commitText, getText, getFontSize })
     @input="onInput"
     @compositionend="onCompositionEnd"
     @mousedown.stop
+    @contextmenu="onContextMenu"
     @wheel="onWheel"
   />
 </template>
