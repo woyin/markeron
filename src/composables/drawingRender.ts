@@ -218,8 +218,8 @@ export function drawLaserTrail(
 ) {
   if (points.length === 0) return
 
-  // Radius — Excalidraw defaults to 2; scale with toolbar width for presence.
-  const size = Math.max(2.5, lineWidth * 0.95)
+  // LaserPointer `size` is radius. Map toolbar presets [1,2,3,5,8] ≈ pen stroke diameter.
+  const size = Math.max(0.6, lineWidth / 2)
 
   const stroke = new LaserPointer({
     size,
@@ -246,8 +246,8 @@ export function drawLaserTrail(
   ctx.strokeStyle = color
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  // Sub-pixel stroke softens polygon edges on 1x DPR screens (fill-only looks staircased).
-  ctx.lineWidth = Math.max(0.75, size * 0.35)
+  // Hairline only — keep it thin so AA stroke does not inflate the beam.
+  ctx.lineWidth = Math.min(0.85, Math.max(0.4, size * 0.3))
   ctx.beginPath()
   ctx.moveTo(outline[0][0], outline[0][1])
   for (let i = 1; i < outline.length; i++) {
