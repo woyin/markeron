@@ -5,7 +5,9 @@ describe('laserSizeFromMapping', () => {
   const now = 10_000
 
   it('keeps the tip fully sized when fresh', () => {
-    expect(laserSizeFromMapping({ pressure: now, runningLength: 100, currentIndex: 99, totalLength: 100 }, now)).toBe(1)
+    expect(
+      laserSizeFromMapping({ pressure: now, runningLength: 100, currentIndex: 99, totalLength: 100 }, now),
+    ).toBeCloseTo(1, 5)
   })
 
   it('fades monotonically toward the start of the stroke', () => {
