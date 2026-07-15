@@ -6,6 +6,7 @@ import {
   isLaserTrailGone,
   laserSizeFromMapping,
   pruneAgedLaserPoints,
+  smoothLaserPositions,
 } from './laser'
 
 describe('laserSizeFromMapping', () => {
@@ -49,6 +50,19 @@ describe('pruneAgedLaserPoints', () => {
     const pts = [{ t: 1000 }, { t: 2000 }, { t: 4500 }]
     const kept = pruneAgedLaserPoints(pts, now)
     expect(kept).toEqual([{ t: 4500 }])
+  })
+})
+
+describe('smoothLaserPositions', () => {
+  it('preserves timestamps while smoothing coordinates', () => {
+    const out = smoothLaserPositions([
+      { x: 0, y: 0, t: 100 },
+      { x: 100, y: 0, t: 200 },
+    ])
+    expect(out[0]).toEqual([0, 0, 100])
+    expect(out[1][0]).toBeGreaterThan(0)
+    expect(out[1][0]).toBeLessThan(100)
+    expect(out[1][2]).toBe(200)
   })
 })
 
