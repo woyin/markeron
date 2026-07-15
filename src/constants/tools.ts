@@ -11,12 +11,12 @@ export interface ToolDef {
 export const TOOL_DEFS: ToolDef[] = [
   { id: 'pen', icon: Pen, key: '1' },
   { id: 'highlighter', icon: Highlighter, key: '2' },
-  { id: 'laser', icon: Crosshair, key: '8' },
   { id: 'arrow', icon: ArrowUpRight, key: '3' },
   { id: 'rect', icon: Square, key: '4' },
   { id: 'ellipse', icon: Circle, key: '5' },
   { id: 'line', icon: Minus, key: '6' },
   { id: 'eraser', icon: Eraser, key: '7' },
+  { id: 'laser', icon: Crosshair, key: '8' },
   { id: 'text', icon: Type, key: 'T' },
 ]
 

@@ -24,8 +24,6 @@ import type { TextOutlineStyle } from '../composables/drawingTypes'
 
 const { t } = useI18n()
 
-const modKeyLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
-
 const props = defineProps<{
   pinned: boolean
   standaloneWindow?: boolean
@@ -74,7 +72,7 @@ const expanded = ref(false)
 const showFullPanel = computed(() => expanded.value)
 
 // Keep compact and expanded states the same width so the standalone toolbar never jumps sideways.
-const PANEL_WIDTH = 272
+const PANEL_WIDTH = 300
 const panelW = computed(() => PANEL_WIDTH)
 function needsWhiteCheck(ri: number, ci: number): boolean {
   return ci >= 5 || (ri === colors.length - 1 && ci >= 3)
@@ -590,13 +588,13 @@ onUnmounted(() => {
             }}</span>
             <span class="text-[10px] overlay-text-hint font-sans">{{ t('panel.toolsHint') }}</span>
           </div>
-          <div class="grid grid-cols-4 gap-1">
+          <div class="grid grid-cols-5 gap-1">
             <button
               v-for="tool in tools"
               :key="tool.id"
               :aria-label="`${tool.label} (${tool.key})`"
               :aria-pressed="currentTool === tool.id"
-              class="flex flex-col items-center gap-[3px] pt-2 px-1 pb-1.5 border-none rounded-[10px] cursor-pointer relative transition-all duration-150"
+              class="flex flex-col items-center gap-[3px] pt-2 px-0.5 pb-1.5 border-none rounded-[10px] cursor-pointer relative transition-all duration-150"
               :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
               :title="`${tool.label} (${tool.key})`"
               @click="selectTool(tool.id)"
@@ -822,52 +820,6 @@ onUnmounted(() => {
             <component :is="expanded ? ChevronUp : MoreHorizontal" :size="14" />
             {{ expanded ? t('toolbar.less') : t('toolbar.more') }}
           </button>
-        </div>
-
-        <!-- Shortcut hints (expanded panel) -->
-        <div v-if="showFullPanel" class="flex flex-col gap-1.5 pt-1 px-3.5 pb-3 ui-divider-h">
-          <div class="flex items-center justify-between text-[10.5px] font-sans">
-            <span class="flex items-center gap-1.5 overlay-text-body">
-              <kbd class="ui-kbd">{{ modKeyLabel }}</kbd>
-              <span class="overlay-text-separator text-[10px]">+</span>
-              <span>{{ t('panel.drag') }}</span>
-            </span>
-            <span class="overlay-text-secondary text-[10.5px] text-right min-w-[48px]">{{ t('panel.rectShape') }}</span>
-          </div>
-          <div class="flex items-center justify-between text-[10.5px] font-sans">
-            <span class="flex items-center gap-1.5 overlay-text-body">
-              <kbd class="ui-kbd">Shift</kbd>
-              <span class="overlay-text-separator text-[10px]">+</span>
-              <span>{{ t('panel.drag') }}</span>
-            </span>
-            <span class="overlay-text-secondary text-[10.5px] text-right min-w-[48px]">{{
-              t('panel.ellipseShape')
-            }}</span>
-          </div>
-          <div class="flex items-center justify-between text-[10.5px] font-sans">
-            <span class="flex items-center gap-1.5 overlay-text-body">
-              <kbd class="ui-kbd">{{ modKeyLabel }}</kbd>
-              <span class="overlay-text-separator text-[10px]">+</span>
-              <kbd class="ui-kbd">Shift</kbd>
-              <span class="overlay-text-separator text-[10px]">+</span>
-              <span>{{ t('panel.drag') }}</span>
-            </span>
-            <span class="overlay-text-secondary text-[10.5px] text-right min-w-[48px]">{{
-              t('panel.arrowShape')
-            }}</span>
-          </div>
-          <div class="flex items-center justify-between text-[10.5px] font-sans">
-            <span class="flex items-center gap-1.5 overlay-text-body">
-              <kbd class="ui-kbd">Q</kbd>
-              <span class="overlay-text-separator text-[10px]">/</span>
-              <kbd class="ui-kbd">E</kbd>
-              <span class="overlay-text-separator text-[10px]">/</span>
-              <span>{{ t('panel.rightClick') }}</span>
-            </span>
-            <span class="overlay-text-secondary text-[10.5px] text-right min-w-[48px]">{{
-              t('panel.switchColor')
-            }}</span>
-          </div>
         </div>
       </div>
     </div>
