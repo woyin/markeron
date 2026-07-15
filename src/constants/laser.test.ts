@@ -62,7 +62,7 @@ describe('easeOut', () => {
 
 describe('isLaserTrailGone', () => {
   it('is true only when every point has aged out', () => {
-    expect(isLaserTrailGone([{ t: 0 }, { t: 100 }], LASER_DECAY_MS)).toBe(true)
+    expect(isLaserTrailGone([{ t: 0 }, { t: 100 }], LASER_DECAY_MS + 100)).toBe(true)
     expect(isLaserTrailGone([{ t: 0 }, { t: LASER_DECAY_MS - 1 }], LASER_DECAY_MS)).toBe(false)
   })
 })

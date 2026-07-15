@@ -511,8 +511,8 @@ describe('useDrawing', () => {
         drawing.endDraw()
         expect(drawing.canClear.value).toBe(true)
 
-        // Tip must age past LASER_DECAY_MS (1000)
-        vi.advanceTimersByTime(1100)
+        // Tip must age past LASER_DECAY_MS
+        vi.advanceTimersByTime(1400)
 
         expect(drawing.canClear.value).toBe(false)
       } finally {
