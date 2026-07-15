@@ -1,41 +1,54 @@
 import { describe, it, expect } from 'vitest'
-import { LASER_DECAY_LENGTH, LASER_DECAY_MS, easeOut, isLaserTrailGone, laserSizeFromMapping } from './laser'
+import {
+  LASER_DECAY_LENGTH,
+  LASER_DECAY_MS,
+  easeOut,
+  isLaserTrailGone,
+  laserSizeFromMapping,
+  pruneAgedLaserPoints,
+} from './laser'
 
 describe('laserSizeFromMapping', () => {
   const now = 10_000
 
-  it('keeps the tip fully sized when fresh', () => {
-    expect(
-      laserSizeFromMapping({ pressure: now, runningLength: 100, currentIndex: 99, totalLength: 100 }, now),
-    ).toBeCloseTo(1, 5)
+  it('keeps a fresh tip larger than an older point at the same index window', () => {
+    const fresh = laserSizeFromMapping({ pressure: now, runningLength: 100, currentIndex: 50, totalLength: 51 }, now)
+    const aged = laserSizeFromMapping(
+      { pressure: now - LASER_DECAY_MS * 0.6, runningLength: 100, currentIndex: 50, totalLength: 51 },
+      now,
+    )
+    expect(fresh).toBeGreaterThan(aged)
+    expect(aged).toBeGreaterThan(0)
   })
 
-  it('fades monotonically toward the start of the stroke', () => {
-    const tip = laserSizeFromMapping({ pressure: now, runningLength: 400, currentIndex: 200, totalLength: 201 }, now)
-    const mid = laserSizeFromMapping({ pressure: now, runningLength: 200, currentIndex: 100, totalLength: 201 }, now)
-    const tail = laserSizeFromMapping({ pressure: now, runningLength: 20, currentIndex: 10, totalLength: 201 }, now)
-    expect(tip).toBeGreaterThan(mid)
-    expect(mid).toBeGreaterThan(tail)
+  it('fades older timestamps before newer ones (first drawn first gone)', () => {
+    const older = laserSizeFromMapping(
+      { pressure: now - 900, runningLength: 20, currentIndex: 10, totalLength: 100 },
+      now,
+    )
+    const newer = laserSizeFromMapping(
+      { pressure: now - 100, runningLength: 180, currentIndex: 90, totalLength: 100 },
+      now,
+    )
+    expect(newer).toBeGreaterThan(older)
   })
 
-  it('is gone beyond the point window', () => {
+  it('is gone after time decay even near the tip index', () => {
     expect(
       laserSizeFromMapping(
-        {
-          pressure: now,
-          runningLength: 0,
-          currentIndex: 0,
-          totalLength: LASER_DECAY_LENGTH + 20,
-        },
+        { pressure: now - LASER_DECAY_MS, runningLength: 100, currentIndex: 99, totalLength: 100 },
         now,
       ),
     ).toBe(0)
   })
+})
 
-  it('is gone after time decay', () => {
-    expect(
-      laserSizeFromMapping({ pressure: 0, runningLength: 100, currentIndex: 50, totalLength: 51 }, LASER_DECAY_MS),
-    ).toBe(0)
+describe('pruneAgedLaserPoints', () => {
+  it('removes leading points that have fully aged out', () => {
+    const now = 5000
+    const pts = [{ t: 1000 }, { t: 2000 }, { t: 4500 }]
+    const kept = pruneAgedLaserPoints(pts, now)
+    expect(kept).toEqual([{ t: 4500 }])
   })
 })
 
@@ -48,11 +61,8 @@ describe('easeOut', () => {
 })
 
 describe('isLaserTrailGone', () => {
-  it('is true when the tip has fully decayed', () => {
-    expect(isLaserTrailGone([{ t: 0 }], LASER_DECAY_MS)).toBe(true)
-  })
-
-  it('is false while the tip is still visible', () => {
-    expect(isLaserTrailGone([{ t: 500 }], 500 + LASER_DECAY_MS - 1)).toBe(false)
+  it('is true only when every point has aged out', () => {
+    expect(isLaserTrailGone([{ t: 0 }, { t: 100 }], LASER_DECAY_MS)).toBe(true)
+    expect(isLaserTrailGone([{ t: 0 }, { t: LASER_DECAY_MS - 1 }], LASER_DECAY_MS)).toBe(false)
   })
 })

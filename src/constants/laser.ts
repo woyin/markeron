@@ -1,9 +1,9 @@
-/** Per-point lifetime after the tip stops moving. */
-export const LASER_DECAY_MS = 1000
+/** How long each point stays fully visible after it was drawn. */
+export const LASER_DECAY_MS = 1200
 
 /**
- * Visible trail window in points from the tip (Excalidraw uses 50).
- * Larger than Excalidraw so dense high-DPI sampling still yields a usable CSS length.
+ * Soft length cap in points from the tip (comet shape while drawing).
+ * Time decay is what makes first-drawn segments disappear first.
  */
 export const LASER_DECAY_LENGTH = 180
 
@@ -20,19 +20,29 @@ export interface LaserSizeMappingInput {
 }
 
 /**
- * Excalidraw-compatible size factor: time decay × monotonic point-count decay.
- * Must stay monotonic along the stroke or LaserPointer outlines tear / thin↔thick.
+ * Size factor: older points (earlier timestamps) shrink first.
+ * Length window only soft-caps the comet; time creates the chase / stagger.
  */
 export function laserSizeFromMapping(c: LaserSizeMappingInput, now: number): number {
-  const timeFactor = Math.max(0, 1 - (now - c.pressure) / LASER_DECAY_MS)
+  const age = now - c.pressure
+  const timeFactor = Math.max(0, 1 - age / LASER_DECAY_MS)
   const pointsFromTip = Math.max(0, c.totalLength - c.currentIndex)
   const lengthFactor = (LASER_DECAY_LENGTH - Math.min(LASER_DECAY_LENGTH, pointsFromTip)) / LASER_DECAY_LENGTH
-  return Math.min(easeOut(lengthFactor), easeOut(timeFactor))
+  // Prefer time so first-drawn → first-gone is obvious; length still tapers the tip.
+  return easeOut(timeFactor) * (0.25 + 0.75 * easeOut(lengthFactor))
 }
 
-/** True once the tip itself has fully decayed (entire trail is invisible). */
+/** Drop points that have fully aged out (keeps the chase visible as the trail shortens). */
+export function pruneAgedLaserPoints<T extends { t?: number }>(points: T[], now: number): T[] {
+  let start = 0
+  while (start < points.length && now - (points[start].t ?? 0) >= LASER_DECAY_MS) {
+    start++
+  }
+  return start === 0 ? points : points.slice(start)
+}
+
+/** True once no points remain visible. */
 export function isLaserTrailGone(points: { t?: number }[], now: number): boolean {
   if (points.length === 0) return true
-  const tip = points[points.length - 1]
-  return now - (tip.t ?? 0) >= LASER_DECAY_MS
+  return points.every((p) => now - (p.t ?? 0) >= LASER_DECAY_MS)
 }

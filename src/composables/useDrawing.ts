@@ -11,7 +11,7 @@ import {
 } from './drawingGeometry'
 import { drawActionDirect, drawLaserTrail } from './drawingRender'
 import { normalizeTextOutline } from '../constants/textOutline'
-import { isLaserTrailGone } from '../constants/laser'
+import { isLaserTrailGone, pruneAgedLaserPoints } from '../constants/laser'
 
 export type { Tool, Point, DrawAction } from './drawingTypes'
 export type { InputPointLike } from './drawingTypes'
@@ -174,11 +174,27 @@ export function useDrawing(
   function pruneExpiredLaserStrokes(now: number): boolean {
     let removed = false
     for (let i = laserStrokes.length - 1; i >= 0; i--) {
-      if (isLaserTrailGone(laserStrokes[i].action.points, now)) {
+      const stroke = laserStrokes[i]
+      const pruned = pruneAgedLaserPoints(stroke.action.points, now)
+      if (pruned.length !== stroke.action.points.length) {
+        stroke.action.points = pruned
+        removed = true
+      }
+      if (isLaserTrailGone(stroke.action.points, now)) {
         laserStrokes.splice(i, 1)
         removed = true
       }
     }
+
+    const cur = currentAction.value
+    if (cur?.tool === 'laser' && cur.points.length > 1) {
+      const pruned = pruneAgedLaserPoints(cur.points, now)
+      if (pruned.length !== cur.points.length && pruned.length > 0) {
+        cur.points = pruned
+        removed = true
+      }
+    }
+
     if (removed) markLaserChanged()
     return removed
   }

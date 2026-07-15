@@ -223,7 +223,9 @@ export function drawLaserTrail(
 
   const stroke = new LaserPointer({
     size,
-    streamline: 0.4,
+    // Keep streamline off so each point's timestamp stays exact — required for
+    // first-drawn-first-gone time stagger (lerp would blend pressure/time).
+    streamline: 0,
     simplify: 0,
     keepHead,
     sizeMapping: (c) => laserSizeFromMapping(c, now),
