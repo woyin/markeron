@@ -3,7 +3,7 @@ import type { Tool } from './drawingTypes'
 import { isMacOS } from '../utils/platform'
 import { logActionEvent } from '../utils/diagnosticEvents'
 
-const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'line', 'eraser']
+const TOOL_KEYS: Tool[] = ['pen', 'highlighter', 'arrow', 'rect', 'ellipse', 'line', 'eraser', 'laser']
 
 /** True while pointer is down for draw/drag — modifier keys serve drawing, not copy. */
 let pointerGestureActive = false
@@ -176,8 +176,8 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       return
     }
 
-    // Tool switching (1-7)
-    if (e.key >= '1' && e.key <= '7') {
+    // Tool switching (1-8)
+    if (e.key >= '1' && e.key <= '8') {
       const tool = TOOL_KEYS[parseInt(e.key) - 1]
       logActionEvent('tool selected', { reason: 'keyboard', tool, key: e.key })
       ctx.currentTool.value = tool

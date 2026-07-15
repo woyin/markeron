@@ -127,6 +127,12 @@ describe('useOverlayKeyboard', () => {
       expect(ctx.currentTool.value).toBe('eraser')
     })
 
+    it('key 8 selects laser', () => {
+      handler(key('8'))
+      expect(ctx.currentTool.value).toBe('laser')
+      expect(actions.calls.showToolTip[0]).toEqual(['laser'])
+    })
+
     it('key T selects text', () => {
       handler(key('t'))
       expect(ctx.currentTool.value).toBe('text')

@@ -1,8 +1,10 @@
-export type Tool = 'pen' | 'highlighter' | 'arrow' | 'rect' | 'ellipse' | 'line' | 'eraser' | 'text'
+export type Tool = 'pen' | 'highlighter' | 'laser' | 'arrow' | 'rect' | 'ellipse' | 'line' | 'eraser' | 'text'
 
 export interface Point {
   x: number
   y: number
+  /** performance.now() when added — used by laser trail decay. */
+  t?: number
 }
 
 export interface InputPointLike {

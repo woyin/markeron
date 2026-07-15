@@ -2,6 +2,7 @@ export default {
   tools: {
     pen: 'Pen',
     highlighter: 'Highlighter',
+    laser: 'Laser',
     arrow: 'Arrow',
     rect: 'Rectangle',
     ellipse: 'Ellipse',
@@ -12,6 +13,7 @@ export default {
   toolDesc: {
     pen: 'Freehand drawing with smooth curves',
     highlighter: 'Semi-transparent highlight',
+    laser: 'Temporary ink that fades from the oldest stroke tip first',
     arrow: 'Arrow pointer line',
     rect: 'Rectangle outline',
     ellipse: 'Ellipse outline',
@@ -40,7 +42,7 @@ export default {
   textSizes: { 1: 'XS', 2: 'S', 3: 'M', 5: 'L', 8: 'XL' },
   panel: {
     tools: 'Tools',
-    toolsHint: 'Press 1-7 / T',
+    toolsHint: 'Press 1-8 / T',
     colors: 'Colors',
     customColor: 'Custom color',
     strokeWidth: 'Stroke',

@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Pen, Highlighter, ArrowUpRight, Square, Circle, Minus, Eraser, Type } from '@lucide/vue'
+import { Pen, Highlighter, Crosshair, ArrowUpRight, Square, Circle, Minus, Eraser, Type } from '@lucide/vue'
 import type { Tool } from '../composables/drawingTypes'
 
 export interface ToolDef {
@@ -11,6 +11,7 @@ export interface ToolDef {
 export const TOOL_DEFS: ToolDef[] = [
   { id: 'pen', icon: Pen, key: '1' },
   { id: 'highlighter', icon: Highlighter, key: '2' },
+  { id: 'laser', icon: Crosshair, key: '8' },
   { id: 'arrow', icon: ArrowUpRight, key: '3' },
   { id: 'rect', icon: Square, key: '4' },
   { id: 'ellipse', icon: Circle, key: '5' },
@@ -38,7 +39,7 @@ export interface ToolLineWidths {
   text: number
 }
 
-const STROKE_TOOLS = new Set<Tool>(['pen', 'arrow', 'rect', 'ellipse', 'line'])
+const STROKE_TOOLS = new Set<Tool>(['pen', 'laser', 'arrow', 'rect', 'ellipse', 'line'])
 
 export function toolLineWidthGroup(tool: Tool): LineWidthGroup {
   if (tool === 'highlighter') return 'highlighter'

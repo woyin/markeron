@@ -7,6 +7,7 @@ function createTooltip() {
   const toolLabelMap = computed<Record<Tool, string>>(() => ({
     pen: 'Pen',
     highlighter: 'Highlighter',
+    laser: 'Laser',
     arrow: 'Arrow',
     rect: 'Rectangle',
     ellipse: 'Ellipse',

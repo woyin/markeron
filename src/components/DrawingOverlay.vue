@@ -82,6 +82,7 @@ const defaultEntryMode = ref<DefaultEntryMode>('screen')
 const toolLabelMap = computed<Record<Tool, string>>(() => ({
   pen: t('tools.pen'),
   highlighter: t('tools.highlighter'),
+  laser: t('tools.laser'),
   arrow: t('tools.arrow'),
   rect: t('tools.rect'),
   ellipse: t('tools.ellipse'),

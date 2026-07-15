@@ -566,7 +566,7 @@ onUnmounted(() => {
 
         <!-- Simple compact tools -->
         <div v-if="!showFullPanel" class="px-3 pb-2">
-          <div class="grid grid-cols-8 gap-[3px]">
+          <div class="grid grid-cols-9 gap-[3px]">
             <button
               v-for="tool in tools"
               :key="tool.id"

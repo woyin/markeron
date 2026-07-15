@@ -554,6 +554,12 @@ onUnmounted(() => {
               </div>
               <div class="help-row">
                 <span class="help-label"
+                  ><kbd class="help-kbd">8</kbd><span class="ml-2.5">{{ t('tools.laser') }}</span></span
+                >
+                <span class="help-desc">{{ t('toolDesc.laser') }}</span>
+              </div>
+              <div class="help-row">
+                <span class="help-label"
                   ><kbd class="help-kbd">T</kbd><span class="ml-2.5">{{ t('tools.text') }}</span></span
                 >
                 <span class="help-desc">{{ t('toolDesc.text') }}</span>

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref, type Ref } from 'vue'
 import { useDrawing } from './useDrawing'
 
@@ -12,6 +12,7 @@ function createMockCanvas(): HTMLCanvasElement {
     clearRect: vi.fn(),
     drawImage: vi.fn(),
     beginPath: vi.fn(),
+    closePath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
     stroke: vi.fn(),
@@ -76,6 +77,10 @@ describe('useDrawing', () => {
 
   beforeEach(() => {
     drawing = setup()
+  })
+
+  afterEach(() => {
+    drawing.destroy()
   })
 
   describe('initial state', () => {
@@ -470,6 +475,49 @@ describe('useDrawing', () => {
     it('removeAction with invalid index does nothing', () => {
       drawing.removeAction(-1)
       drawing.removeAction(999)
+    })
+  })
+
+  describe('laser', () => {
+    it('does not enter undo history or hit-testable actions', () => {
+      drawing.currentTool.value = 'laser'
+      drawing.startDraw({ x: 10, y: 10 })
+      drawing.draw({ x: 40, y: 40 })
+      drawing.endDraw()
+
+      expect(drawing.canUndo.value).toBe(false)
+      expect(drawing.findActionAt({ x: 25, y: 25 })).toBeNull()
+      expect(drawing.canClear.value).toBe(true)
+    })
+
+    it('clearAll removes laser strokes without creating undo', () => {
+      drawing.currentTool.value = 'laser'
+      drawing.startDraw({ x: 0, y: 0 })
+      drawing.draw({ x: 20, y: 20 })
+      drawing.endDraw()
+
+      expect(drawing.canClear.value).toBe(true)
+      drawing.clearAll()
+      expect(drawing.canClear.value).toBe(false)
+      expect(drawing.canUndo.value).toBe(false)
+    })
+
+    it('expires after lifetime and clears canClear', () => {
+      vi.useFakeTimers()
+      try {
+        drawing.currentTool.value = 'laser'
+        drawing.startDraw({ x: 0, y: 0 })
+        drawing.draw({ x: 30, y: 30 })
+        drawing.endDraw()
+        expect(drawing.canClear.value).toBe(true)
+
+        // Tip must age past LASER_DECAY_MS (1000)
+        vi.advanceTimersByTime(1100)
+
+        expect(drawing.canClear.value).toBe(false)
+      } finally {
+        vi.useRealTimers()
+      }
     })
   })
 

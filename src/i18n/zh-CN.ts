@@ -2,6 +2,7 @@ export default {
   tools: {
     pen: '画笔',
     highlighter: '荧光笔',
+    laser: '激光笔',
     arrow: '箭头',
     rect: '矩形',
     ellipse: '椭圆',
@@ -12,6 +13,7 @@ export default {
   toolDesc: {
     pen: '自由绘画，贝塞尔曲线平滑',
     highlighter: '半透明高亮标记',
+    laser: '临时笔迹，先画的部分先淡出消失',
     arrow: '带箭头指示线',
     rect: '矩形边框',
     ellipse: '椭圆边框',
@@ -40,7 +42,7 @@ export default {
   textSizes: { 1: '极小', 2: '小', 3: '中', 5: '大', 8: '极大' },
   panel: {
     tools: '工具',
-    toolsHint: '按 1-7 / T 切换',
+    toolsHint: '按 1-8 / T 切换',
     colors: '颜色',
     customColor: '自定义颜色',
     strokeWidth: '线宽',

@@ -9,8 +9,9 @@ import {
   hitTestAction,
   snapPointToAngle,
 } from './drawingGeometry'
-import { drawActionDirect } from './drawingRender'
+import { drawActionDirect, drawLaserTrail } from './drawingRender'
 import { normalizeTextOutline } from '../constants/textOutline'
+import { isLaserTrailGone } from '../constants/laser'
 
 export type { Tool, Point, DrawAction } from './drawingTypes'
 export type { InputPointLike } from './drawingTypes'
@@ -120,6 +121,15 @@ export function useDrawing(
   const undoStack: UndoEntry[] = []
   const redoStack: UndoEntry[] = []
   const historyRevision = ref(0)
+
+  interface LaserStroke {
+    action: DrawAction
+  }
+
+  const laserStrokes: LaserStroke[] = []
+  const laserRevision = ref(0)
+  let laserRafId: number | null = null
+
   const canUndo = computed(() => {
     void historyRevision.value
     return undoStack.length > 0
@@ -130,11 +140,73 @@ export function useDrawing(
   })
   const canClear = computed(() => {
     void historyRevision.value
-    return history.length > 0
+    void laserRevision.value
+    return history.length > 0 || laserStrokes.length > 0
   })
+
+  function isDrawingLaser() {
+    return isDrawing.value && currentAction.value?.tool === 'laser'
+  }
 
   function markHistoryStacksChanged() {
     historyRevision.value++
+  }
+
+  function markLaserChanged() {
+    laserRevision.value++
+  }
+
+  function stopLaserAnimation() {
+    if (laserRafId !== null) {
+      clearTimeout(laserRafId)
+      laserRafId = null
+    }
+  }
+
+  function clearLaserStrokes(): boolean {
+    if (laserStrokes.length === 0) return false
+    laserStrokes.length = 0
+    markLaserChanged()
+    stopLaserAnimation()
+    return true
+  }
+
+  function pruneExpiredLaserStrokes(now: number): boolean {
+    let removed = false
+    for (let i = laserStrokes.length - 1; i >= 0; i--) {
+      if (isLaserTrailGone(laserStrokes[i].action.points, now)) {
+        laserStrokes.splice(i, 1)
+        removed = true
+      }
+    }
+    if (removed) markLaserChanged()
+    return removed
+  }
+
+  function needsLaserAnimation() {
+    return laserStrokes.length > 0 || isDrawingLaser()
+  }
+
+  function ensureLaserAnimation() {
+    if (laserRafId !== null) return
+    const tick = () => {
+      laserRafId = null
+      const now = performance.now()
+      pruneExpiredLaserStrokes(now)
+      previewDirty = true
+      scheduleRender()
+      if (needsLaserAnimation()) {
+        laserRafId = window.setTimeout(tick, 16)
+      }
+    }
+    laserRafId = window.setTimeout(tick, 16)
+  }
+
+  function drawLaserStrokes(ctx: CanvasRenderingContext2D, now = performance.now()) {
+    for (let i = 0; i < laserStrokes.length; i++) {
+      const { action } = laserStrokes[i]
+      drawLaserTrail(ctx, action.points, action.color, action.lineWidth, now, false)
+    }
   }
   const currentAction = shallowRef<DrawAction | null>(null)
   const previewAction = shallowRef<DrawAction | null>(null)
@@ -461,13 +533,25 @@ export function useDrawing(
       const drawX = Math.round((dragBboxX + dragOffsetX) * dpr)
       const drawY = Math.round((dragBboxY + dragOffsetY) * dpr)
       ctx.drawImage(dragCanvas, drawX, drawY)
+      if (laserStrokes.length > 0) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        drawLaserStrokes(ctx)
+      }
       ctx.restore()
       previewDirty = false
       return
     }
 
+    if (laserStrokes.length > 0) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      drawLaserStrokes(ctx)
+    }
+
     if (action && action.tool !== 'eraser') {
-      if (action.tool === 'pen' && strokeCanvas && action.points.length > 3) {
+      if (action.tool === 'laser') {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        drawLaserTrail(ctx, action.points, action.color, action.lineWidth, performance.now(), true)
+      } else if (action.tool === 'pen' && strokeCanvas && action.points.length > 3) {
         ctx.drawImage(strokeCanvas, 0, 0)
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
         drawFreehandTail(ctx, action)
@@ -596,15 +680,19 @@ export function useDrawing(
 
     const opacity = currentTool.value === 'highlighter' ? 0.35 : 1
     const width = resolveDrawLineWidth(currentTool.value)
+    const startPoint: Point = currentTool.value === 'laser' ? { x: point.x, y: point.y, t: performance.now() } : point
 
     currentAction.value = {
       tool: currentTool.value,
       color: currentTool.value === 'eraser' ? 'rgba(0,0,0,1)' : currentColor.value,
       lineWidth: width,
       opacity,
-      points: [point],
+      points: [startPoint],
     }
     previewDirty = true
+    if (currentTool.value === 'laser') {
+      ensureLaserAnimation()
+    }
     if (currentTool.value === 'eraser') {
       if (eraserMode.value === 'object') {
         objectEraserBatch = []
@@ -627,12 +715,14 @@ export function useDrawing(
     if (!action || points.length === 0) return
 
     const pts = action.points
-    const isFreehand = action.tool === 'pen' || action.tool === 'highlighter' || action.tool === 'eraser'
+    const isFreehand =
+      action.tool === 'pen' || action.tool === 'highlighter' || action.tool === 'laser' || action.tool === 'eraser'
 
     if (isFreehand) {
       let last = pts[pts.length - 1]
       let appended = false
-      const minDist = getMinDistSq()
+      // Denser sampling for laser so the head→tail fade reads smoothly
+      const minDist = action.tool === 'laser' ? Math.max(1, Math.round(getMinDistSq() / 4)) : getMinDistSq()
 
       for (let i = 0; i < points.length; i++) {
         const point = points[i]
@@ -643,14 +733,16 @@ export function useDrawing(
         const dx = x - last.x
         const dy = y - last.y
         if (dx * dx + dy * dy < minDist) continue
-        const nextPoint: Point = { x, y }
+        const nextPoint: Point = action.tool === 'laser' ? { x, y, t: performance.now() } : { x, y }
         pts.push(nextPoint)
         last = nextPoint
         appended = true
       }
 
       if (!appended) return
-      if (action.tool === 'pen') {
+      if (action.tool === 'laser') {
+        ensureLaserAnimation()
+      } else if (action.tool === 'pen') {
         bakeIncrementalStroke(action)
       } else if (action.tool === 'eraser' && eraserMode.value === 'object') {
         processObjectEraserHits(action)
@@ -695,11 +787,23 @@ export function useDrawing(
     if (!action) return
     isDrawing.value = false
 
-    const pad = Math.max(20, action.lineWidth / 2 + 10)
-    action.bbox = computeBbox(action, pad)
-    updateShapeHitCache(action)
+    if (action.tool !== 'laser') {
+      const pad = Math.max(20, action.lineWidth / 2 + 10)
+      action.bbox = computeBbox(action, pad)
+      updateShapeHitCache(action)
+    }
 
     clearStrokeCanvas()
+
+    if (action.tool === 'laser') {
+      laserStrokes.push({ action })
+      markLaserChanged()
+      currentAction.value = null
+      previewDirty = true
+      ensureLaserAnimation()
+      flushRender()
+      return
+    }
 
     if (action.tool === 'eraser' && eraserMode.value === 'object') {
       if (objectEraserLastProcessedPt < action.points.length) {
@@ -1073,7 +1177,16 @@ export function useDrawing(
   }
 
   function clearAll() {
-    if (history.length === 0) return
+    const clearedLasers = clearLaserStrokes()
+    if (history.length === 0) {
+      if (clearedLasers) {
+        currentAction.value = null
+        previewAction.value = null
+        previewDirty = true
+        flushRender()
+      }
+      return
+    }
     historyIndexDirty = true
 
     const entry: UndoEntry = {
@@ -1101,16 +1214,26 @@ export function useDrawing(
   function exportAsDataURL(backgroundColor?: string) {
     const canvas = historyCanvasRef.value
     if (!canvas) return null
-    if (!backgroundColor) return canvas.toDataURL('image/png')
 
     const exportCanvas = document.createElement('canvas')
     exportCanvas.width = canvas.width
     exportCanvas.height = canvas.height
     const ctx = exportCanvas.getContext('2d')
     if (!ctx) return canvas.toDataURL('image/png')
-    ctx.fillStyle = backgroundColor
-    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height)
+
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height)
+    }
     ctx.drawImage(canvas, 0, 0)
+
+    if (laserStrokes.length > 0) {
+      const dpr = getEffectiveDpr()
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      drawLaserStrokes(ctx)
+      ctx.setTransform(1, 0, 0, 1, 0, 0)
+    }
+
     return exportCanvas.toDataURL('image/png')
   }
 
@@ -1119,6 +1242,7 @@ export function useDrawing(
     history.length = 0
     undoStack.length = 0
     redoStack.length = 0
+    clearLaserStrokes()
     clearHitGridState()
     hitGridDirty = false
     invalidateCache()
@@ -1187,6 +1311,8 @@ export function useDrawing(
       cancelAnimationFrame(rafId)
       rafId = null
     }
+    stopLaserAnimation()
+    laserStrokes.length = 0
     cacheCanvas = null
     cacheCtx = null
     historyCtx = null

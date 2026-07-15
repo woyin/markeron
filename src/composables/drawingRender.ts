@@ -1,5 +1,7 @@
 import type { DrawAction, Point } from './drawingTypes'
 import { getActiveTextOutline } from '../constants/textOutline'
+import { LaserPointer } from '@excalidraw/laser-pointer'
+import { easeOut, LASER_DECAY_LENGTH, LASER_DECAY_MS } from '../constants/laser'
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, points: Point[]) {
   ctx.beginPath()
@@ -160,6 +162,7 @@ export function drawActionDirect(
   switch (action.tool) {
     case 'pen':
     case 'highlighter':
+    case 'laser':
     case 'eraser': {
       let path = pathCache?.get(action)
       if (!path && action.bbox) {
@@ -198,5 +201,57 @@ export function drawActionDirect(
       break
   }
 
+  ctx.restore()
+}
+
+/**
+ * Excalidraw-style laser: filled variable-width outline (not stroked segments).
+ * Decay is geometric taper via sizeMapping — edges stay crisp and opaque.
+ */
+export function drawLaserTrail(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  color: string,
+  lineWidth: number,
+  now = performance.now(),
+  keepHead = false,
+) {
+  if (points.length === 0) return
+
+  // Radius — Excalidraw defaults to 2; scale with toolbar width for presence.
+  const size = Math.max(2.5, lineWidth * 0.95)
+
+  const stroke = new LaserPointer({
+    size,
+    streamline: 0.4,
+    simplify: 0,
+    keepHead,
+    sizeMapping: (c) => {
+      const t = Math.max(0, 1 - (now - c.pressure) / LASER_DECAY_MS)
+      const l = (LASER_DECAY_LENGTH - Math.min(LASER_DECAY_LENGTH, c.totalLength - c.currentIndex)) / LASER_DECAY_LENGTH
+      return Math.min(easeOut(l), easeOut(t))
+    },
+  })
+
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]
+    stroke.addPoint([p.x, p.y, p.t ?? now])
+  }
+  stroke.close()
+
+  const outline = stroke.getStrokeOutline()
+  if (outline.length < 2) return
+
+  ctx.save()
+  ctx.globalAlpha = 1
+  ctx.globalCompositeOperation = 'source-over'
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.moveTo(outline[0][0], outline[0][1])
+  for (let i = 1; i < outline.length; i++) {
+    ctx.lineTo(outline[i][0], outline[i][1])
+  }
+  ctx.closePath()
+  ctx.fill()
   ctx.restore()
 }
