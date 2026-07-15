@@ -1,7 +1,7 @@
 import type { DrawAction, Point } from './drawingTypes'
 import { getActiveTextOutline } from '../constants/textOutline'
 import { LaserPointer } from '@excalidraw/laser-pointer'
-import { laserSizeFromMapping } from '../constants/laser'
+import { laserSizeFromMapping, smoothLaserPositions } from '../constants/laser'
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, points: Point[]) {
   ctx.beginPath()
@@ -223,17 +223,16 @@ export function drawLaserTrail(
 
   const stroke = new LaserPointer({
     size,
-    // Keep streamline off so each point's timestamp stays exact — required for
-    // first-drawn-first-gone time stagger (lerp would blend pressure/time).
+    // Built-in streamline would lerp timestamps; we smooth x/y ourselves instead.
     streamline: 0,
     simplify: 0,
     keepHead,
     sizeMapping: (c) => laserSizeFromMapping(c, now),
   })
 
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i]
-    stroke.addPoint([p.x, p.y, p.t ?? now])
+  const smoothed = smoothLaserPositions(points)
+  for (let i = 0; i < smoothed.length; i++) {
+    stroke.addPoint(smoothed[i])
   }
   stroke.close()
 
@@ -244,6 +243,11 @@ export function drawLaserTrail(
   ctx.globalAlpha = 1
   ctx.globalCompositeOperation = 'source-over'
   ctx.fillStyle = color
+  ctx.strokeStyle = color
+  ctx.lineJoin = 'round'
+  ctx.lineCap = 'round'
+  // Sub-pixel stroke softens polygon edges on 1x DPR screens (fill-only looks staircased).
+  ctx.lineWidth = Math.max(0.75, size * 0.35)
   ctx.beginPath()
   ctx.moveTo(outline[0][0], outline[0][1])
   for (let i = 1; i < outline.length; i++) {
@@ -251,5 +255,6 @@ export function drawLaserTrail(
   }
   ctx.closePath()
   ctx.fill()
+  ctx.stroke()
   ctx.restore()
 }

@@ -7,6 +7,12 @@ export const LASER_DECAY_MS = 1200
  */
 export const LASER_DECAY_LENGTH = 180
 
+/**
+ * Position-only smoothing (Excalidraw-style). Must NOT blend timestamps —
+ * LaserPointer's built-in streamline lerps pressure/time and kills the chase.
+ */
+export const LASER_POSITION_STREAMLINE = 0.4
+
 /** Quartic ease-out used by Excalidraw for laser size mapping. */
 export function easeOut(k: number): number {
   return 1 - Math.pow(1 - k, 4)
@@ -17,6 +23,41 @@ export interface LaserSizeMappingInput {
   runningLength: number
   currentIndex: number
   totalLength: number
+}
+
+export interface LaserInputPoint {
+  x: number
+  y: number
+  t?: number
+}
+
+/**
+ * Smooth x/y toward previous point; keep each point's original timestamp.
+ */
+export function smoothLaserPositions(
+  points: LaserInputPoint[],
+  streamline = LASER_POSITION_STREAMLINE,
+): Array<[number, number, number]> {
+  if (points.length === 0) return []
+  const out: Array<[number, number, number]> = []
+  let prevX = points[0].x
+  let prevY = points[0].y
+  const pull = 1 - streamline
+
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]
+    const t = p.t ?? 0
+    if (i === 0 || streamline <= 0) {
+      prevX = p.x
+      prevY = p.y
+      out.push([prevX, prevY, t])
+      continue
+    }
+    prevX = prevX + (p.x - prevX) * pull
+    prevY = prevY + (p.y - prevY) * pull
+    out.push([prevX, prevY, t])
+  }
+  return out
 }
 
 /**
