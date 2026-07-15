@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { LASER_DECAY_MS, LASER_DECAY_PX, easeOut, isLaserTrailGone, laserPointSize, pathLengthPx } from './laser'
+import {
+  LASER_DECAY_MS,
+  LASER_DECAY_PX,
+  easeOut,
+  isLaserTrailGone,
+  laserPointSize,
+  laserSizeFromMapping,
+} from './laser'
 
 describe('laserPointSize', () => {
   it('keeps the tip fully sized when fresh', () => {
@@ -22,16 +29,27 @@ describe('laserPointSize', () => {
   })
 })
 
-describe('pathLengthPx', () => {
-  it('sums segment lengths', () => {
-    expect(pathLengthPx([])).toBe(0)
-    expect(pathLengthPx([{ x: 0, y: 0 }])).toBe(0)
-    expect(
-      pathLengthPx([
-        { x: 0, y: 0 },
-        { x: 30, y: 40 },
-      ]),
-    ).toBe(50)
+describe('laserSizeFromMapping', () => {
+  const now = 10_000
+
+  it('keeps the tip fully sized when fresh', () => {
+    // 100 points, 2px spacing, tip at index 99
+    expect(laserSizeFromMapping({ pressure: now, runningLength: 198, currentIndex: 99, totalLength: 100 }, now)).toBe(1)
+  })
+
+  it('yields similar fade at the same CSS distance for dense vs sparse sampling', () => {
+    // ~140px from tip, fresh timestamps
+    const dense = laserSizeFromMapping(
+      { pressure: now, runningLength: 200, currentIndex: 100, totalLength: 171 }, // 70pts * 2px
+      now,
+    )
+    const sparse = laserSizeFromMapping(
+      { pressure: now, runningLength: 200, currentIndex: 25, totalLength: 43 }, // 17pts * ~8px
+      now,
+    )
+    expect(Math.abs(dense - sparse)).toBeLessThan(0.15)
+    expect(dense).toBeGreaterThan(0.2)
+    expect(dense).toBeLessThan(0.95)
   })
 })
 

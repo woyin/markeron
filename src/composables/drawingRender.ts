@@ -1,7 +1,7 @@
 import type { DrawAction, Point } from './drawingTypes'
 import { getActiveTextOutline } from '../constants/textOutline'
 import { LaserPointer } from '@excalidraw/laser-pointer'
-import { easeOut, LASER_DECAY_MS, LASER_DECAY_PX, pathLengthPx } from '../constants/laser'
+import { laserSizeFromMapping } from '../constants/laser'
 
 export function drawFreehand(ctx: CanvasRenderingContext2D, points: Point[]) {
   ctx.beginPath()
@@ -220,21 +220,13 @@ export function drawLaserTrail(
 
   // Radius — Excalidraw defaults to 2; scale with toolbar width for presence.
   const size = Math.max(2.5, lineWidth * 0.95)
-  // Approximate total path length (CSS px). sizeMapping uses this so trail length
-  // stays stable across DPI / sampling density (unlike point-count decay).
-  const totalPx = Math.max(pathLengthPx(points), 1)
 
   const stroke = new LaserPointer({
     size,
     streamline: 0.4,
     simplify: 0,
     keepHead,
-    sizeMapping: (c) => {
-      const t = Math.max(0, 1 - (now - c.pressure) / LASER_DECAY_MS)
-      const distFromTip = Math.max(0, totalPx - c.runningLength)
-      const l = Math.max(0, 1 - distFromTip / LASER_DECAY_PX)
-      return Math.min(easeOut(l), easeOut(t))
-    },
+    sizeMapping: (c) => laserSizeFromMapping(c, now),
   })
 
   for (let i = 0; i < points.length; i++) {
