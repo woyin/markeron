@@ -2,11 +2,10 @@
 export const LASER_DECAY_MS = 1000
 
 /**
- * Target visible trail length in CSS pixels from the tip.
- * Converted from point-index using LaserPointer's own runningLength so it
- * stays consistent across sampling density / DPI (unlike a raw point count).
+ * Visible trail window in points from the tip (Excalidraw uses 50).
+ * Larger than Excalidraw so dense high-DPI sampling still yields a usable CSS length.
  */
-export const LASER_DECAY_PX = 280
+export const LASER_DECAY_LENGTH = 180
 
 /** Quartic ease-out used by Excalidraw for laser size mapping. */
 export function easeOut(k: number): number {
@@ -21,24 +20,13 @@ export interface LaserSizeMappingInput {
 }
 
 /**
- * Size factor from LaserPointer sizeMapping details (0 = gone, 1 = full).
- * Uses only LaserPointer-internal metrics — do not mix with pre-streamline path length.
+ * Excalidraw-compatible size factor: time decay × monotonic point-count decay.
+ * Must stay monotonic along the stroke or LaserPointer outlines tear / thin↔thick.
  */
 export function laserSizeFromMapping(c: LaserSizeMappingInput, now: number): number {
   const timeFactor = Math.max(0, 1 - (now - c.pressure) / LASER_DECAY_MS)
-  const pointsFromTip = Math.max(0, c.totalLength - 1 - c.currentIndex)
-  const avgSpacing = c.currentIndex > 0 ? c.runningLength / c.currentIndex : 4
-  const distFromTipPx = pointsFromTip * avgSpacing
-  const lengthFactor = Math.max(0, 1 - distFromTipPx / LASER_DECAY_PX)
-  return Math.min(easeOut(lengthFactor), easeOut(timeFactor))
-}
-
-/**
- * Size / opacity factor when distance-from-tip in CSS px is already known.
- */
-export function laserPointSize(pointTime: number, now: number, distFromTipPx: number): number {
-  const timeFactor = Math.max(0, 1 - (now - pointTime) / LASER_DECAY_MS)
-  const lengthFactor = Math.max(0, 1 - distFromTipPx / LASER_DECAY_PX)
+  const pointsFromTip = Math.max(0, c.totalLength - c.currentIndex)
+  const lengthFactor = (LASER_DECAY_LENGTH - Math.min(LASER_DECAY_LENGTH, pointsFromTip)) / LASER_DECAY_LENGTH
   return Math.min(easeOut(lengthFactor), easeOut(timeFactor))
 }
 
