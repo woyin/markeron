@@ -721,8 +721,9 @@ export function useDrawing(
     if (isFreehand) {
       let last = pts[pts.length - 1]
       let appended = false
-      // Denser sampling for laser so the head→tail fade reads smoothly
-      const minDist = action.tool === 'laser' ? Math.max(1, Math.round(getMinDistSq() / 4)) : getMinDistSq()
+      // Keep laser sampling in line with pen density so high-DPI machines
+      // do not pack 50+ points into a few CSS pixels.
+      const minDist = getMinDistSq()
 
       for (let i = 0; i < points.length; i++) {
         const point = points[i]
