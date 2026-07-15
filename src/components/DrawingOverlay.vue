@@ -43,6 +43,7 @@ import { resolveDefaultEntryMode, shouldClearWhiteboardOnEntry, type DefaultEntr
 import { logDiagnostic, logSessionEvent, logActionEvent } from '../utils/diagnosticEvents'
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { toolbarPopupScreenPosition } from '../utils/toolbarPosition'
+import { TOOLBAR_PANEL_WIDTH } from '../utils/toolbarWindow'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
 import { useI18n } from '../i18n'
 
@@ -260,7 +261,6 @@ function applyToolbarFromConfig(general?: AppConfig['general']) {
 }
 
 const TOOLBAR_PANEL_HEIGHT = 500
-const TOOLBAR_PANEL_WIDTH = 272
 
 async function ensureOverlayLayoutReady(): Promise<void> {
   if (overlayLayoutReady.value) return

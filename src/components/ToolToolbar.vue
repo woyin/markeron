@@ -14,6 +14,7 @@ import {
   fetchOverlayMonitorBounds,
   getToolbarWindowScreenOrigin,
   refreshToolbarWindowScreenOrigin,
+  TOOLBAR_PANEL_WIDTH,
 } from '../utils/toolbarWindow'
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { isPointerOverPanelRect } from '../utils/toolbarPanelHover'
@@ -72,7 +73,7 @@ const expanded = ref(false)
 const showFullPanel = computed(() => expanded.value)
 
 // Keep compact and expanded states the same width so the standalone toolbar never jumps sideways.
-const PANEL_WIDTH = 300
+const PANEL_WIDTH = TOOLBAR_PANEL_WIDTH
 const panelW = computed(() => PANEL_WIDTH)
 function needsWhiteCheck(ri: number, ci: number): boolean {
   return ci >= 5 || (ri === colors.length - 1 && ci >= 3)

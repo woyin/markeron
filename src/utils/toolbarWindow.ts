@@ -32,7 +32,8 @@ export async function refreshToolbarWindowScreenOrigin(): Promise<{ x: number; y
   return cachedToolbarScreenOrigin
 }
 
-const TOOLBAR_PANEL_WIDTH = 272
+/** Logical width of the toolbar panel (must match ToolToolbar / Rust overlay). */
+export const TOOLBAR_PANEL_WIDTH = 300
 const TOOLBAR_PANEL_HEIGHT = 500
 
 export async function fetchOverlayMonitorBounds(): Promise<MonitorLogicalBounds | null> {

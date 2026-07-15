@@ -307,6 +307,12 @@
 .overlay-tool-btn {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.7);
+  outline: none;
+}
+
+.overlay-tool-btn:focus,
+.overlay-tool-btn:focus-visible {
+  outline: none;
 }
 
 .overlay-tool-btn:hover {
