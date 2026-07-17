@@ -26,7 +26,7 @@ import {
 } from '../composables/overlayBridge'
 import type { AppConfig } from '../types/app'
 import TextBox from './TextBox.vue'
-import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth } from '../constants/tools'
+import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth, resolveLineWidths } from '../constants/tools'
 import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
 import {
   EMPTY_TEXT_RMB_CLICK,
@@ -202,12 +202,15 @@ function onWheel(e: WheelEvent) {
   lineWidth.value = WIDTH_PRESETS[next]
   const labelKey = tool === 'text' ? `textSizes.${lineWidth.value}` : `widths.${lineWidth.value}`
   showWidthTip(lineWidth.value, t(labelKey))
+  schedulePersistLineWidths()
 }
 
 const {
   currentTool,
   currentColor,
   lineWidth,
+  lineWidths,
+  setLineWidths,
   setAngleSnapStep,
   setEraserMode,
   isDrawing,
@@ -348,6 +351,38 @@ function applyDefaultEntryFromConfig(general?: AppConfig['general']) {
 
 function applyEraserModeFromConfig(general?: AppConfig['general']) {
   setEraserMode(resolveEraserMode(general))
+}
+
+function applyLineWidthsFromConfig(general?: AppConfig['general']) {
+  setLineWidths(resolveLineWidths(general?.lineWidths))
+}
+
+let persistLineWidthsTimer: ReturnType<typeof setTimeout> | null = null
+
+function schedulePersistLineWidths() {
+  if (persistLineWidthsTimer !== null) clearTimeout(persistLineWidthsTimer)
+  persistLineWidthsTimer = setTimeout(() => {
+    persistLineWidthsTimer = null
+    void persistLineWidths()
+  }, 250)
+}
+
+/** Cancel debounce and persist immediately (exit drawing / unmount). */
+function flushPersistLineWidths() {
+  if (persistLineWidthsTimer === null) return
+  clearTimeout(persistLineWidthsTimer)
+  persistLineWidthsTimer = null
+  void persistLineWidths()
+}
+
+async function persistLineWidths() {
+  try {
+    // Dedicated IPC patches only lineWidths under the Rust config lock —
+    // avoids read-modify-write races with settings `save_general`.
+    await invoke('save_line_widths', { lineWidths: resolveLineWidths(lineWidths.value) })
+  } catch (error) {
+    console.error('Failed to save line widths:', error)
+  }
 }
 
 function applyDefaultEntryOnActivate() {
@@ -1244,6 +1279,7 @@ async function handleToolbarAction(action: ToolbarAction) {
     case 'updateLineWidth':
       await resumeDrawingFromToolbar()
       lineWidth.value = action.width
+      schedulePersistLineWidths()
       break
     case 'updateTextOutline':
       await resumeDrawingFromToolbar()
@@ -1348,6 +1384,7 @@ onMounted(async () => {
     applyToolbarFromConfig(cfg.general)
     applyDefaultEntryFromConfig(cfg.general)
     applyEraserModeFromConfig(cfg.general)
+    applyLineWidthsFromConfig(cfg.general)
     preserveDrawings.value = cfg.general?.preserveDrawings ?? false
     whiteboardPreserveDrawings.value = cfg.general?.whiteboardPreserveDrawings ?? true
     setAngleSnapStep((cfg.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -1362,6 +1399,7 @@ onMounted(async () => {
       applyToolbarFromConfig(event.payload.general)
       applyDefaultEntryFromConfig(event.payload.general)
       applyEraserModeFromConfig(event.payload.general)
+      // lineWidths: overlay is the sole writer; skip echo from our own save_general
       preserveDrawings.value = event.payload.general?.preserveDrawings ?? false
       whiteboardPreserveDrawings.value = event.payload.general?.whiteboardPreserveDrawings ?? true
       setAngleSnapStep((event.payload.general?.angleSnapStep as 15 | 30 | 45 | undefined) ?? 15)
@@ -1391,6 +1429,7 @@ onMounted(async () => {
       showQuickColors.value = false
       textBoxPos.value = null
       if (mode === 'hidden') {
+        flushPersistLineWidths()
         whiteboardMode.value = false
         void syncWhiteboardMode(false)
         toolbarPanelHovered.value = false
@@ -1483,6 +1522,7 @@ onUnmounted(() => {
     clearTimeout(resizeTimer)
     resizeTimer = null
   }
+  flushPersistLineWidths()
   dprMediaQuery?.removeEventListener('change', onDprChange)
   dprMediaQuery = null
   window.removeEventListener('keydown', syncPointerModFromKey)

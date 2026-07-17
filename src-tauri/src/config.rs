@@ -33,6 +33,59 @@ fn default_auto_start() -> bool {
     true
 }
 
+fn default_line_width() -> u32 {
+    3
+}
+
+const LINE_WIDTH_PRESETS: [u32; 5] = [1, 2, 3, 5, 8];
+
+fn is_valid_line_width(value: u32) -> bool {
+    LINE_WIDTH_PRESETS.contains(&value)
+}
+
+fn normalize_line_width(value: u32) -> u32 {
+    if is_valid_line_width(value) {
+        value
+    } else {
+        default_line_width()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct LineWidthsConfig {
+    #[serde(default = "default_line_width")]
+    pub stroke: u32,
+    #[serde(default = "default_line_width")]
+    pub highlighter: u32,
+    #[serde(default = "default_line_width")]
+    pub eraser: u32,
+    #[serde(default = "default_line_width")]
+    pub text: u32,
+}
+
+impl Default for LineWidthsConfig {
+    fn default() -> Self {
+        let w = default_line_width();
+        Self {
+            stroke: w,
+            highlighter: w,
+            eraser: w,
+            text: w,
+        }
+    }
+}
+
+impl LineWidthsConfig {
+    pub fn normalized(self) -> Self {
+        Self {
+            stroke: normalize_line_width(self.stroke),
+            highlighter: normalize_line_width(self.highlighter),
+            eraser: normalize_line_width(self.eraser),
+            text: normalize_line_width(self.text),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum DragMode {
     #[serde(rename = "off")]
@@ -93,6 +146,8 @@ pub struct GeneralConfig {
     pub default_entry_mode: DefaultEntryMode,
     #[serde(default, rename = "eraserMode")]
     pub eraser_mode: EraserMode,
+    #[serde(default, rename = "lineWidths")]
+    pub line_widths: LineWidthsConfig,
     #[serde(default = "default_auto_start", rename = "autoStart")]
     pub auto_start: bool,
 }
@@ -110,6 +165,7 @@ impl Default for GeneralConfig {
             toolbar_visibility: ToolbarVisibility::Space,
             default_entry_mode: DefaultEntryMode::Screen,
             eraser_mode: EraserMode::Stroke,
+            line_widths: LineWidthsConfig::default(),
             auto_start: default_auto_start(),
         }
     }
@@ -154,6 +210,7 @@ impl GeneralConfig {
         if !matches!(self.eraser_mode, EraserMode::Stroke | EraserMode::Object) {
             self.eraser_mode = EraserMode::Stroke;
         }
+        self.line_widths = self.line_widths.normalized();
         self
     }
 }
@@ -544,6 +601,54 @@ mod tests {
     fn general_config_defaults_eraser_mode() {
         let general = GeneralConfig::default();
         assert_eq!(general.eraser_mode, EraserMode::Stroke);
+    }
+
+    #[test]
+    fn config_deserializes_line_widths() {
+        let json = r#"{
+            "shortcuts": {
+                "toggleDrawing": "Ctrl+Shift+D",
+                "clearDrawing": "Ctrl+Shift+C"
+            },
+            "general": {
+                "lineWidths": {
+                    "stroke": 5,
+                    "highlighter": 8,
+                    "eraser": 2,
+                    "text": 1
+                }
+            }
+        }"#;
+        let config: AppConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.general.line_widths.stroke, 5);
+        assert_eq!(config.general.line_widths.highlighter, 8);
+        assert_eq!(config.general.line_widths.eraser, 2);
+        assert_eq!(config.general.line_widths.text, 1);
+    }
+
+    #[test]
+    fn general_config_defaults_line_widths() {
+        let general = GeneralConfig::default();
+        assert_eq!(general.line_widths, LineWidthsConfig::default());
+        assert_eq!(general.line_widths.stroke, 3);
+    }
+
+    #[test]
+    fn normalized_clamps_invalid_line_widths() {
+        let general = GeneralConfig {
+            line_widths: LineWidthsConfig {
+                stroke: 4,
+                highlighter: 0,
+                eraser: 99,
+                text: 5,
+            },
+            ..GeneralConfig::default()
+        };
+        let normalized = general.normalized();
+        assert_eq!(normalized.line_widths.stroke, 3);
+        assert_eq!(normalized.line_widths.highlighter, 3);
+        assert_eq!(normalized.line_widths.eraser, 3);
+        assert_eq!(normalized.line_widths.text, 5);
     }
 
     #[test]

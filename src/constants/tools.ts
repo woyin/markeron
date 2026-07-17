@@ -62,6 +62,22 @@ export function createDefaultLineWidths(): ToolLineWidths {
   }
 }
 
+export function normalizeLineWidth(value: unknown): number {
+  return typeof value === 'number' && WIDTH_PRESETS.includes(value) ? value : DEFAULT_LINE_WIDTH
+}
+
+/** Resolve persisted line widths; missing/invalid values fall back to defaults. */
+export function resolveLineWidths(partial?: Partial<ToolLineWidths> | null): ToolLineWidths {
+  const defaults = createDefaultLineWidths()
+  if (!partial) return defaults
+  return {
+    stroke: normalizeLineWidth(partial.stroke ?? defaults.stroke),
+    highlighter: normalizeLineWidth(partial.highlighter ?? defaults.highlighter),
+    eraser: normalizeLineWidth(partial.eraser ?? defaults.eraser),
+    text: normalizeLineWidth(partial.text ?? defaults.text),
+  }
+}
+
 /** Highlighter stroke width = lineWidth × scale (default 3 → 21px). */
 export const HIGHLIGHTER_WIDTH_SCALE = 7
 
