@@ -172,11 +172,6 @@ fn os_version() -> Option<String> {
         .map(|s| s.trim().to_string())
 }
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-fn os_version() -> Option<String> {
-    None
-}
-
 pub fn build_bundle(
     app: &AppHandle,
     state: &AppState,

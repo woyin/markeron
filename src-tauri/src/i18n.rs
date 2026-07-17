@@ -81,8 +81,4 @@ fn detect_chinese() -> bool {
                 .map(|o| String::from_utf8_lossy(&o.stdout).contains("zh"))
                 .unwrap_or(false)
     }
-    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-    {
-        std::env::var("LANG").unwrap_or_default().starts_with("zh")
-    }
 }

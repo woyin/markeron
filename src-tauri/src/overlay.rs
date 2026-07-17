@@ -6,14 +6,8 @@ use crate::diagnostics::log_backend_event;
 use crate::monitor;
 use std::time::{Duration, Instant};
 
-#[cfg(not(target_os = "linux"))]
 fn set_ignore_cursor_events(window: &WebviewWindow, ignore: bool) {
     window.set_ignore_cursor_events(ignore).ok();
-}
-
-#[cfg(target_os = "linux")]
-fn set_ignore_cursor_events(window: &WebviewWindow, ignore: bool) {
-    crate::linux_cursor::set_ignore_cursor_events(window, ignore);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -112,13 +106,6 @@ pub fn setup_overlay_size(app: &AppHandle) {
                         .ok();
                     window.set_position(tauri::PhysicalPosition::new(x, y)).ok();
                 }
-            }
-            #[cfg(all(not(target_os = "macos"), not(windows)))]
-            {
-                window
-                    .set_size(tauri::PhysicalSize::new(w, h.saturating_sub(1)))
-                    .ok();
-                window.set_position(tauri::PhysicalPosition::new(x, y)).ok();
             }
         } else if let Some(mon) = app.primary_monitor().ok().flatten() {
             let size = mon.size();
@@ -230,7 +217,7 @@ fn create_toolbar_window(app: &AppHandle) {
 ///
 /// **Windows:** `SetWindowPos(HWND_TOPMOST)` on overlay, then toolbar (`win32.rs`).
 ///
-/// **macOS / Linux:** `toolbar.show()` via the `#[cfg(not(windows))]` branch — same
+/// **macOS:** `toolbar.show()` via the `#[cfg(not(windows))]` branch — same
 /// strategy as the pre-existing `activate_drawing` path. Do not call WKWebView
 /// Objective-C selectors here (crashes on Wry); use Tauri APIs only.
 ///
@@ -244,7 +231,7 @@ pub fn raise_toolbar_above_overlay(app: &AppHandle) {
         return;
     }
     // Keep both windows topmost, then re-show the toolbar so it stacks above the overlay
-    // on every platform (Windows Z-order, macOS window ordering, Linux WM).
+    // on every platform (Windows Z-order, macOS window ordering).
     if let Some(overlay) = app.get_webview_window("overlay") {
         overlay.set_always_on_top(true).ok();
     }

@@ -18,12 +18,12 @@ test('merge-updater-json merges platform maps', () => {
     }),
   )
   writeFileSync(
-    join(dir, 'linux.json'),
+    join(dir, 'macos.json'),
     JSON.stringify({
       version: '1.2.0',
       notes: 'longer release notes',
       pub_date: '2026-01-02T00:00:00Z',
-      platforms: { 'linux-x86_64': { url: 'https://example/linux', signature: 'sig2' } },
+      platforms: { 'darwin-aarch64': { url: 'https://example/macos', signature: 'sig2' } },
     }),
   )
 
@@ -36,7 +36,7 @@ test('merge-updater-json merges platform maps', () => {
   assert.equal(merged.version, '1.2.0')
   assert.equal(merged.notes, 'longer release notes')
   assert.ok(merged.platforms['windows-x86_64'])
-  assert.ok(merged.platforms['linux-x86_64'])
+  assert.ok(merged.platforms['darwin-aarch64'])
 
   rmSync(dir, { recursive: true, force: true })
 })

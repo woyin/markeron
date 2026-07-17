@@ -15,7 +15,7 @@ MarkerOn is a lightweight open-source screen annotation tool for demos, teaching
 
 ## Short Description
 
-MarkerOn is a small, open-source desktop app for screen annotation. Press a hotkey, draw over any app, switch to click-through mode when you need to operate the screen below, and jump back to drawing whenever the explanation needs another mark. It supports 8 annotation tools, whiteboard mode, keyboard shortcuts, and official builds for Windows, macOS, and Linux.
+MarkerOn is a small, open-source desktop app for screen annotation. Press a hotkey, draw over any app, switch to click-through mode when you need to operate the screen below, and jump back to drawing whenever the explanation needs another mark. It supports 8 annotation tools, whiteboard mode, keyboard shortcuts, and official builds for Windows and macOS.
 
 ## Long Description
 
@@ -63,7 +63,7 @@ Highlights:
 - click-through mode
 - whiteboard mode
 - full keyboard control
-- Windows, macOS, and Linux builds
+- Windows and macOS builds
 - Microsoft Store download for Windows
 
 I'd love feedback from teachers, trainers, people who record tutorials, and anyone who uses tools like ZoomIt or Epic Pen.
@@ -85,7 +85,7 @@ Tech stack: Tauri v2, Rust, Vue 3, TypeScript, Canvas.
 Downloads: https://github.com/ifer47/markeron/releases/latest
 Source: https://github.com/ifer47/markeron
 
-I'd especially appreciate feedback on multi-monitor behavior, Linux desktop environments, and whether the keyboard-first workflow feels natural.
+I'd especially appreciate feedback on multi-monitor behavior, macOS tablet/stylus input, and whether the keyboard-first workflow feels natural.
 
 ## V2EX Draft
 
@@ -108,13 +108,13 @@ v1.0 最大更新是「穿透模式」：标注内容可以继续留在屏幕上
 - 支持画笔、荧光笔、箭头、矩形、椭圆、直线、橡皮擦、文字
 - 支持穿透模式和白板模式
 - 工具栏可常驻，也可按 Space 呼出
-- 支持 Windows / macOS / Linux
+- 支持 Windows / macOS
 - Windows 可从 Microsoft Store 安装
 
 GitHub: https://github.com/ifer47/markeron
 下载: https://github.com/ifer47/markeron/releases/latest
 
-欢迎反馈多屏、数位板、Linux 桌面环境等实际使用问题。
+欢迎反馈多屏、macOS 数位板等实际使用问题。
 
 ## X / Twitter Drafts
 
@@ -165,7 +165,7 @@ Outline:
 3. The overlay problem: transparent always-on-top windows.
 4. The v1.0 click-through mode: drawing window, toolbar window, and event bridging.
 5. Rendering strategy: canvas, history, preview, and cached completed drawings.
-6. Platform notes: Windows, macOS, Linux, and multi-monitor edge cases.
+6. Platform notes: Windows, macOS, and multi-monitor edge cases.
 7. What I would like feedback on.
 
 Closing CTA:
@@ -186,7 +186,7 @@ If you teach, record tutorials, run demos, or use ZoomIt / Epic Pen-style tools,
 4. Tauri 多窗口设计：透明 overlay + 独立工具栏窗口。
 5. Canvas 绘制和撤销/重做/白板模式。
 6. 体积和性能取舍。
-7. 当前希望大家帮忙测试的点：多显示器、macOS 数位板、Linux 桌面环境。
+7. 当前希望大家帮忙测试的点：多显示器、macOS 数位板。
 
 ## Short Video Scripts
 

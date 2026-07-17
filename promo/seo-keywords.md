@@ -35,7 +35,7 @@ MarkerOn - Lightweight Screen Annotation Tool with Click-Through Mode
 
 ## Suggested Meta Description
 
-MarkerOn is a lightweight open-source screen annotation tool for Windows, macOS, and Linux. Draw over any app, use click-through mode, switch to whiteboard mode, and control everything from the keyboard.
+MarkerOn is a lightweight open-source screen annotation tool for Windows and macOS. Draw over any app, use click-through mode, switch to whiteboard mode, and control everything from the keyboard.
 
 ## Chinese Meta Title
 

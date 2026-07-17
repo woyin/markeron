@@ -19,7 +19,7 @@
     en: {
       'meta.title': 'MarkerOn - Lightweight Screen Annotation Tool',
       'meta.description':
-        'MarkerOn is a lightweight open-source screen annotation tool with click-through mode, whiteboard mode, and keyboard-first drawing for Windows, macOS, and Linux.',
+        'MarkerOn is a lightweight open-source screen annotation tool with click-through mode, whiteboard mode, and keyboard-first drawing for Windows and macOS.',
       'meta.keywords':
         'screen annotation tool, desktop drawing overlay, click-through annotation, desktop whiteboard, Tauri app, screen drawing',
       'meta.ogTitle': 'MarkerOn - Lightweight Screen Annotation Tool',
@@ -47,7 +47,7 @@
       'hero.chip.tools': '8 drawing tools',
       'hero.chip.clickThrough': 'Click-through mode',
       'hero.chip.whiteboard': 'Whiteboard mode',
-      'hero.chip.platforms': 'Win / macOS / Linux',
+      'hero.chip.platforms': 'Win / macOS',
       'hero.quickStartAria': 'Quick start',
       'hero.quickStartTitle': 'Quick Start',
       'hero.quickStep1': 'Launch — runs in the system tray',
@@ -94,7 +94,7 @@
       'bottom.downloadLabel': 'Official downloads',
       'bottom.faqLabel': 'Common questions',
       'bottom.githubTitle': 'GitHub Releases',
-      'bottom.githubDesc': 'Windows, macOS, Linux assets',
+      'bottom.githubDesc': 'Windows and macOS assets',
       'bottom.storeTitle': 'Microsoft Store',
       'bottom.storeDesc': 'Windows install and updates',
       'bottom.sourceTitle': 'Source Code',
@@ -114,7 +114,7 @@
     'zh-CN': {
       'meta.title': 'MarkerOn - 轻量级屏幕标注工具',
       'meta.description':
-        'MarkerOn 是一款轻量级开源屏幕标注工具，支持穿透模式、白板模式与快捷键优先绘制，适用于 Windows、macOS 和 Linux。',
+        'MarkerOn 是一款轻量级开源屏幕标注工具，支持穿透模式、白板模式与快捷键优先绘制，适用于 Windows 和 macOS。',
       'meta.keywords':
         '屏幕标注工具, 桌面标注, 穿透模式, 桌面白板, Tauri 应用, 屏幕绘画',
       'meta.ogTitle': 'MarkerOn - 轻量级屏幕标注工具',
@@ -142,7 +142,7 @@
       'hero.chip.tools': '8 种绘画工具',
       'hero.chip.clickThrough': '穿透模式',
       'hero.chip.whiteboard': '白板模式',
-      'hero.chip.platforms': 'Win / macOS / Linux',
+      'hero.chip.platforms': 'Win / macOS',
       'hero.quickStartAria': '快速开始',
       'hero.quickStartTitle': '快速开始',
       'hero.quickStep1': '启动 — 在系统托盘运行',
@@ -188,7 +188,7 @@
       'bottom.downloadLabel': '官方下载',
       'bottom.faqLabel': '常见问题',
       'bottom.githubTitle': 'GitHub Releases',
-      'bottom.githubDesc': 'Windows、macOS、Linux 安装包',
+      'bottom.githubDesc': 'Windows、macOS 安装包',
       'bottom.storeTitle': '微软商店',
       'bottom.storeDesc': 'Windows 安装与更新',
       'bottom.sourceTitle': '源代码',

@@ -123,12 +123,6 @@ pub fn get_cursor_screen_pos() -> Option<(i32, i32)> {
     }
 }
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn get_cursor_screen_pos() -> Option<(i32, i32)> {
-    let (x, y, w, h) = get_cursor_monitor_rect()?;
-    Some((x + w as i32 / 2, y + h as i32 / 2))
-}
-
 /// Cursor position in overlay client coordinates (CSS pixels in the webview).
 pub fn get_overlay_client_pointer(app: &AppHandle) -> Option<OverlayPointerPosition> {
     let (screen_x, screen_y) = get_cursor_screen_pos()?;
@@ -195,17 +189,6 @@ pub fn get_cursor_monitor_rect() -> Option<(i32, i32, u32, u32)> {
     Some((x, y, w, h))
 }
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-pub fn get_cursor_monitor_rect() -> Option<(i32, i32, u32, u32)> {
-    let monitors = std::panic::catch_unwind(xcap::Monitor::all).ok()?.ok()?;
-    let m = monitors.first()?;
-    let x = m.x().ok()?;
-    let y = m.y().ok()?;
-    let w = m.width().ok()?;
-    let h = m.height().ok()?;
-    Some((x, y, w, h))
-}
-
 #[cfg(target_os = "windows")]
 fn get_monitor_rect_at_point(x: i32, y: i32) -> Option<(i32, i32, u32, u32)> {
     crate::win32::get_monitor_rect_at_point_win32(x, y)
@@ -219,11 +202,6 @@ fn get_monitor_rect_at_point(x: i32, y: i32) -> Option<(i32, i32, u32, u32)> {
     let w = monitor.width().ok()?;
     let h = monitor.height().ok()?;
     Some((x, y, w, h))
-}
-
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-fn get_monitor_rect_at_point(_x: i32, _y: i32) -> Option<(i32, i32, u32, u32)> {
-    get_cursor_monitor_rect()
 }
 
 /// Monitor bounds for the overlay window (used to confine the cursor while drawing).

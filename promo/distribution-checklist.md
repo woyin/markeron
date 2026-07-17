@@ -78,7 +78,7 @@ Links:
 Use this metadata:
 
 - Name: `MarkerOn`
-- Platforms: Windows, macOS, Linux
+- Platforms: Windows, macOS
 - License: Open Source / MIT
 - Tags: screen annotation, desktop annotation, whiteboard, drawing, productivity, presentation
 - Website: GitHub repo or GitHub Pages website

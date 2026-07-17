@@ -25,9 +25,6 @@ body:
         - Windows 10
         - macOS (Apple Silicon)
         - macOS (Intel)
-        - Linux (Ubuntu/Debian)
-        - Linux (Fedora/RHEL)
-        - Linux (Arch)
         - Other
     validations:
       required: true

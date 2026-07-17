@@ -42,14 +42,6 @@ describe('isMacOS', () => {
     expect(isMacOS()).toBe(false)
   })
 
-  it('returns false for Linux platform', () => {
-    vi.stubGlobal('navigator', {
-      platform: 'Linux x86_64',
-      userAgent: 'Mozilla/5.0 (X11; Linux x86_64)',
-    })
-    expect(isMacOS()).toBe(false)
-  })
-
   it('handles missing platform/userAgent gracefully', () => {
     vi.stubGlobal('navigator', {})
     expect(isMacOS()).toBe(false)

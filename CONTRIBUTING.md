@@ -11,7 +11,8 @@ Thank you for your interest in contributing!
 - Platform-specific dependencies:
   - **Windows**: Windows SDK (for MSIX builds)
   - **macOS**: Xcode Command Line Tools
-  - **Linux**: `libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libxdo-dev libxcb-shm0-dev libxcb-randr0-dev`
+
+Supported platforms: **Windows** and **macOS** only.
 
 ### Node.js setup
 
