@@ -155,6 +155,7 @@ pub fn run() {
             commands::set_overlay_ignore_cursor_events,
             commands::save_shortcuts,
             commands::save_general,
+            commands::save_line_widths,
             commands::save_locale,
             commands::exit_drawing,
             commands::enter_penetration_mode,

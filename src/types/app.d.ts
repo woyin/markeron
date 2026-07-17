@@ -19,6 +19,12 @@ export interface AppConfig {
     toolbarVisibility?: ToolbarVisibility
     defaultEntryMode?: DefaultEntryMode
     eraserMode?: EraserMode
+    lineWidths?: {
+      stroke: number
+      highlighter: number
+      eraser: number
+      text: number
+    }
     autoStart?: boolean
   }
 }

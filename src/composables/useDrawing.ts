@@ -17,7 +17,14 @@ export type { Tool, Point, DrawAction } from './drawingTypes'
 export type { InputPointLike } from './drawingTypes'
 
 import type { Tool, Point, DrawAction, InputPointLike, TextOutlineStyle } from './drawingTypes'
-import { createDefaultLineWidths, eraserLineWidth, highlighterLineWidth, toolLineWidthGroup } from '../constants/tools'
+import {
+  createDefaultLineWidths,
+  eraserLineWidth,
+  highlighterLineWidth,
+  resolveLineWidths,
+  toolLineWidthGroup,
+  type ToolLineWidths,
+} from '../constants/tools'
 
 const HIT_GRID_SIZE = 192
 const HIT_GRID_MAX_CELLS = 64
@@ -60,6 +67,10 @@ export function useDrawing(
 
   function setEraserMode(mode: EraserMode) {
     eraserMode.value = mode
+  }
+
+  function setLineWidths(widths: Partial<ToolLineWidths> | null | undefined) {
+    lineWidths.value = resolveLineWidths(widths)
   }
 
   function resolveDrawLineWidth(tool: Tool): number {
@@ -1346,6 +1357,8 @@ export function useDrawing(
     currentTool,
     currentColor,
     lineWidth,
+    lineWidths,
+    setLineWidths,
     angleSnapStep,
     setEraserMode,
     isDrawing,

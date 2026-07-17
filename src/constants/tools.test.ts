@@ -6,6 +6,8 @@ import {
   ERASER_WIDTH_SCALE,
   highlighterLineWidth,
   HIGHLIGHTER_WIDTH_SCALE,
+  normalizeLineWidth,
+  resolveLineWidths,
   toolLineWidthGroup,
 } from './tools'
 
@@ -33,5 +35,21 @@ describe('line width helpers', () => {
     expect(HIGHLIGHTER_WIDTH_SCALE).toBe(7)
     expect(eraserLineWidth(3)).toBe(24)
     expect(highlighterLineWidth(3)).toBe(21)
+  })
+
+  it('normalizes line width to presets', () => {
+    expect(normalizeLineWidth(5)).toBe(5)
+    expect(normalizeLineWidth(4)).toBe(DEFAULT_LINE_WIDTH)
+    expect(normalizeLineWidth('3')).toBe(DEFAULT_LINE_WIDTH)
+  })
+
+  it('resolves persisted line widths with fallbacks', () => {
+    expect(resolveLineWidths()).toEqual(createDefaultLineWidths())
+    expect(resolveLineWidths({ stroke: 8, eraser: 4 })).toEqual({
+      stroke: 8,
+      highlighter: DEFAULT_LINE_WIDTH,
+      eraser: DEFAULT_LINE_WIDTH,
+      text: DEFAULT_LINE_WIDTH,
+    })
   })
 })

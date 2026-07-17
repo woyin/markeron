@@ -3,7 +3,9 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 use tauri_plugin_opener::OpenerExt;
 use tracing::{info, warn};
 
-use crate::config::{lock_or_recover, AppConfig, AppState, GeneralConfig, SaveResult, Shortcuts};
+use crate::config::{
+    lock_or_recover, AppConfig, AppState, GeneralConfig, LineWidthsConfig, SaveResult, Shortcuts,
+};
 use crate::error::{AppError, AppResult};
 use crate::shortcuts::{parse_shortcut, register_shortcuts};
 
@@ -172,6 +174,31 @@ pub fn save_general(
         crate::overlay::ensure_toolbar_window(&app, &state);
     }
     info!("General config saved");
+    Ok(())
+}
+
+/// Patch only `lineWidths` under the config lock so concurrent `save_general`
+/// callers cannot clobber each other (and vice versa).
+#[tauri::command]
+pub fn save_line_widths(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+    line_widths: LineWidthsConfig,
+) -> AppResult<()> {
+    let normalized = line_widths.normalized();
+    let snapshot = {
+        let mut cfg = lock_or_recover(&state.config);
+        if cfg.general.line_widths == normalized {
+            return Ok(());
+        }
+        cfg.general.line_widths = normalized;
+        crate::config::save_config(&app, &cfg);
+        cfg.clone()
+    };
+    if let Err(e) = app.emit("config-changed", snapshot) {
+        warn!("Failed to emit config-changed: {}", e);
+    }
+    info!("Line widths saved");
     Ok(())
 }
 

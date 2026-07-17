@@ -96,6 +96,18 @@ describe('useDrawing', () => {
       expect(drawing.lineWidth.value).toBe(3)
     })
 
+    it('applies persisted line widths per group', () => {
+      drawing.setLineWidths({ stroke: 8, highlighter: 5, eraser: 2, text: 1 })
+      drawing.currentTool.value = 'pen'
+      expect(drawing.lineWidth.value).toBe(8)
+      drawing.currentTool.value = 'highlighter'
+      expect(drawing.lineWidth.value).toBe(5)
+      drawing.currentTool.value = 'eraser'
+      expect(drawing.lineWidth.value).toBe(2)
+      drawing.currentTool.value = 'text'
+      expect(drawing.lineWidth.value).toBe(1)
+    })
+
     it('shares stroke width across pen and shapes; eraser is independent', () => {
       drawing.currentTool.value = 'pen'
       drawing.lineWidth.value = 8
