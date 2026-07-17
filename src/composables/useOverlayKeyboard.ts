@@ -216,15 +216,19 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
     if (ctx.showToolbarPopup.value && !ctx.toolbarPinned.value) return
 
     // Undo/Redo/Clear/Exit
-    if (modDown(e) && e.shiftKey && e.key === 'Z') {
+    // macOS WKWebView often reports Cmd+Shift+Z as key 'z' (lowercase) even with shiftKey;
+    // require !shiftKey on undo so Mod+Shift+Z never falls through as undo.
+    const keyZ = e.key === 'z' || e.key === 'Z'
+    const keyY = e.key === 'y' || e.key === 'Y'
+    if (modDown(e) && e.shiftKey && keyZ) {
       e.preventDefault()
       logActionEvent('redo', { reason: 'keyboard', shortcut: 'mod+shift+z' })
       actions.redo()
-    } else if (modDown(e) && e.key === 'z') {
+    } else if (modDown(e) && !e.shiftKey && keyZ) {
       e.preventDefault()
       logActionEvent('undo', { reason: 'keyboard', shortcut: 'mod+z' })
       actions.undo()
-    } else if (modDown(e) && e.key === 'y') {
+    } else if (modDown(e) && !e.shiftKey && keyY) {
       e.preventDefault()
       logActionEvent('redo', { reason: 'keyboard', shortcut: 'mod+y' })
       actions.redo()

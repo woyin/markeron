@@ -162,6 +162,13 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.redo).toHaveLength(1)
     })
 
+    // macOS WKWebView: Cmd+Shift+Z often reports lowercase 'z' with shiftKey set
+    it('Mod+Shift+z (lowercase key) triggers redo, not undo', () => {
+      handler(key('z', { ctrlKey: true, shiftKey: true }))
+      expect(actions.calls.redo).toHaveLength(1)
+      expect(actions.calls.undo).toHaveLength(0)
+    })
+
     it('does not undo/redo when toolbar popup is open', () => {
       ctx.showToolbarPopup.value = true
       handler(key('z', { ctrlKey: true }))
