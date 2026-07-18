@@ -80,7 +80,6 @@ export default {
     creditsRoll: {
       title: '致谢',
       sponsorsEmpty: '爱发电上的每一位赞助者',
-      sponsorAmount: '¥{amount}',
       closing: '感谢每一份支持',
     },
     shortcutLabels: {

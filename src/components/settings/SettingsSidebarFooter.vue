@@ -9,7 +9,7 @@ const APP_VERSION = __APP_VERSION__
 
 const CLICKS_NEEDED = 3
 const CLICK_WINDOW_MS = 3000
-const SHAKE_MS = 320
+const SHAKE_MS = 480
 const UNROLL_MS = 650
 const HOLD_AFTER_SCROLL_MS = 2000
 const CLOSE_MS = 500
@@ -17,6 +17,7 @@ const CLOSE_MS = 500
 type Phase = 'idle' | 'shake' | 'unroll' | 'scroll' | 'close'
 
 const phase = ref<Phase>('idle')
+const versionBtnRef = ref<HTMLElement | null>(null)
 const trackRef = ref<HTMLElement | null>(null)
 const viewportRef = ref<HTMLElement | null>(null)
 
@@ -28,18 +29,13 @@ const creditSections = computed(() => [
   },
 ])
 
-function formatSponsorMeta(plan: string, amount: string) {
-  const parts: string[] = []
-  const planLabel = plan.replace(/^⭐\s*/, '').trim()
-  if (planLabel) parts.push(planLabel)
-  if (amount && amount !== '0' && amount !== '0.00') {
-    parts.push(t('settings.creditsRoll.sponsorAmount', { amount }))
-  }
-  return parts.join(' · ')
+function formatSponsorPlan(plan: string) {
+  return plan.replace(/^⭐\s*/, '').trim()
 }
 
 const clickTimestamps: number[] = []
 let timers: ReturnType<typeof setTimeout>[] = []
+let shakeAnimation: Animation | null = null
 
 function schedule(ms: number, fn: () => void) {
   const id = setTimeout(fn, ms)
@@ -59,7 +55,37 @@ function resetScrollTrack() {
   track.style.removeProperty('--credits-duration')
 }
 
+function stopShakeAnimation() {
+  shakeAnimation?.cancel()
+  shakeAnimation = null
+  versionBtnRef.value?.style.removeProperty('transform')
+}
+
+function playShake() {
+  const el = versionBtnRef.value
+  if (!el || typeof el.animate !== 'function') return
+
+  stopShakeAnimation()
+  shakeAnimation = el.animate(
+    [
+      { transform: 'translateX(0) scale(1)' },
+      { transform: 'translateX(-6px) scale(1.03)' },
+      { transform: 'translateX(6px) scale(1.02)' },
+      { transform: 'translateX(-4px) scale(1.025)' },
+      { transform: 'translateX(4px) scale(1.01)' },
+      { transform: 'translateX(-2px) scale(1.015)' },
+      { transform: 'translateX(0) scale(1)' },
+    ],
+    {
+      duration: SHAKE_MS,
+      easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      fill: 'none',
+    },
+  )
+}
+
 function resetEasterEgg() {
+  stopShakeAnimation()
   phase.value = 'idle'
   resetScrollTrack()
 }
@@ -94,6 +120,7 @@ function startEasterEgg() {
   clearTimers()
   resetScrollTrack()
   phase.value = 'shake'
+  void nextTick(playShake)
 
   schedule(SHAKE_MS, () => {
     phase.value = 'unroll'
@@ -105,8 +132,9 @@ function startEasterEgg() {
   })
 }
 
-function onVersionClick() {
+function onVersionActivate(event: PointerEvent) {
   if (phase.value !== 'idle') return
+  if (event.button !== 0) return
 
   const now = Date.now()
   while (clickTimestamps.length > 0 && now - clickTimestamps[0]! > CLICK_WINDOW_MS) {
@@ -123,7 +151,10 @@ function onVersionClick() {
 const creditsVisible = computed(() => phase.value !== 'idle')
 const hideFooterLine = computed(() => phase.value !== 'idle' && phase.value !== 'shake')
 
-onUnmounted(clearTimers)
+onUnmounted(() => {
+  clearTimers()
+  stopShakeAnimation()
+})
 </script>
 
 <template>
@@ -133,11 +164,12 @@ onUnmounted(clearTimers)
   >
     <p class="settings-sidebar-footer__line" :class="{ 'settings-sidebar-footer__line--hidden': hideFooterLine }">
       <button
+        ref="versionBtnRef"
         type="button"
         class="settings-sidebar-footer__version-btn"
         :class="{ 'is-shaking': phase === 'shake' }"
         :aria-label="`v${APP_VERSION}`"
-        @click="onVersionClick"
+        @pointerdown="onVersionActivate"
       >
         v{{ APP_VERSION }}
       </button>
@@ -172,11 +204,8 @@ onUnmounted(clearTimers)
                     class="settings-sidebar-credits__sponsor"
                   >
                     <span class="settings-sidebar-credits__sponsor-name">{{ sponsor.name }}</span>
-                    <span
-                      v-if="formatSponsorMeta(sponsor.plan, sponsor.amount)"
-                      class="settings-sidebar-credits__sponsor-meta"
-                    >
-                      {{ formatSponsorMeta(sponsor.plan, sponsor.amount) }}
+                    <span v-if="formatSponsorPlan(sponsor.plan)" class="settings-sidebar-credits__sponsor-meta">
+                      {{ formatSponsorPlan(sponsor.plan) }}
                     </span>
                   </div>
                 </template>

@@ -80,7 +80,6 @@ export default {
     creditsRoll: {
       title: 'Credits',
       sponsorsEmpty: 'Every supporter on Afdian',
-      sponsorAmount: '¥{amount}',
       closing: 'Thank you for your support',
     },
     shortcutLabels: {
