@@ -32,6 +32,22 @@
     background: #1e1e20;
   }
 
+  /* Settings window typography scale (settings webview only; overlay unchanged)
+     title 16 · label 14.5 · body 13.5 · caption/btn/footer 12.5 · segment/kbd 12 */
+  html.settings {
+    --settings-fs-title: 16px;
+    --settings-fs-heading: 19px;
+    --settings-fs-brand: 14.5px;
+    --settings-fs-nav: 14.5px;
+    --settings-fs-label: 14.5px;
+    --settings-fs-body: 13.5px;
+    --settings-fs-caption: 12.5px;
+    --settings-fs-btn: 12.5px;
+    --settings-fs-segment: 12px;
+    --settings-fs-kbd: 12px;
+    --settings-fs-footer: 12.5px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -87,7 +103,7 @@
   margin: 0;
   padding: 8px 16px 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 10px;
+  font-size: var(--settings-fs-caption, 12.5px);
   color: rgba(255, 255, 255, 0.25);
   line-height: 1.625;
 }
@@ -162,6 +178,22 @@
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 0.05em;
+}
+
+html.settings .ui-kbd {
+  font-size: var(--settings-fs-kbd);
+}
+
+html.settings .ui-kbd--shortcut {
+  font-size: var(--settings-fs-kbd);
+}
+
+html.settings .ui-segment {
+  font-size: var(--settings-fs-segment);
+}
+
+html.settings .ui-select {
+  font-size: var(--settings-fs-body);
 }
 
 .ui-btn-outline {
@@ -356,34 +388,49 @@
 /* Settings window — explicit rgba for macOS WebKit parity with Windows */
 .settings-text-brand {
   color: rgba(255, 255, 255, 0.85);
+  font-size: var(--settings-fs-brand, 14.5px);
 }
 
 .settings-text-title {
   color: rgba(255, 255, 255, 0.75);
+  font-size: var(--settings-fs-title, 16px);
 }
 
 .settings-text-heading {
   color: rgba(255, 255, 255, 0.85);
+  font-size: var(--settings-fs-heading, 19px);
 }
 
 .settings-text-label {
   color: rgba(255, 255, 255, 0.7);
+  font-size: var(--settings-fs-label, 14.5px);
 }
 
 .settings-text-value {
   color: rgba(255, 255, 255, 0.65);
+  font-size: var(--settings-fs-body, 13.5px);
 }
 
 .settings-text-muted {
   color: rgba(255, 255, 255, 0.45);
+  font-size: var(--settings-fs-body, 13.5px);
 }
 
+/* Secondary hint / status copy (privacy notes, update progress) */
 .settings-text-subtle {
   color: rgba(255, 255, 255, 0.4);
+  font-size: var(--settings-fs-caption, 12.5px);
+}
+
+/* Meta row key on the left (About card) — same size as labels, muted color */
+.settings-text-row-key {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--settings-fs-label, 14.5px);
 }
 
 .settings-text-faint {
   color: rgba(255, 255, 255, 0.3);
+  font-size: var(--settings-fs-footer, 12.5px);
 }
 
 .settings-text-dim {
@@ -391,23 +438,28 @@
 }
 
 .settings-text-footer {
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.32);
+  font-size: var(--settings-fs-footer, 12.5px);
 }
 
 .settings-text-body {
   color: rgba(255, 255, 255, 0.5);
+  font-size: var(--settings-fs-body, 13.5px);
 }
 
 .settings-text-tooltip {
   color: rgba(255, 255, 255, 0.75);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .settings-text-btn {
   color: rgba(255, 255, 255, 0.6);
+  font-size: var(--settings-fs-btn, 12.5px);
 }
 
 .settings-text-btn-strong {
   color: rgba(255, 255, 255, 0.7);
+  font-size: var(--settings-fs-btn, 12.5px);
 }
 
 .settings-text-select {
@@ -424,10 +476,17 @@
 
 .settings-text-accent {
   color: rgba(10, 132, 255, 0.8);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .settings-text-accent-link {
   color: rgba(10, 132, 255, 0.7);
+  font-size: var(--settings-fs-body, 13.5px);
+}
+
+.settings-text-capture {
+  color: rgb(10, 132, 255);
+  font-size: var(--settings-fs-body, 13.5px);
 }
 
 .settings-sidebar-footer {
@@ -441,19 +500,19 @@
   align-items: center;
   flex-wrap: nowrap;
   gap: 4px;
-  font-size: 9.5px;
-  line-height: 1;
+  font-size: var(--settings-fs-footer, 12.5px);
+  line-height: 1.2;
 }
 
 .settings-sidebar-footer__open {
   letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.32);
   white-space: nowrap;
 }
 
 .settings-sidebar-footer__sep {
-  color: rgba(255, 255, 255, 0.12);
-  font-size: 8px;
+  color: rgba(255, 255, 255, 0.18);
+  font-size: inherit;
   line-height: 1;
   flex-shrink: 0;
 }
@@ -461,7 +520,7 @@
 .settings-sidebar-footer__license {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 0.06em;
-  color: rgba(10, 132, 255, 0.38);
+  color: rgba(10, 132, 255, 0.48);
   white-space: nowrap;
 }
 
@@ -480,14 +539,14 @@
   cursor: pointer;
   white-space: nowrap;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 9.5px;
+  font-size: inherit;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.24);
+  color: rgba(255, 255, 255, 0.36);
   transition: color 180ms ease;
 }
 
 .settings-sidebar-footer__version-btn:hover {
-  color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .settings-sidebar-footer__version-btn:focus-visible {
@@ -685,21 +744,25 @@
 
 .settings-status-success {
   color: rgba(74, 222, 128, 0.7);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .settings-msg-success {
   background: rgba(16, 185, 129, 0.1);
   color: rgba(52, 211, 153, 0.8);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .settings-msg-error {
   background: rgba(239, 68, 68, 0.1);
   color: rgba(248, 113, 113, 0.8);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .settings-nav-item {
   background: transparent;
   color: rgba(255, 255, 255, 0.4);
+  font-size: var(--settings-fs-nav, 14.5px);
 }
 
 .settings-nav-item:hover {
@@ -710,6 +773,7 @@
 .settings-nav-item--active {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
+  font-size: var(--settings-fs-nav, 14.5px);
 }
 
 .settings-toggle-on {
@@ -747,6 +811,7 @@
   color: rgba(10, 132, 255, 0.8);
   background: rgba(10, 132, 255, 0.08);
   border: 1px solid rgba(10, 132, 255, 0.15);
+  font-size: var(--settings-fs-btn, 12.5px);
   transition: background 0.15s;
 }
 
@@ -758,6 +823,7 @@
   color: rgba(255, 255, 255, 0.85);
   background: rgba(10, 132, 255, 0.2);
   border: 1px solid rgba(10, 132, 255, 0.25);
+  font-size: var(--settings-fs-btn, 12.5px);
   transition: background 0.15s;
 }
 

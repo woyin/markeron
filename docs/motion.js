@@ -158,11 +158,75 @@
     });
   }
 
+  function initHelpTocSpy() {
+    if (document.body?.dataset?.page !== 'help') return;
+
+    const links = Array.from(document.querySelectorAll('.help-toc a[href^="#"]'));
+    if (!links.length) return;
+
+    const sections = links
+      .map((link) => {
+        const id = link.getAttribute('href')?.slice(1);
+        const el = id ? document.getElementById(id) : null;
+        return el ? { link, el } : null;
+      })
+      .filter(Boolean);
+
+    if (!sections.length) return;
+
+    function setActive(id) {
+      links.forEach((link) => {
+        const match = link.getAttribute('href') === `#${id}`;
+        link.classList.toggle('is-active', match);
+        if (match) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      });
+    }
+
+    setActive(sections[0].el.id);
+
+    const navOffset = () => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--nav-height');
+      const nav = parseFloat(raw) || 60;
+      return nav + 12;
+    };
+
+    links.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const id = link.getAttribute('href')?.slice(1);
+        const target = id ? document.getElementById(id) : null;
+        if (!target) return;
+        event.preventDefault();
+        const top = target.getBoundingClientRect().top + window.scrollY - navOffset();
+        window.scrollTo({ top: Math.max(0, top), behavior: reduce.matches ? 'auto' : 'smooth' });
+        history.replaceState(null, '', `#${id}`);
+        setActive(id);
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (!visible.length) return;
+        setActive(visible[0].target.id);
+      },
+      {
+        rootMargin: '-18% 0px -62% 0px',
+        threshold: [0.08, 0.2, 0.4],
+      },
+    );
+
+    sections.forEach(({ el }) => observer.observe(el));
+  }
+
   function init() {
     initHeroStagger();
     initScrollReveal();
     initAvatarGroups();
     initCardTilt();
+    initHelpTocSpy();
   }
 
   if (document.readyState === 'loading') {

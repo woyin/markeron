@@ -105,8 +105,8 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
     let url = WebviewUrl::App(hash.into());
     let builder = WebviewWindowBuilder::new(app, "settings", url)
         .title(i18n::strings().window_title)
-        .inner_size(620.0, 450.0)
-        .min_inner_size(500.0, 380.0)
+        .inner_size(660.0, 500.0)
+        .min_inner_size(540.0, 420.0)
         .resizable(true)
         .center()
         .visible(false);

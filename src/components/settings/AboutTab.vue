@@ -40,21 +40,21 @@ async function openUrl(url: string) {
         </svg>
       </div>
 
-      <h1 class="text-[18px] font-semibold settings-text-heading tracking-wide mb-1">MarkerOn</h1>
-      <p class="text-[11.5px] settings-text-subtle text-center" :class="updateUiExpanded ? 'mb-3' : 'mb-4'">
+      <h1 class="font-semibold settings-text-heading tracking-wide mb-1">MarkerOn</h1>
+      <p class="settings-text-body text-center" :class="updateUiExpanded ? 'mb-3' : 'mb-4'">
         {{ t('about.tagline') }}
       </p>
 
       <div class="flex flex-col items-center gap-2 w-full" :class="updateUiExpanded ? 'mb-3' : 'mb-6'">
         <button
           v-if="status === 'idle' || status === 'error'"
-          class="settings-btn-accent-outline px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer"
+          class="settings-btn-accent-outline px-4 py-1.5 rounded-lg cursor-pointer"
           @click="checkForUpdate()"
         >
           {{ status === 'error' ? t('about.updateError') : t('about.checkUpdate') }}
         </button>
 
-        <span v-else-if="status === 'checking'" class="text-[11.5px] settings-text-subtle flex items-center gap-1.5">
+        <span v-else-if="status === 'checking'" class="settings-text-subtle flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -63,11 +63,9 @@ async function openUrl(url: string) {
         </span>
 
         <div v-else-if="status === 'available'" class="flex flex-col items-center gap-1.5">
-          <span class="text-[11.5px] settings-text-accent">{{
-            t('about.updateAvailable', { version: newVersion })
-          }}</span>
+          <span class="settings-text-accent">{{ t('about.updateAvailable', { version: newVersion }) }}</span>
           <button
-            class="settings-btn-accent-primary px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer"
+            class="settings-btn-accent-primary px-4 py-1.5 rounded-lg cursor-pointer"
             @click="downloadAndInstall()"
           >
             {{ t('about.installAndRestart') }}
@@ -75,9 +73,7 @@ async function openUrl(url: string) {
         </div>
 
         <div v-else-if="status === 'downloading'" class="flex flex-col items-center gap-1.5 w-full max-w-[200px]">
-          <span class="text-[11.5px] settings-text-subtle">{{
-            t('about.downloading', { progress: String(progress) })
-          }}</span>
+          <span class="settings-text-subtle">{{ t('about.downloading', { progress: String(progress) }) }}</span>
           <div class="settings-progress-track w-full h-1.5 rounded-full overflow-hidden">
             <div
               class="settings-progress-fill h-full rounded-full transition-all duration-300"
@@ -86,70 +82,27 @@ async function openUrl(url: string) {
           </div>
         </div>
 
-        <span v-else-if="status === 'up-to-date'" class="text-[11.5px] settings-status-success">
+        <span v-else-if="status === 'up-to-date'" class="settings-status-success">
           {{ t('about.upToDate') }}
         </span>
       </div>
     </div>
 
-    <div class="flex-1 min-h-0 w-full max-w-[340px] flex flex-col">
-      <div class="settings-card w-full flex-1 min-h-0 flex flex-col overflow-hidden">
-        <div class="about-card-scroll flex-1 min-h-0 overflow-y-auto">
-          <div class="flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover transition-colors">
-            <span class="text-[12px] settings-text-muted">{{ t('about.license') }}</span>
-            <span class="text-[12px] settings-text-value">MIT License</span>
-          </div>
-          <button
-            class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
-            @click="openUrl('https://github.com/ifer47/markeron')"
-          >
-            <span class="text-[12px] settings-text-muted">GitHub</span>
-            <span class="flex items-center gap-1.5 text-[12px] settings-text-accent-link">
-              ifer47/markeron
-              <svg
-                class="w-3 h-3 opacity-50"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            </span>
-          </button>
-          <button
-            class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
-            @click="openUrl('https://afdian.com/a/markeron')"
-          >
-            <span class="text-[12px] settings-text-muted">{{ t('about.sponsor') }}</span>
-            <span class="flex items-center gap-1.5 text-[12px] settings-text-accent-link">
-              爱发电
-              <svg
-                class="w-3 h-3 opacity-50"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                <polyline points="15 3 21 3 21 9" />
-                <line x1="10" y1="14" x2="21" y2="3" />
-              </svg>
-            </span>
-          </button>
-          <button
-            class="w-full flex items-center justify-between px-4 py-3 settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-none"
-            @click="openUrl('https://github.com/ifer47/markeron/issues')"
-          >
-            <span class="text-[12px] settings-text-muted">{{ t('about.feedback') }}</span>
+    <div class="w-full max-w-[340px] shrink-0">
+      <div class="settings-card w-full overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover transition-colors">
+          <span class="settings-text-row-key">{{ t('about.license') }}</span>
+          <span class="settings-text-value">MIT License</span>
+        </div>
+        <button
+          class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
+          @click="openUrl('https://github.com/ifer47/markeron')"
+        >
+          <span class="settings-text-row-key">GitHub</span>
+          <span class="flex items-center gap-1.5 settings-text-accent-link">
+            ifer47/markeron
             <svg
-              class="w-3.5 h-3.5 settings-text-dim"
+              class="w-3 h-3 opacity-50"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -157,15 +110,54 @@ async function openUrl(url: string) {
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <polyline points="9 18 15 12 9 6" />
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
             </svg>
-          </button>
-        </div>
+          </span>
+        </button>
+        <button
+          class="w-full flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-x-0 border-t-0"
+          @click="openUrl('https://afdian.com/a/markeron')"
+        >
+          <span class="settings-text-row-key">{{ t('about.sponsor') }}</span>
+          <span class="flex items-center gap-1.5 settings-text-accent-link">
+            {{ '\u7231\u53d1\u7535' }}
+            <svg
+              class="w-3 h-3 opacity-50"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </span>
+        </button>
+        <button
+          class="w-full flex items-center justify-between px-4 py-3 settings-row-hover-strong transition-colors cursor-pointer bg-transparent border-none"
+          @click="openUrl('https://github.com/ifer47/markeron/issues')"
+        >
+          <span class="settings-text-row-key">{{ t('about.feedback') }}</span>
+          <svg
+            class="w-3.5 h-3.5 settings-text-dim"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
       </div>
     </div>
 
-    <p class="shrink-0 pt-6 pb-1 text-[10.5px] settings-text-footer tracking-wide">
-      &copy; 2026 ifer47 &middot; Open Source
-    </p>
+    <p class="shrink-0 mt-auto pt-6 pb-1 settings-text-footer tracking-wide">&copy; 2026 ifer47 &middot; Open Source</p>
   </div>
 </template>

@@ -16,7 +16,7 @@ const { t, locale, setLocale, availableLocales } = useI18n()
 
 const localeLabels: Record<string, string> = {
   en: 'English',
-  'zh-CN': '简体中文',
+  'zh-CN': '\u7b80\u4f53\u4e2d\u6587',
 }
 
 const localeOpen = ref(false)
@@ -241,15 +241,15 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
 
 <template>
   <div class="flex-1 flex flex-col px-7 py-6 overflow-y-auto settings-scroll">
-    <h2 class="text-[14px] font-semibold settings-text-title mb-4">{{ t('settings.generalTitle') }}</h2>
+    <h2 class="font-semibold settings-text-title mb-4">{{ t('settings.generalTitle') }}</h2>
 
     <div class="flex flex-col gap-2">
       <div class="settings-card settings-card--popover-host" :class="{ 'relative z-20': localeOpen }">
         <div class="settings-card-row">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.language') }}</span>
+          <span class="settings-text-label">{{ t('settings.language') }}</span>
           <div ref="localeDropdownRef" class="relative">
             <button
-              class="flex items-center gap-1.5 px-3 py-[5px] rounded-md ui-select text-[12px] cursor-pointer outline-none"
+              class="flex items-center gap-1.5 px-3 py-[5px] rounded-md ui-select cursor-pointer outline-none"
               @click="toggleLocaleDropdown"
             >
               {{ localeLabels[locale.locale] || locale.locale }}
@@ -274,7 +274,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
                 <button
                   v-for="loc in availableLocales"
                   :key="loc"
-                  class="w-full flex items-center gap-2 px-3 py-[6px] text-[12px] border-none cursor-pointer transition-colors duration-100"
+                  class="w-full flex items-center gap-2 px-3 py-[6px] settings-text-value border-none cursor-pointer transition-colors duration-100"
                   :class="locale.locale === loc ? 'settings-locale-item--active' : 'settings-locale-item'"
                   @click="changeLocale(loc)"
                 >
@@ -301,7 +301,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
 
       <div class="settings-card">
         <div class="settings-card-row">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.autoStart') }}</span>
+          <span class="settings-text-label">{{ t('settings.autoStart') }}</span>
           <button
             role="switch"
             :aria-checked="autoStartEnabled"
@@ -320,12 +320,12 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
 
       <div class="settings-card">
         <div class="settings-card-row">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.dragMode') }}</span>
+          <span class="settings-text-label">{{ t('settings.dragMode') }}</span>
           <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[62%]">
             <button
               v-for="mode in dragModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': dragMode === mode }"
               :aria-pressed="dragMode === mode"
               @click="setDragMode(mode)"
@@ -341,16 +341,16 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
 
       <div class="settings-card">
         <div class="settings-card-row">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.angleSnapStep') }}</span>
+          <span class="settings-text-label">{{ t('settings.angleSnapStep') }}</span>
           <div class="flex items-center gap-1.5 shrink-0">
             <button
               v-for="step in snapStepOptions"
               :key="step"
-              class="px-2.5 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120"
+              class="px-2.5 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120"
               :class="{ 'ui-segment--active': angleSnapStep === step }"
               @click="toggleAngleSnapStep(step)"
             >
-              {{ step }}°
+              {{ step }}{{ '\u00B0' }}
             </button>
           </div>
         </div>
@@ -359,12 +359,12 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
 
       <div class="settings-card">
         <div class="settings-card-row">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.eraserMode') }}</span>
+          <span class="settings-text-label">{{ t('settings.eraserMode') }}</span>
           <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[62%]">
             <button
               v-for="mode in eraserModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': eraserMode === mode }"
               :aria-pressed="eraserMode === mode"
               @click="setEraserMode(mode)"
@@ -373,21 +373,20 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             </button>
           </div>
         </div>
-        <p class="settings-card-desc">{{ t('settings.eraserModeDesc') }}</p>
       </div>
 
       <div class="settings-card">
         <div class="settings-card-header">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.whiteboardSection') }}</span>
+          <span class="settings-text-label">{{ t('settings.whiteboardSection') }}</span>
         </div>
 
         <div class="settings-card-row settings-card-row--divided">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.defaultEntryMode') }}</span>
+          <span class="settings-text-label">{{ t('settings.defaultEntryMode') }}</span>
           <div class="flex items-center gap-1 shrink-0 flex-wrap justify-end max-w-[62%]">
             <button
               v-for="mode in defaultEntryModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': defaultEntryMode === mode }"
               :aria-pressed="defaultEntryMode === mode"
               @click="setDefaultEntryMode(mode)"
@@ -398,7 +397,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
         </div>
 
         <div class="settings-card-row settings-card-row--divided">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.preserveDrawings') }}</span>
+          <span class="settings-text-label">{{ t('settings.preserveDrawings') }}</span>
           <button
             role="switch"
             :aria-checked="preserveDrawings"
@@ -415,7 +414,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
         </div>
 
         <div class="settings-card-row settings-card-row--divided">
-          <span class="text-[12.5px] settings-text-label">{{ t('settings.whiteboardPreserveDrawings') }}</span>
+          <span class="settings-text-label">{{ t('settings.whiteboardPreserveDrawings') }}</span>
           <button
             role="switch"
             :aria-checked="whiteboardPreserveDrawings"
@@ -430,8 +429,6 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             />
           </button>
         </div>
-
-        <p class="settings-card-desc">{{ t('settings.whiteboardSectionDesc') }}</p>
       </div>
     </div>
   </div>

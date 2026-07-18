@@ -17,6 +17,9 @@ import SettingsSidebarFooter from './settings/SettingsSidebarFooter.vue'
 const { t } = useI18n()
 
 const modLabel = computed(() => (isMacOS() ? 'Command' : 'Ctrl'))
+const helpMod = computed(() => (isMacOS() ? '⌘' : 'Ctrl'))
+const helpOpt = computed(() => (isMacOS() ? '⌥' : 'Alt'))
+const helpShift = computed(() => (isMacOS() ? '⇧' : 'Shift'))
 
 const defaultShortcutStrings = computed(() =>
   isMacOS()
@@ -31,6 +34,24 @@ const defaultShortcutStrings = computed(() =>
         togglePenetration: 'Ctrl+Shift+X',
       },
 )
+
+const helpGlobalKeys = computed(() =>
+  isMacOS()
+    ? { toggle: '⌘+⇧+D', clear: '⌘+⇧+C', through: '⌘+⇧+X' }
+    : { toggle: 'Ctrl+Shift+D', clear: 'Ctrl+Shift+C', through: 'Ctrl+Shift+X' },
+)
+
+const helpTools = [
+  { key: '1', name: 'tools.pen', desc: 'toolDesc.pen' },
+  { key: '2', name: 'tools.highlighter', desc: 'toolDesc.highlighter' },
+  { key: '3', name: 'tools.arrow', desc: 'toolDesc.arrow' },
+  { key: '4', name: 'tools.rect', desc: 'toolDesc.rect' },
+  { key: '5', name: 'tools.ellipse', desc: 'toolDesc.ellipse' },
+  { key: '6', name: 'tools.line', desc: 'toolDesc.line' },
+  { key: '7', name: 'tools.eraser', desc: 'toolDesc.eraser' },
+  { key: '8', name: 'tools.laser', desc: 'toolDesc.laser' },
+  { key: 'T', name: 'tools.text', desc: 'toolDesc.text' },
+] as const
 
 const hashTab = window.location.hash.split('/')[1]
 const activeTab = ref(
@@ -194,6 +215,14 @@ const preserveDrawings = ref(false)
 const whiteboardPreserveDrawings = ref(true)
 const angleSnapStep = ref<15 | 30 | 45>(15)
 
+async function openOnlineHelp() {
+  try {
+    await invoke('open_url', { url: 'https://markeron.cn/help.html' })
+  } catch (error) {
+    console.error('Failed to open online help:', error)
+  }
+}
+
 let unlistenSwitchTab: (() => void) | null = null
 let unlistenConfigChanged: (() => void) | null = null
 
@@ -229,7 +258,7 @@ onUnmounted(() => {
 <template>
   <div class="flex h-full w-full font-text text-white select-none overflow-hidden">
     <!-- Sidebar -->
-    <div class="relative z-10 w-[154px] shrink-0 bg-[#161618] flex flex-col ui-divider-v">
+    <div class="relative z-10 w-[164px] shrink-0 bg-[#161618] flex flex-col ui-divider-v">
       <div class="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <svg class="w-7 h-7 shrink-0" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -237,7 +266,7 @@ onUnmounted(() => {
             fill="currentColor"
           />
         </svg>
-        <span class="text-[13px] font-semibold settings-text-brand tracking-wide leading-tight">MarkerOn</span>
+        <span class="font-semibold settings-text-brand tracking-wide leading-tight">MarkerOn</span>
       </div>
 
       <nav role="tablist" aria-orientation="vertical" class="flex flex-col gap-0.5 px-2">
@@ -247,7 +276,7 @@ onUnmounted(() => {
           role="tab"
           :aria-selected="activeTab === tab.id"
           :aria-controls="`tabpanel-${tab.id}`"
-          class="relative flex items-center gap-2 px-3 py-[7px] rounded-lg text-[12.5px] border-none cursor-pointer transition-all duration-120 overflow-hidden"
+          class="relative flex items-center gap-2 px-3 py-[7px] rounded-lg border-none cursor-pointer transition-all duration-120 overflow-hidden"
           :class="activeTab === tab.id ? 'settings-nav-item--active' : 'settings-nav-item'"
           @click="activeTab = tab.id"
         >
@@ -338,7 +367,7 @@ onUnmounted(() => {
     <div class="flex-1 bg-[#1e1e20] flex flex-col overflow-hidden">
       <div v-if="activeTab === 'shortcuts'" class="flex-1 flex flex-col px-7 py-6 overflow-y-auto settings-scroll">
         <div class="flex items-center gap-2 mb-4">
-          <h2 class="text-[14px] font-semibold settings-text-title">{{ t('settings.shortcutsTitle') }}</h2>
+          <h2 class="font-semibold settings-text-title">{{ t('settings.shortcutsTitle') }}</h2>
           <div class="group relative flex items-center">
             <svg
               class="w-[14px] h-[14px] settings-text-icon settings-text-icon-hover cursor-help transition-colors duration-200 outline-none"
@@ -356,7 +385,7 @@ onUnmounted(() => {
             <div
               class="absolute left-full top-1/2 -translate-y-1/2 ml-2 mt-4 w-[248px] p-2.5 ui-tooltip rounded-[8px] opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none origin-left"
             >
-              <p class="text-[10.5px] settings-text-tooltip leading-[1.6] m-0 text-left font-sans">
+              <p class="settings-text-tooltip leading-[1.6] m-0 text-left font-sans">
                 {{ t('settings.comboRequirement', { mod: modLabel }) }}
               </p>
             </div>
@@ -370,15 +399,15 @@ onUnmounted(() => {
             class="settings-card settings-card-row"
             :class="{ 'settings-card--active': capturing === action }"
           >
-            <span class="text-[12.5px] settings-text-label">{{ label }}</span>
+            <span class="settings-text-label">{{ label }}</span>
 
             <div class="flex items-center gap-2">
               <template v-if="capturing === action">
-                <span class="text-[12px] text-accent font-medium min-w-[90px] text-right tracking-wide">
+                <span class="settings-text-capture font-medium min-w-[90px] text-right tracking-wide">
                   {{ capturedKeys || t('settings.pressComboHint') }}
                 </span>
                 <button
-                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn text-[11px] cursor-pointer"
+                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn cursor-pointer"
                   @click="cancelCapture"
                 >
                   {{ t('settings.cancel') }}
@@ -388,11 +417,11 @@ onUnmounted(() => {
                 <kbd v-if="shortcuts[action]" class="ui-kbd--shortcut">
                   {{ shortcuts[action] }}
                 </kbd>
-                <span v-else class="text-[12px] settings-text-muted min-w-[90px] text-right">
+                <span v-else class="settings-text-muted min-w-[90px] text-right">
                   {{ t('settings.shortcutNotSet') }}
                 </span>
                 <button
-                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn-strong text-[11px] cursor-pointer shadow-sm"
+                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn-strong cursor-pointer shadow-sm"
                   @click="startCapture(action)"
                 >
                   {{ t('settings.edit') }}
@@ -409,7 +438,7 @@ onUnmounted(() => {
             <Transition name="msg">
               <div
                 v-if="message"
-                class="px-3 py-1.5 rounded-[6px] text-[11.5px]"
+                class="px-3 py-1.5 rounded-[6px]"
                 :class="message.type === 'success' ? 'settings-msg-success' : 'settings-msg-error'"
               >
                 {{ message.text }}
@@ -418,7 +447,7 @@ onUnmounted(() => {
           </div>
 
           <button
-            class="px-3.5 py-[5px] rounded-[6px] ui-btn-outline ui-btn-outline--subtle settings-text-btn text-[11.5px] cursor-pointer shadow-sm ml-auto"
+            class="px-3.5 py-[5px] rounded-[6px] ui-btn-outline ui-btn-outline--subtle settings-text-btn cursor-pointer shadow-sm ml-auto"
             @click="resetDefaults"
           >
             {{ t('settings.restoreDefaults') }}
@@ -445,196 +474,160 @@ onUnmounted(() => {
       />
 
       <div v-else-if="activeTab === 'help'" class="flex-1 flex flex-col px-7 py-6 overflow-y-auto help-scroll">
-        <h2 class="text-[14px] font-semibold settings-text-title mb-4">{{ t('help.basicUsage') }}</h2>
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-semibold settings-text-title m-0">{{ t('help.basicUsage') }}</h2>
+          <button
+            type="button"
+            class="shrink-0 px-3 py-[5px] rounded-[6px] ui-btn-outline settings-text-btn cursor-pointer"
+            @click="openOnlineHelp"
+          >
+            {{ t('help.openOnline') }}
+          </button>
+        </div>
 
         <div class="flex flex-col gap-2">
-          <!-- Intro card -->
           <div class="settings-card help-card">
-            <div class="px-4 py-3 text-[11.5px] settings-text-body leading-[1.8]">
-              <p class="m-0" v-html="t('help.basicDesc1')" />
-              <p class="m-0 mt-1" v-html="t('help.basicDesc2')" />
+            <div class="px-4 py-2.5 settings-text-body leading-[1.65]">
+              <p class="m-0" v-html="t('help.basicDesc')" />
             </div>
           </div>
 
-          <!-- Global shortcuts -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.globalShortcuts') }}</div>
             <div class="help-rows">
               <div class="help-row">
                 <span class="help-label">{{ t('help.toggleAnnotation') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Shift+D</kbd><span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⇧+D</kbd>
+                  <kbd class="help-kbd">{{ helpGlobalKeys.toggle }}</kbd>
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.clearAll') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Shift+C</kbd><span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⇧+C</kbd>
+                  <kbd class="help-kbd">{{ helpGlobalKeys.clear }}</kbd>
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.togglePenetration') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Shift+X</kbd><span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⇧+X</kbd>
+                  <kbd class="help-kbd">{{ helpGlobalKeys.through }}</kbd>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- In-session shortcuts -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.inSessionShortcuts') }}</div>
             <div class="help-rows">
               <div class="help-row">
                 <span class="help-label">{{ t('help.togglePenetrationLocal') }}</span>
-                <div class="help-keys">
-                  <kbd class="help-kbd">X</kbd>
-                </div>
+                <div class="help-keys"><kbd class="help-kbd">X</kbd></div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.settingsPanel') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Space</kbd></div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.exitDrawing') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Esc</kbd></div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.undo') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Esc</kbd>
+                  <kbd class="help-kbd">{{ helpMod }}+Z</kbd>
                 </div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.redo') }}</span>
+                <div class="help-keys">
+                  <kbd class="help-kbd">{{ helpMod }}+{{ helpShift }}+Z</kbd>
+                </div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.strokeWidth') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Ctrl</kbd> + Scroll</div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.copyScreen') }}</span>
+                <div class="help-keys">
+                  <kbd class="help-kbd">{{ helpMod }}+C</kbd>
+                </div>
+              </div>
+              <div class="help-row">
+                <span class="help-label">{{ t('help.clearAllAnnotation') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Delete</kbd></div>
               </div>
             </div>
           </div>
 
-          <!-- Tool switch -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.toolSwitch') }}</div>
             <div class="help-rows">
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">1</kbd><span class="ml-2.5">{{ t('tools.pen') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.pen') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">2</kbd><span class="ml-2.5">{{ t('tools.highlighter') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.highlighter') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">3</kbd><span class="ml-2.5">{{ t('tools.arrow') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.arrow') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">4</kbd><span class="ml-2.5">{{ t('tools.rect') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.rect') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">5</kbd><span class="ml-2.5">{{ t('tools.ellipse') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.ellipse') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">6</kbd><span class="ml-2.5">{{ t('tools.line') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.line') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">7</kbd><span class="ml-2.5">{{ t('tools.eraser') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.eraser') }}</span>
-              </div>
-              <div class="help-row help-row-block">
-                <span class="help-desc">{{ t('help.eraserModeHint') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">8</kbd><span class="ml-2.5">{{ t('tools.laser') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.laser') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label"
-                  ><kbd class="help-kbd">T</kbd><span class="ml-2.5">{{ t('tools.text') }}</span></span
-                >
-                <span class="help-desc">{{ t('toolDesc.text') }}</span>
+              <div v-for="item in helpTools" :key="item.key" class="help-row help-row--tool">
+                <span class="help-label">
+                  <kbd class="help-kbd">{{ item.key }}</kbd>
+                  <span class="ml-2">{{ t(item.name) }}</span>
+                </span>
+                <span class="help-desc">{{ t(item.desc) }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Modifier drawing -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.modifierDraw') }}</div>
             <div class="help-rows">
               <div class="help-row">
                 <span class="help-label">{{ t('help.straightLine') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Alt</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌥</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpOpt }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('tools.rect') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpMod }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.square') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Alt</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⌥</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpMod }}+{{ helpOpt }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('tools.ellipse') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Shift</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⇧</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpShift }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('help.circle') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Shift+Alt</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⇧+⌥</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpShift }}+{{ helpOpt }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
               <div class="help-row">
                 <span class="help-label">{{ t('tools.arrow') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Shift</kbd> + {{ t('panel.drag') }}<span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⇧</kbd> + {{ t('panel.drag') }}
+                  <kbd class="help-kbd">{{ helpMod }}+{{ helpShift }}</kbd> + {{ t('help.dragAction') }}
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Color & edit operations -->
           <div class="settings-card help-card">
-            <div class="help-card-header">{{ t('help.colorSwitch') }}</div>
+            <div class="help-card-header">{{ t('help.colorSwitch') }} · {{ t('help.whiteboardMode') }}</div>
             <div class="help-rows">
               <div class="help-row">
-                <span class="help-label"><kbd class="help-kbd">Q</kbd> / <kbd class="help-kbd">E</kbd></span>
-                <span class="help-desc">{{ t('help.prevColor') }} / {{ t('help.nextColor') }}</span>
+                <span class="help-label">{{ t('help.prevColor') }}</span>
+                <div class="help-keys"><kbd class="help-kbd">Q</kbd> / <kbd class="help-kbd">E</kbd></div>
               </div>
               <div class="help-row">
-                <span class="help-label">{{ t('help.mouseRightClick') }}</span>
-                <span class="help-desc">{{ t('help.rightClickColor') }}</span>
+                <span class="help-label">{{ t('help.rightClickColor') }}</span>
+                <div class="help-keys">
+                  <span class="help-keys-plain">{{ t('help.mouseRightClick') }}</span>
+                </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Whiteboard mode -->
-          <div class="settings-card help-card">
-            <div class="help-card-header">{{ t('help.whiteboardMode') }}</div>
-            <div class="help-rows">
               <div class="help-row">
                 <span class="help-label">{{ t('help.toggleWhiteboard') }}</span>
                 <div class="help-keys"><kbd class="help-kbd">W</kbd></div>
@@ -642,88 +635,26 @@ onUnmounted(() => {
               <div class="help-row">
                 <span class="help-label">{{ t('help.copyWhiteboard') }}</span>
                 <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+C</kbd><span class="help-sep">/</span><kbd class="help-kbd">⌘+C</kbd>
+                  <kbd class="help-kbd">{{ helpMod }}+C</kbd>
                 </div>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.exitWhiteboard') }}</span>
-                <div class="help-keys"><kbd class="help-kbd">Esc</kbd></div>
-              </div>
-              <div class="help-row help-row-block">
-                <span class="help-desc">{{ t('help.whiteboardContentHint') }}</span>
-              </div>
-              <div class="help-row help-row-block">
-                <span class="help-desc">{{ t('help.whiteboardPreserveHint') }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Edit & other -->
-          <div class="settings-card help-card">
-            <div class="help-card-header">{{ t('help.editAndOther') }}</div>
-            <div class="help-rows">
-              <div class="help-row">
-                <span class="help-label">{{ t('help.settingsPanel') }}</span>
-                <div class="help-keys"><kbd class="help-kbd">Space</kbd></div>
-              </div>
-              <div class="help-row help-row-block">
-                <span class="help-desc">{{ t('help.toolbarOptionsHint') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.copyScreen') }}</span>
-                <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+C</kbd><span class="help-sep">/</span><kbd class="help-kbd">⌘+C</kbd>
-                </div>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.undo') }}</span>
-                <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Z</kbd><span class="help-sep">/</span><kbd class="help-kbd">⌘+Z</kbd>
-                </div>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.redo') }}</span>
-                <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl+Shift+Z</kbd><span class="help-sep">/</span
-                  ><kbd class="help-kbd">⌘+⇧+Z</kbd>
-                </div>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.strokeWidth') }}</span>
-                <div class="help-keys">
-                  <kbd class="help-kbd">Ctrl</kbd> + Scroll<span class="help-sep">/</span><kbd class="help-kbd">⌘</kbd>
-                  + Scroll
-                </div>
-              </div>
-              <div class="help-row help-row-block">
-                <span class="help-desc">{{ t('help.strokeWidthHint') }}</span>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.clearAllAnnotation') }}</span>
-                <div class="help-keys"><kbd class="help-kbd">Delete</kbd></div>
-              </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.exitAnnotation') }}</span>
-                <div class="help-keys"><kbd class="help-kbd">Esc</kbd></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Drag & text -->
           <div class="settings-card help-card">
             <div class="help-card-header">{{ t('help.dragAndText') }}</div>
             <div class="help-rows">
               <div class="help-row help-row-block">
-                <span class="help-label settings-text-label">{{ t('help.dragElement') }}</span>
+                <span class="help-label">{{ t('help.dragElement') }}</span>
                 <span class="help-desc">{{ t('help.dragDesc') }}</span>
               </div>
               <div class="help-row help-row-block">
-                <span class="help-label settings-text-label">{{ t('help.editText') }}</span>
-                <span class="help-desc"><span v-html="t('help.editTextDesc')" /></span>
+                <span class="help-label">{{ t('help.editText') }}</span>
+                <span class="help-desc" v-html="t('help.editTextDesc')" />
               </div>
               <div class="help-row help-row-block">
-                <span class="help-label settings-text-label">{{ t('help.confirmText') }}</span>
-                <span class="help-desc"><span v-html="t('help.confirmTextDesc')" /></span>
+                <span class="help-label">{{ t('help.confirmText') }}</span>
+                <span class="help-desc" v-html="t('help.confirmTextDesc')" />
               </div>
             </div>
           </div>
@@ -769,7 +700,7 @@ onUnmounted(() => {
 
 .help-card-header {
   padding: 7px 14px;
-  font-size: 11px;
+  font-size: var(--settings-fs-caption, 12.5px);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -785,25 +716,30 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
+  padding: 7px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  min-height: 30px;
-  gap: 12px;
+  min-height: 32px;
+  gap: 14px;
 }
 
 .help-row:last-child {
   border-bottom: none;
 }
 
+.help-row--tool {
+  justify-content: flex-start;
+  align-items: baseline;
+}
+
 .help-row-block {
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
-  padding: 8px 14px;
+  gap: 3px;
+  padding: 9px 14px;
 }
 
 .help-label {
-  font-size: 12.5px;
+  font-size: var(--settings-fs-label, 14.5px);
   color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
@@ -812,29 +748,31 @@ onUnmounted(() => {
 }
 
 .help-desc {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.25);
-  text-align: right;
+  font-size: var(--settings-fs-caption, 12.5px);
+  color: rgba(255, 255, 255, 0.32);
+  text-align: left;
+  line-height: 1.45;
+  min-width: 0;
 }
 
-.help-row-block .help-desc {
-  text-align: left;
+.help-row--tool .help-desc {
+  flex: 1;
 }
 
 .help-keys {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.25);
+  font-size: var(--settings-fs-caption, 12.5px);
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.help-sep {
-  color: rgba(255, 255, 255, 0.15);
-  margin: 0 2px;
-  font-size: 10px;
+.help-keys-plain {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--settings-fs-caption, 12.5px);
 }
 
 .help-kbd {
@@ -844,7 +782,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 10.5px;
+  font-size: var(--settings-fs-kbd, 12px);
   color: rgba(255, 255, 255, 0.55);
   line-height: 1.5;
   white-space: nowrap;

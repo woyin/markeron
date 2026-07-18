@@ -61,16 +61,16 @@ async function openGithubIssue() {
 
 <template>
   <div class="flex-1 flex flex-col px-7 py-6 overflow-y-auto settings-scroll">
-    <h2 class="text-[14px] font-semibold settings-text-title mb-1">{{ t('diagnostics.title') }}</h2>
+    <h2 class="font-semibold settings-text-title mb-1">{{ t('diagnostics.title') }}</h2>
     <div class="mb-5">
-      <p class="text-[11.5px] settings-text-body leading-[1.7] m-0">{{ t('diagnostics.intro') }}</p>
-      <p class="text-[10.5px] settings-text-subtle leading-[1.6] mt-2 mb-0">
+      <p class="settings-text-body leading-[1.7] m-0">{{ t('diagnostics.intro') }}</p>
+      <p class="settings-text-subtle leading-[1.6] mt-2 mb-0">
         {{ t('diagnostics.privacyNotice') }}
       </p>
     </div>
 
     <div class="mb-4">
-      <label class="block text-[12.5px] font-medium settings-text-label mb-2" for="diag-description">
+      <label class="block font-medium settings-text-label mb-2" for="diag-description">
         {{ t('diagnostics.descriptionTitle') }}
       </label>
       <div class="relative">
@@ -79,10 +79,10 @@ async function openGithubIssue() {
           v-model="description"
           :maxlength="maxDescription"
           rows="4"
-          class="diag-textarea w-full resize-none rounded-lg px-3 py-2.5 text-[12px] settings-text-value outline-none transition-colors"
+          class="diag-textarea w-full resize-none rounded-lg px-3 py-2.5 settings-text-value outline-none transition-colors"
           :placeholder="t('diagnostics.descriptionPlaceholder')"
         />
-        <span class="absolute right-2.5 bottom-2 text-[10px] settings-text-faint font-mono">
+        <span class="absolute right-2.5 bottom-2 settings-text-faint font-mono">
           {{ charCount }}/{{ maxDescription }}
         </span>
       </div>
@@ -90,14 +90,14 @@ async function openGithubIssue() {
 
     <div class="flex items-center gap-2 flex-wrap">
       <button
-        class="settings-btn-accent-primary px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer disabled:opacity-50"
+        class="settings-btn-accent-primary px-4 py-1.5 rounded-lg cursor-pointer disabled:opacity-50"
         :disabled="exporting || reporting"
         @click="openGithubIssue"
       >
         {{ reporting ? t('diagnostics.reporting') : t('diagnostics.reportGithub') }}
       </button>
       <button
-        class="settings-btn-accent-outline px-4 py-1.5 text-[11.5px] rounded-lg cursor-pointer disabled:opacity-50"
+        class="settings-btn-accent-outline px-4 py-1.5 rounded-lg cursor-pointer disabled:opacity-50"
         :disabled="exporting || reporting"
         @click="exportDiagnostics"
       >
@@ -109,7 +109,7 @@ async function openGithubIssue() {
       <Transition name="msg">
         <div
           v-if="message"
-          class="px-3 py-1.5 rounded-[6px] text-[11.5px]"
+          class="px-3 py-1.5 rounded-[6px]"
           :class="message.type === 'success' ? 'settings-msg-success' : 'settings-msg-error'"
         >
           {{ message.text }}

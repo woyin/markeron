@@ -282,6 +282,7 @@ const ALLOWED_URL_PREFIXES: &[&str] = &[
     "https://github.com/",
     "https://apps.microsoft.com/",
     "https://afdian.com/",
+    "https://markeron.cn/",
 ];
 
 fn is_allowed_open_url(url: &str) -> bool {
@@ -360,6 +361,7 @@ mod tests {
         assert!(is_allowed_open_url(
             "https://apps.microsoft.com/store/detail/markeron/9P123"
         ));
+        assert!(is_allowed_open_url("https://markeron.cn/help.html"));
     }
 
     #[test]
@@ -369,5 +371,7 @@ mod tests {
         assert!(!is_allowed_open_url(
             "https://afdian.com.evil.com/a/markeron"
         ));
+        assert!(!is_allowed_open_url("https://markeron.cn.evil.com/help"));
+        assert!(!is_allowed_open_url("http://markeron.cn/help.html"));
     }
 }

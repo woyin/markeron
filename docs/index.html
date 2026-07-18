@@ -46,6 +46,7 @@
         <div class="header-actions">
           <nav class="nav-links" data-i18n-aria="nav.linksAria">
             <a href="#features" data-i18n="nav.features">Features</a>
+            <a href="help.html" data-i18n="nav.help">Help</a>
             <a href="#download" data-i18n="nav.download">Download</a>
             <a href="#faq" data-i18n="nav.faq">FAQ</a>
             <a href="https://afdian.com/a/markeron" rel="noopener noreferrer" target="_blank" data-i18n="nav.sponsor">Sponsor</a>
@@ -103,13 +104,26 @@
           <aside class="hero-aside t-scroll-reveal" data-reveal-immediate data-reveal-delay="3" data-i18n-aria="hero.quickStartAria">
             <h2 class="hero-aside-title" data-i18n="hero.quickStartTitle">Quick Start</h2>
             <ol class="quick-steps">
-              <li data-i18n="hero.quickStep1">Launch — runs in the system tray</li>
-              <li data-i18n-html="hero.quickStep2">
-                <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>D</kbd></span>
-                — enter annotation
+              <li>
+                <span class="quick-step-keys" data-i18n-html="hero.quickStep1Keys">
+                  <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>D</kbd></span>
+                </span>
+                <span class="quick-step-desc" data-i18n="hero.quickStep1Desc">Enter annotation</span>
               </li>
-              <li data-i18n-html="hero.quickStep3"><kbd>X</kbd> — click through; <kbd>Esc</kbd> — exit</li>
-              <li data-i18n-html="hero.quickStep4"><kbd>Space</kbd> — toolbar</li>
+              <li>
+                <span class="quick-step-keys" data-i18n-html="hero.quickStep2Keys">
+                  <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>X</kbd></span>
+                </span>
+                <span class="quick-step-desc" data-i18n="hero.quickStep2Desc">Click through</span>
+              </li>
+              <li>
+                <span class="quick-step-keys" data-i18n-html="hero.quickStep3Keys"><kbd>Esc</kbd></span>
+                <span class="quick-step-desc" data-i18n="hero.quickStep3Desc">Exit</span>
+              </li>
+              <li>
+                <span class="quick-step-keys" data-i18n-html="hero.quickStep4Keys"><kbd>Space</kbd></span>
+                <span class="quick-step-desc" data-i18n="hero.quickStep4Desc">Toolbar</span>
+              </li>
             </ol>
           </aside>
         </div>
@@ -221,10 +235,14 @@
                       loading="lazy"
                       decoding="async"
                       data-i18n-alt="showcase.demoAlt"
-                      alt="Click-through demo: draw on screen, press X, then select text in the app below while annotations remain visible"
+                      alt="Click-through demo: draw on screen, press Ctrl+Shift+X, then select text in the app below while annotations remain visible"
                     />
                   </figure>
-                  <p class="panel-caption" data-i18n-html="showcase.demoCaption">Draw, press <kbd>X</kbd>, then keep working underneath.</p>
+                  <p class="panel-caption" data-i18n-html="showcase.demoCaption">
+                    Draw, press
+                    <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>X</kbd></span>,
+                    then keep working underneath.
+                  </p>
                   <div class="t-tilt-glare" aria-hidden="true"></div>
                 </article>
               </div>
@@ -241,7 +259,9 @@
               </li>
               <li class="t-avatar">
                 <span class="shortcut-label" data-i18n="shortcuts.through">Through</span>
-                <kbd>X</kbd>
+                <span data-i18n-html="shortcuts.throughKeys">
+                  <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>X</kbd></span>
+                </span>
               </li>
               <li class="t-avatar">
                 <span class="shortcut-label" data-i18n="shortcuts.board">Board</span>
@@ -294,15 +314,20 @@
                 <article class="info-card info-card-blue t-scroll-reveal" data-reveal-delay="1">
                   <h4 class="info-card-title" data-i18n="bottom.faq2Title">How does click-through mode work?</h4>
                   <p class="info-card-desc" data-i18n-html="bottom.faq2Desc">
-                    Toggle from the toolbar, with
-                    <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>X</kbd></span>
-                    (global), or press <kbd>X</kbd> while drawing. Marks stay visible while you click, scroll, and type in apps below.
+                    Toggle from the toolbar or with
+                    <span class="kbd-combo"><kbd>Ctrl</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>Shift</kbd><span class="kbd-plus" aria-hidden="true">+</span><kbd>X</kbd></span>.
+                    Marks stay visible while you click, scroll, and type in apps below.
                   </p>
                 </article>
                 <article class="info-card info-card-green t-scroll-reveal" data-reveal-delay="2">
                   <h4 class="info-card-title" data-i18n="bottom.faq3Title">Account or cloud upload?</h4>
                   <p class="info-card-desc" data-i18n="bottom.faq3Desc">No. Local-first, open source, and account-free.</p>
                 </article>
+                <a class="info-card info-card-blue t-scroll-reveal" data-reveal-delay="3" href="help.html">
+                  <span class="info-card-title" data-i18n="bottom.helpLink">Full shortcuts &amp; help</span>
+                  <span class="info-card-desc" data-i18n="bottom.helpLinkDesc">Tools, modifiers, whiteboard, and click-through tips.</span>
+                  <span class="info-card-mark" aria-hidden="true">→</span>
+                </a>
               </div>
             </div>
           </div>
