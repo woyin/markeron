@@ -531,7 +531,8 @@ pub fn clear_drawing(app: &AppHandle, state: &AppState) {
     if current_mode(state) == OverlayMode::Hidden {
         return;
     }
-    if let Err(e) = app.emit("clear-drawing", ()) {
+    // `true` = undoable clear (Ctrl+Z restores). Activation without preserve emits `()`.
+    if let Err(e) = app.emit("clear-drawing", true) {
         warn!("Failed to emit clear-drawing: {}", e);
     }
 }

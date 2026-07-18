@@ -106,7 +106,6 @@ winget install --id 9N6623X973JV --source msstore
 | 白板模式切换 | <kbd>W</kbd> | <kbd>W</kbd> |
 | 撤销 / 重做 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
 | 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮（画笔与形状共用；荧光笔/橡皮擦/文字各自独立） |
-| 清除全部 | <kbd>Delete</kbd> | <kbd>Delete</kbd> |
 | 退出标注 | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
 <details>

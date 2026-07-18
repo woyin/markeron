@@ -1064,7 +1064,6 @@ const onKeyDown = createKeyDownHandler(
     showToolTip,
     undo,
     redo,
-    clearAll,
     togglePenetrationMode,
     enterWhiteboardMode,
     exitWhiteboardMode,
@@ -1295,6 +1294,9 @@ async function handleToolbarAction(action: ToolbarAction) {
       redo()
       break
     case 'clearAll':
+      if (isDrawing.value || isDragging || capturedPointerId !== null) {
+        finishActivePointerInteraction()
+      }
       clearAll()
       break
     case 'toggleWhiteboard':
@@ -1472,9 +1474,20 @@ onMounted(async () => {
   )
 
   unlisteners.push(
-    await listen('clear-drawing', () => {
-      hardReset()
-      logActionEvent('canvas cleared', { reason: 'clear-drawing-event' })
+    await listen<boolean>('clear-drawing', (event) => {
+      // Finish in-progress stroke/drag so clearAll is not a no-op on an empty history
+      // (first stroke still in currentAction) and pointer state is not left stuck.
+      if (isDrawing.value || isDragging || capturedPointerId !== null) {
+        finishActivePointerInteraction()
+      }
+      // Global shortcut emits `true` (undoable). Activation without preserve emits unit/`false`.
+      if (event.payload === true) {
+        clearAll()
+        logActionEvent('canvas cleared', { reason: 'clear-drawing-event' })
+      } else {
+        hardReset()
+        logActionEvent('canvas hard reset', { reason: 'clear-drawing-event' })
+      }
       syncOverlayStateToToolbar()
     }),
   )

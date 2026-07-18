@@ -192,7 +192,6 @@ export default {
     redo: '重做',
     strokeWidth: '线宽',
     strokeWidthHint: '',
-    clearAllAnnotation: '清除全部',
     exitAnnotation: '退出',
     dragAndText: '拖拽与文字',
     dragDesc: '关闭 / 悬停 / 按住修饰键 — 在「常规」设置。橡皮擦下禁用。',

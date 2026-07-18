@@ -553,10 +553,6 @@ onUnmounted(() => {
                   <kbd class="help-kbd">{{ helpMod }}+C</kbd>
                 </div>
               </div>
-              <div class="help-row">
-                <span class="help-label">{{ t('help.clearAllAnnotation') }}</span>
-                <div class="help-keys"><kbd class="help-kbd">Delete</kbd></div>
-              </div>
             </div>
           </div>
 

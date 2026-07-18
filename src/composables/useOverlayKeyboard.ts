@@ -34,7 +34,6 @@ export interface KeyboardActions {
   showToolTip: (tool: Tool) => void
   undo: () => void
   redo: () => void
-  clearAll: () => void
   exitDrawing: () => void
   togglePenetrationMode: () => void
   enterWhiteboardMode: () => void
@@ -232,9 +231,6 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       e.preventDefault()
       logActionEvent('redo', { reason: 'keyboard', shortcut: 'mod+y' })
       actions.redo()
-    } else if (e.key === 'Delete') {
-      logActionEvent('canvas cleared', { reason: 'keyboard', shortcut: 'delete' })
-      actions.clearAll()
     } else if (e.key === 'Escape') {
       if (ctx.whiteboardMode.value) {
         logActionEvent('whiteboard exit requested', { reason: 'keyboard', shortcut: 'escape' })

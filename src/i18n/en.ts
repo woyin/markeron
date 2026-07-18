@@ -194,7 +194,6 @@ export default {
     redo: 'Redo',
     strokeWidth: 'Stroke width',
     strokeWidthHint: '',
-    clearAllAnnotation: 'Clear all',
     exitAnnotation: 'Exit',
     dragAndText: 'Drag & text',
     dragDesc: 'Off / hover / hold modifier — set in General. Disabled with eraser.',

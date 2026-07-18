@@ -97,7 +97,7 @@
       'helpPage.global.toggle': 'Toggle annotation',
       'helpPage.global.toggleWin': enterCombo,
       'helpPage.global.toggleMac': enterComboMac,
-      'helpPage.global.clear': 'Clear all annotations',
+      'helpPage.global.clear': 'Clear all annotations (undoable)',
       'helpPage.global.clearWin': clearCombo,
       'helpPage.global.clearMac': clearComboMac,
       'helpPage.global.through': 'Toggle click-through',
@@ -136,7 +136,6 @@
       'helpPage.session.widthKeys': '<kbd>Ctrl</kbd> + scroll',
       'helpPage.session.copy': 'Copy screen',
       'helpPage.session.copyKeys': `${copyCombo} <span class="help-key-sep" aria-hidden="true">/</span> ${copyComboMac}`,
-      'helpPage.session.clear': 'Clear all',
       'helpPage.session.widthHint':
         'Pen, arrow, rectangle, ellipse, and line share one width; highlighter, eraser, and text each have their own.',
       'helpPage.draw.eyebrow': '04',
@@ -337,7 +336,7 @@
       'helpPage.global.toggle': '开启 / 退出标注',
       'helpPage.global.toggleWin': enterCombo,
       'helpPage.global.toggleMac': enterComboMac,
-      'helpPage.global.clear': '清除所有标注',
+      'helpPage.global.clear': '清除所有标注（可撤销）',
       'helpPage.global.clearWin': clearCombo,
       'helpPage.global.clearMac': clearComboMac,
       'helpPage.global.through': '切换穿透模式',
@@ -376,7 +375,6 @@
       'helpPage.session.widthKeys': '<kbd>Ctrl</kbd> + 滚轮',
       'helpPage.session.copy': '复制屏幕',
       'helpPage.session.copyKeys': `${copyCombo} <span class="help-key-sep" aria-hidden="true">/</span> ${copyComboMac}`,
-      'helpPage.session.clear': '清除全部',
       'helpPage.session.widthHint':
         '画笔与箭头 / 矩形 / 椭圆 / 直线共用粗细；荧光笔、橡皮擦、文字各自独立。',
       'helpPage.draw.eyebrow': '04',

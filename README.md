@@ -106,7 +106,6 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | Whiteboard toggle | <kbd>W</kbd> | <kbd>W</kbd> |
 | Undo / Redo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
 | Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll (pen & shapes share; highlighter/eraser/text separate) |
-| Clear all | <kbd>Delete</kbd> | <kbd>Delete</kbd> |
 | Exit | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
 <details>

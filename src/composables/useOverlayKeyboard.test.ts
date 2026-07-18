@@ -43,7 +43,6 @@ function createActions(): KeyboardActions & { calls: Record<string, unknown[][]>
     showToolTip: make('showToolTip') as KeyboardActions['showToolTip'],
     undo: make('undo') as KeyboardActions['undo'],
     redo: make('redo') as KeyboardActions['redo'],
-    clearAll: make('clearAll') as KeyboardActions['clearAll'],
     exitDrawing: make('exitDrawing') as KeyboardActions['exitDrawing'],
     togglePenetrationMode: make('togglePenetrationMode') as KeyboardActions['togglePenetrationMode'],
     enterWhiteboardMode: make('enterWhiteboardMode') as KeyboardActions['enterWhiteboardMode'],
@@ -177,11 +176,6 @@ describe('useOverlayKeyboard', () => {
   })
 
   describe('clear and exit', () => {
-    it('Delete clears all', () => {
-      handler(key('Delete'))
-      expect(actions.calls.clearAll).toHaveLength(1)
-    })
-
     it('Escape exits drawing', () => {
       handler(key('Escape'))
       expect(actions.calls.exitDrawing).toHaveLength(1)
@@ -205,11 +199,9 @@ describe('useOverlayKeyboard', () => {
       expect(actions.calls.exitDrawing).toHaveLength(0)
     })
 
-    it('does not clear/exit when toolbar popup is open', () => {
+    it('does not exit when toolbar popup is open', () => {
       ctx.showToolbarPopup.value = true
-      handler(key('Delete'))
       handler(key('Escape'))
-      expect(actions.calls.clearAll).toHaveLength(0)
       expect(actions.calls.togglePenetrationMode).toHaveLength(0)
       expect(actions.calls.exitDrawing).toHaveLength(0)
       expect(actions.calls.exitWhiteboardMode).toHaveLength(0)
