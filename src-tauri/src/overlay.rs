@@ -253,6 +253,63 @@ pub fn raise_toolbar_above_overlay(app: &AppHandle) {
     }
 }
 
+/// Keep the always-on toolbar fully inside the current overlay monitor.
+///
+/// Called whenever the pinned toolbar is shown (e.g. Ctrl+Shift+D) so a saved or
+/// stale position on a disconnected / other display cannot leave the panel off-screen.
+fn clamp_toolbar_to_overlay_monitor(app: &AppHandle) {
+    let Some(window) = app.get_webview_window("toolbar") else {
+        return;
+    };
+    let Some(bounds) = monitor::get_overlay_monitor_logical_bounds(app) else {
+        return;
+    };
+
+    let overlay_scale = app
+        .get_webview_window("overlay")
+        .and_then(|w| w.scale_factor().ok())
+        .unwrap_or(1.0);
+    let toolbar_scale = window.scale_factor().unwrap_or(overlay_scale);
+
+    let Ok(pos) = window.outer_position() else {
+        return;
+    };
+    let left = pos.x as f64 / toolbar_scale;
+    let top = pos.y as f64 / toolbar_scale;
+
+    let (x, y) = monitor::clamp_logical_position_to_monitor(
+        left,
+        top,
+        TOOLBAR_PANEL_WIDTH,
+        TOOLBAR_PANEL_HEIGHT,
+        &bounds,
+        TOOLBAR_EDGE_MARGIN,
+    );
+
+    if (x - left).abs() < 0.5 && (y - top).abs() < 0.5 {
+        return;
+    }
+
+    #[cfg(windows)]
+    {
+        let phys_x = (x * overlay_scale).round() as i32;
+        let phys_y = (y * overlay_scale).round() as i32;
+        window
+            .set_position(tauri::PhysicalPosition::new(phys_x, phys_y))
+            .ok();
+        if let Err(e) = app.emit("toolbar-window-positioned", ()) {
+            warn!("Failed to emit toolbar-window-positioned: {}", e);
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        window
+            .set_position(tauri::LogicalPosition::new(x, y))
+            .ok();
+    }
+}
+
 pub fn set_toolbar_window_visible(app: &AppHandle, visible: bool) {
     create_toolbar_window(app);
     if let Some(window) = app.get_webview_window("toolbar") {
@@ -260,6 +317,10 @@ pub fn set_toolbar_window_visible(app: &AppHandle, visible: bool) {
             window.show().ok();
             window.set_always_on_top(true).ok();
             set_ignore_cursor_events(&window, false);
+            let state = app.state::<AppState>();
+            if toolbar_always_visible(&state) {
+                clamp_toolbar_to_overlay_monitor(app);
+            }
             raise_toolbar_above_overlay(app);
         } else {
             window.hide().ok();

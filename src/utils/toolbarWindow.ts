@@ -55,8 +55,26 @@ export async function restoreToolbarWindowPosition(): Promise<void> {
     ? clampToolbarWindowPosition(logical.left, logical.top, TOOLBAR_PANEL_WIDTH, TOOLBAR_PANEL_HEIGHT, bounds)
     : logical
   await win.setPosition(new LogicalPosition(position.left, position.top))
-  if (saved.coordSpace !== 'logical') {
+  if (saved.coordSpace !== 'logical' || position.left !== logical.left || position.top !== logical.top) {
     saveToolbarPosition(position.left, position.top, true)
+  }
+}
+
+/** Clamp the current always-on toolbar window into the overlay monitor and persist. */
+export async function clampToolbarWindowToOverlay(): Promise<void> {
+  const win = getCurrentWindow()
+  const [pos, scale] = await Promise.all([win.outerPosition(), win.scaleFactor()])
+  const logical = pos.toLogical(scale)
+  const bounds = await fetchOverlayMonitorBounds()
+  if (!bounds) return
+  const position = clampToolbarWindowPosition(logical.x, logical.y, TOOLBAR_PANEL_WIDTH, TOOLBAR_PANEL_HEIGHT, bounds)
+  if (position.left === logical.x && position.top === logical.y) {
+    return
+  }
+  await win.setPosition(new LogicalPosition(position.left, position.top))
+  saveToolbarPosition(position.left, position.top, true)
+  if (isMacOS()) {
+    await refreshToolbarWindowScreenOrigin()
   }
 }
 

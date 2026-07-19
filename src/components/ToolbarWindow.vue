@@ -19,7 +19,11 @@ import {
   type OverlayPointerScreen,
 } from '../composables/overlayBridge'
 import { isToolbarPinned, resolveToolbarVisibility, type ToolbarVisibility } from '../utils/toolbarSettings'
-import { restoreToolbarWindowPosition, refreshToolbarWindowScreenOrigin } from '../utils/toolbarWindow'
+import {
+  restoreToolbarWindowPosition,
+  refreshToolbarWindowScreenOrigin,
+  clampToolbarWindowToOverlay,
+} from '../utils/toolbarWindow'
 import { isMacOS } from '../utils/platform'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { AppConfig } from '../types/app'
@@ -168,6 +172,10 @@ onMounted(async () => {
       const hidden = mode === 'hidden'
       document.body.style.visibility = hidden ? 'hidden' : 'visible'
       penetrationMode.value = mode === 'penetration'
+      // Always-on: re-clamp on each drawing activation (Ctrl+Shift+D) and persist.
+      if (mode === 'drawing' && toolbarPinned.value) {
+        void clampToolbarWindowToOverlay()
+      }
     }),
   )
 
