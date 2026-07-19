@@ -985,7 +985,13 @@ function onPointerMove(e: PointerEvent) {
 
 function onPointerUp(e: PointerEvent) {
   if (capturedPointerId !== null && e.pointerId !== capturedPointerId) return
-  if (capturedPointerId === null && !isDrawing.value && !isDragging) return
+  // Text-tool / commit-textbox clicks invalidate the copy modifier on pointerdown but
+  // never capture — still clear gesture state so Ctrl+C works after the press.
+  if (capturedPointerId === null && !isDrawing.value && !isDragging) {
+    markPointerInteractionEnded()
+    resetPointerGestureState()
+    return
+  }
   const wasDrawing = isDrawing.value
   releaseCapturedPointer()
 

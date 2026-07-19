@@ -5,6 +5,7 @@ import {
   resetCopyModifierState,
   invalidateCopyModifierForPointerInteraction,
   markPointerInteractionEnded,
+  isCopyShortcut,
   type KeyboardContext,
   type KeyboardActions,
 } from './useOverlayKeyboard'
@@ -70,6 +71,18 @@ function copyChord(handler: (e: KeyboardEvent) => void, mods: Partial<KeyboardEv
   handler(key('Control', mods))
   handler(key('c', mods))
 }
+
+describe('isCopyShortcut', () => {
+  it('matches Ctrl+C and Cmd+C without Shift', () => {
+    expect(isCopyShortcut(key('c', { ctrlKey: true }))).toBe(true)
+    expect(isCopyShortcut(key('C', { ctrlKey: true }))).toBe(true)
+  })
+
+  it('rejects Shift+Ctrl+C and plain C', () => {
+    expect(isCopyShortcut(key('c', { ctrlKey: true, shiftKey: true }))).toBe(false)
+    expect(isCopyShortcut(key('c'))).toBe(false)
+  })
+})
 
 describe('useOverlayKeyboard', () => {
   let ctx: KeyboardContext
@@ -357,6 +370,18 @@ describe('useOverlayKeyboard', () => {
       handler(key('z', { ctrlKey: true }))
       expect(actions.calls.showToolTip).toHaveLength(0)
       expect(actions.calls.undo).toHaveLength(0)
+    })
+
+    it('allows Ctrl+C after a no-op pointer gesture ends (text-tool click)', () => {
+      ctx.textBoxPos.value = null
+      invalidateCopyModifierForPointerInteraction()
+      handler(key('Control', { ctrlKey: true }))
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(0)
+      markPointerInteractionEnded()
+      handler(key('Control', { ctrlKey: true }))
+      handler(key('c', { ctrlKey: true }))
+      expect(actions.calls.copyScreen).toHaveLength(1)
     })
   })
 

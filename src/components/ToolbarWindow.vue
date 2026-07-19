@@ -25,6 +25,7 @@ import {
   clampToolbarWindowToOverlay,
 } from '../utils/toolbarWindow'
 import { isMacOS } from '../utils/platform'
+import { isCopyShortcut } from '../composables/useOverlayKeyboard'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { AppConfig } from '../types/app'
 
@@ -97,15 +98,23 @@ async function onPanelDrag(dragging: boolean) {
   await emit(TOOLBAR_DRAGGING_EVENT, dragging)
 }
 
+function isEditableKeyTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement
+  )
+}
+
 function onToolbarKeyDown(e: KeyboardEvent) {
-  if (e.key !== ' ' || toolbarPinned.value) return
-  if (
-    e.target instanceof HTMLInputElement ||
-    e.target instanceof HTMLTextAreaElement ||
-    e.target instanceof HTMLSelectElement
-  ) {
+  if (isEditableKeyTarget(e.target)) return
+
+  // Overlay key handlers do not run while this window has OS focus.
+  if (isCopyShortcut(e)) {
+    e.preventDefault()
+    emitToolbarAction({ type: 'copy' })
     return
   }
+
+  if (e.key !== ' ' || toolbarPinned.value) return
   e.preventDefault()
   void onToolbarClose()
 }

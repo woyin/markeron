@@ -48,6 +48,12 @@ function modDown(e: KeyboardEvent): boolean {
   return e.ctrlKey || (isMacOS() && e.metaKey)
 }
 
+/** Mod+C without Shift — used when the toolbar window has OS focus (overlay never sees the chord). */
+export function isCopyShortcut(e: KeyboardEvent): boolean {
+  if (!modDown(e) || e.shiftKey) return false
+  return e.key === 'c' || e.key === 'C'
+}
+
 export function trackCopyModifierKeyDown(e: KeyboardEvent): void {
   if ((e.key === 'Control' || e.key === 'Meta') && !pointerGestureActive) {
     copyModifierPhysicallyDown = true
@@ -88,8 +94,7 @@ export function isPointerGestureActive(): boolean {
 
 function shouldTriggerKeyboardCopy(e: KeyboardEvent, ctx: KeyboardContext): boolean {
   if (ctx.isDrawing.value || pointerGestureActive) return false
-  if (!modDown(e) || e.shiftKey) return false
-  if (e.key !== 'c' && e.key !== 'C') return false
+  if (!isCopyShortcut(e)) return false
   return copyModifierPhysicallyDown
 }
 
