@@ -304,9 +304,7 @@ fn clamp_toolbar_to_overlay_monitor(app: &AppHandle) {
 
     #[cfg(not(windows))]
     {
-        window
-            .set_position(tauri::LogicalPosition::new(x, y))
-            .ok();
+        window.set_position(tauri::LogicalPosition::new(x, y)).ok();
     }
 }
 
