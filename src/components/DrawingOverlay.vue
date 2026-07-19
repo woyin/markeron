@@ -1590,18 +1590,12 @@ async function copyScreen(reason = 'unknown') {
   }
   logDiagnostic('copy', 'copyScreen invoked', { reason })
   isCopying = true
-  const restoreToolbar = toolbarPinned.value || showToolbarPopup.value
   try {
+    // Hide overlay-local chrome (cursor tip, quick colors, text box). The independent
+    // toolbar window is excluded inside Rust `copy_screen` (hide / display affinity).
     hideUiForCapture.value = true
     showQuickColors.value = false
     disposeTooltip()
-    if (restoreToolbar) {
-      if (toolbarPinned.value) {
-        await invoke('set_toolbar_visible', { visible: false })
-      } else {
-        await setToolbarPopupVisible(false)
-      }
-    }
     await nextTick()
     await new Promise<void>((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 32))),
@@ -1615,13 +1609,6 @@ async function copyScreen(reason = 'unknown') {
     showTip(t('overlay.copyFailed'))
   } finally {
     hideUiForCapture.value = false
-    if (restoreToolbar) {
-      if (toolbarPinned.value) {
-        await invoke('set_toolbar_visible', { visible: true })
-      } else {
-        await setToolbarPopupVisible(true)
-      }
-    }
     isCopying = false
   }
 }

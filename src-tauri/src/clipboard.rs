@@ -1,6 +1,8 @@
 use std::borrow::Cow;
+use std::time::Duration;
 
 use base64::Engine;
+use tauri::{AppHandle, Manager};
 
 #[tauri::command]
 pub fn copy_whiteboard(data_url: String) -> Result<(), String> {
@@ -24,9 +26,46 @@ pub fn copy_whiteboard(data_url: String) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
+/// Hide / exclude the independent toolbar window so it does not appear in the
+/// clipboard screenshot, then restore it afterward.
+fn with_toolbar_excluded_from_capture<R>(app: &AppHandle, capture: impl FnOnce() -> R) -> R {
+    let Some(toolbar) = app.get_webview_window("toolbar") else {
+        return capture();
+    };
+    if !toolbar.is_visible().unwrap_or(false) {
+        return capture();
+    }
+
+    #[cfg(windows)]
+    let affinity_applied = toolbar
+        .hwnd()
+        .ok()
+        .is_some_and(|hwnd| crate::win32::set_window_exclude_from_capture(hwnd.0 as isize, true));
+
+    // Hide so capture never includes the toolbar. On Windows, display-affinity
+    // above also covers the brief compositor race between hide() and BitBlt.
+    toolbar.hide().ok();
+    std::thread::sleep(Duration::from_millis(64));
+    let result = capture();
+    crate::set_toolbar_window_visible(app, true);
+
+    #[cfg(windows)]
+    if affinity_applied {
+        if let Ok(hwnd) = toolbar.hwnd() {
+            let _ = crate::win32::set_window_exclude_from_capture(hwnd.0 as isize, false);
+        }
+    }
+
+    result
+}
+
 #[tauri::command]
-pub fn copy_screen() -> Result<(), String> {
+pub fn copy_screen(app: AppHandle) -> Result<(), String> {
+    with_toolbar_excluded_from_capture(&app, copy_screen_inner)
+}
+
+#[cfg(target_os = "windows")]
+fn copy_screen_inner() -> Result<(), String> {
     use crate::win32::*;
 
     #[allow(clippy::upper_case_acronyms)]
@@ -188,8 +227,7 @@ pub fn copy_screen() -> Result<(), String> {
 }
 
 #[cfg(target_os = "macos")]
-#[tauri::command]
-pub fn copy_screen() -> Result<(), String> {
+fn copy_screen_inner() -> Result<(), String> {
     #[repr(C)]
     struct CGPoint {
         x: f64,

@@ -33,6 +33,9 @@ pub const HWND_TOPMOST: isize = -1;
 pub const SWP_NOMOVE: u32 = 0x0002;
 pub const SWP_NOSIZE: u32 = 0x0001;
 pub const SWP_NOACTIVATE: u32 = 0x0010;
+pub const WDA_NONE: u32 = 0x00000000;
+/// Exclude window from BitBlt / screen capture (Windows 10 2004+).
+pub const WDA_EXCLUDEFROMCAPTURE: u32 = 0x00000011;
 
 extern "system" {
     pub fn GetCursorPos(lp_point: *mut POINT) -> i32;
@@ -48,6 +51,18 @@ extern "system" {
         cy: i32,
         u_flags: u32,
     ) -> i32;
+    fn SetWindowDisplayAffinity(h_wnd: isize, dw_affinity: u32) -> i32;
+}
+
+/// Exclude (or re-include) a window from desktop BitBlt / screen capture.
+/// Returns false when the API is unavailable or rejects the hwnd.
+pub fn set_window_exclude_from_capture(hwnd: isize, exclude: bool) -> bool {
+    let affinity = if exclude {
+        WDA_EXCLUDEFROMCAPTURE
+    } else {
+        WDA_NONE
+    };
+    unsafe { SetWindowDisplayAffinity(hwnd, affinity) != 0 }
 }
 
 /// Raise a window to the top of the topmost group without stealing keyboard focus.
