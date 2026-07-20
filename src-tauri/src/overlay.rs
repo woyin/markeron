@@ -230,9 +230,10 @@ fn create_toolbar_window(app: &AppHandle) {
 ///
 /// **Windows:** `SetWindowPos(HWND_TOPMOST)` on overlay, then toolbar (`win32.rs`).
 ///
-/// **macOS:** `toolbar.show()` via the `#[cfg(not(windows))]` branch — same
-/// strategy as the pre-existing `activate_drawing` path. Do not call WKWebView
-/// Objective-C selectors here (crashes on Wry); use Tauri APIs only.
+/// **macOS:** `-[NSWindow orderWindow:NSWindowAbove relativeTo:]` on the toolbar
+/// window (`macos.rs`). Do **not** rely on `toolbar.show()` — it is often a no-op
+/// when the toolbar is already visible, leaving ink from the overlay painted over
+/// the panel. Do not call WKWebView Objective-C selectors (crashes on Wry).
 ///
 /// Invoked from drawing activation, toolbar reposition, and the frontend `raise_toolbar`
 /// IPC (pointer-down, toolbar drag end).
@@ -243,16 +244,16 @@ pub fn raise_toolbar_above_overlay(app: &AppHandle) {
     if !toolbar.is_visible().unwrap_or(false) {
         return;
     }
-    // Keep both windows topmost, then re-show the toolbar so it stacks above the overlay
-    // on every platform (Windows Z-order, macOS window ordering).
-    if let Some(overlay) = app.get_webview_window("overlay") {
+    // Keep both windows topmost, then force toolbar above overlay in the OS Z-order.
+    let overlay = app.get_webview_window("overlay");
+    if let Some(ref overlay) = overlay {
         overlay.set_always_on_top(true).ok();
     }
     toolbar.set_always_on_top(true).ok();
     #[cfg(windows)]
     {
         if let Ok(toolbar_hwnd) = toolbar.hwnd() {
-            if let Some(overlay) = app.get_webview_window("overlay") {
+            if let Some(ref overlay) = overlay {
                 if let Ok(overlay_hwnd) = overlay.hwnd() {
                     crate::win32::raise_window_topmost_no_activate(overlay_hwnd.0 as isize);
                 }
@@ -260,9 +261,9 @@ pub fn raise_toolbar_above_overlay(app: &AppHandle) {
             crate::win32::raise_window_topmost_no_activate(toolbar_hwnd.0 as isize);
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
     {
-        toolbar.show().ok();
+        crate::macos::raise_toolbar_ns_window_above_overlay(&toolbar, overlay.as_ref());
     }
 }
 
@@ -655,14 +656,14 @@ pub fn on_overlay_focus_lost(app: &AppHandle, state: &AppState) {
 mod tests {
     /// Regression guard for cross-platform toolbar stacking in `raise_toolbar_above_overlay`.
     ///
-    /// macOS must stay on the shared `set_always_on_top` + `toolbar.show()` path,
-    /// not the Win32-only `SetWindowPos` branch. CI on macOS runners executes this test.
+    /// macOS must use NSWindow `orderWindow:relativeTo:` (`macos.rs`), not the
+    /// Win32-only `SetWindowPos` branch. CI on macOS runners executes this test.
     #[test]
     #[cfg(target_os = "macos")]
-    fn macos_raise_toolbar_uses_non_win32_branch() {
+    fn macos_raise_toolbar_uses_nswindow_reorder_not_win32() {
         assert!(
             !cfg!(windows),
-            "macOS must use the #[cfg(not(windows))] toolbar.show() branch"
+            "macOS must use NSWindow orderWindow:relativeTo:, not SetWindowPos"
         );
     }
 
