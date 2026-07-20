@@ -10,6 +10,8 @@ export const TOOLBAR_DRAGGING_EVENT = 'toolbar-dragging'
 export const OVERLAY_POINTER_SCREEN_EVENT = 'overlay-pointer-screen'
 /** Raised when the pointer is released over the toolbar window (overlay may miss pointerup). */
 export const TOOLBAR_POINTER_UP_EVENT = 'toolbar-pointer-up'
+/** Measured standalone panel height — toolbar webview → overlay (separate JS heaps). */
+export const TOOLBAR_PANEL_HEIGHT_EVENT = 'toolbar-panel-height'
 
 export interface OverlayPointerScreen {
   x: number
@@ -48,4 +50,8 @@ export function emitToolbarAction(action: ToolbarAction): void {
 
 export function emitOverlayState(state: OverlayStateSync): void {
   void import('@tauri-apps/api/event').then(({ emit }) => emit(OVERLAY_STATE_EVENT, state))
+}
+
+export function emitToolbarPanelHeight(height: number): void {
+  void import('@tauri-apps/api/event').then(({ emit }) => emit(TOOLBAR_PANEL_HEIGHT_EVENT, Math.ceil(height)))
 }

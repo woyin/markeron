@@ -74,6 +74,43 @@ export function clampToolbarWindowPosition(
   }
 }
 
+/**
+ * After compact↔expanded height change: grow/shrink upward when the panel sits on (or
+ * would cross) the bottom edge; otherwise keep the top fixed so mid-screen panels expand down.
+ *
+ * `margin` should match the clamp used for placement (space popup uses 12; drag clamp uses 8).
+ * Bottom-anchored detection allows a few px slack for float / margin mismatch.
+ */
+export function adjustToolbarTopForHeightChange(
+  top: number,
+  oldHeight: number,
+  newHeight: number,
+  monitor: MonitorLogicalBounds,
+  margin = 8,
+): number {
+  if (oldHeight <= 0 || newHeight <= 0) return top
+  const delta = newHeight - oldHeight
+  // Ignore sub-pixel / outer-vs-content noise (esp. macOS WKWebView outerSize).
+  if (Math.abs(delta) < 48) return top
+
+  const minTop = monitor.top + margin
+  const maxBottom = monitor.top + monitor.height - margin
+  const oldBottom = top + oldHeight
+  const wasBottomAnchored = oldBottom >= maxBottom - 16
+
+  let nextTop = top
+  if (delta > 0) {
+    if (wasBottomAnchored || top + newHeight > maxBottom) {
+      nextTop = oldBottom - newHeight
+    }
+  } else if (wasBottomAnchored) {
+    nextTop = oldBottom - newHeight
+  }
+
+  const maxTop = Math.max(minTop, maxBottom - newHeight)
+  return Math.min(Math.max(nextTop, minTop), maxTop)
+}
+
 function storageKey(forStandaloneWindow: boolean): string {
   return forStandaloneWindow ? WINDOW_STORAGE_KEY_V2 : STORAGE_KEY
 }

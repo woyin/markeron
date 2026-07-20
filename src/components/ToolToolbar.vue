@@ -14,6 +14,8 @@ import {
   fetchOverlayMonitorBounds,
   getToolbarWindowScreenOrigin,
   refreshToolbarWindowScreenOrigin,
+  repositionToolbarAfterHeightChange,
+  getToolbarPanelHeight,
   TOOLBAR_PANEL_WIDTH,
 } from '../utils/toolbarWindow'
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
@@ -137,8 +139,18 @@ async function syncStandaloneWindowSize() {
   await nextTick()
   if (generation !== syncSizeGeneration || !panelRef.value) return
   const width = panelW.value
+  let oldHeight = getToolbarPanelHeight()
+  try {
+    const win = getCurrentWindow()
+    const [size, scale] = await Promise.all([win.outerSize(), win.scaleFactor()])
+    const logicalH = size.toLogical(scale).height
+    if (logicalH >= 64) oldHeight = logicalH
+  } catch {
+    // keep cache
+  }
   const height = measureToolbarPanelHeight(panelRef.value)
   await fitToolbarWindow(width, height)
+  await repositionToolbarAfterHeightChange(oldHeight, height, { persist: props.pinned })
   if (isMacOS()) {
     await refreshToolbarWindowScreenOrigin()
   }

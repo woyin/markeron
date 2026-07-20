@@ -20,6 +20,7 @@ import {
   TOOLBAR_DRAGGING_EVENT,
   TOOLBAR_PANEL_HOVER_EVENT,
   TOOLBAR_POINTER_UP_EVENT,
+  TOOLBAR_PANEL_HEIGHT_EVENT,
   OVERLAY_POINTER_SCREEN_EVENT,
   emitOverlayState,
   type ToolbarAction,
@@ -43,7 +44,7 @@ import { resolveDefaultEntryMode, shouldClearWhiteboardOnEntry, type DefaultEntr
 import { logDiagnostic, logSessionEvent, logActionEvent } from '../utils/diagnosticEvents'
 import type { MonitorLogicalBounds } from '../utils/toolbarPosition'
 import { toolbarPopupScreenPosition } from '../utils/toolbarPosition'
-import { TOOLBAR_PANEL_WIDTH } from '../utils/toolbarWindow'
+import { TOOLBAR_PANEL_WIDTH, getToolbarPanelHeight, rememberToolbarPanelHeight } from '../utils/toolbarWindow'
 import { resolveEraserMode, type EraserMode } from '../utils/eraserMode'
 import { useI18n } from '../i18n'
 
@@ -263,8 +264,6 @@ function applyToolbarFromConfig(general?: AppConfig['general']) {
   }
 }
 
-const TOOLBAR_PANEL_HEIGHT = 500
-
 async function ensureOverlayLayoutReady(): Promise<void> {
   if (overlayLayoutReady.value) return
   if (overlayResizeInFlight) await overlayResizeInFlight
@@ -276,7 +275,7 @@ async function openToolbarPopupAtPointer(): Promise<void> {
   await seedPointerPosition()
 
   const panelW = TOOLBAR_PANEL_WIDTH
-  const panelH = TOOLBAR_PANEL_HEIGHT
+  const panelH = getToolbarPanelHeight()
   let monitorBounds: MonitorLogicalBounds | null = null
   try {
     monitorBounds = await invoke<MonitorLogicalBounds | null>('get_overlay_monitor_logical_bounds')
@@ -299,7 +298,7 @@ async function openToolbarPopupAtPointer(): Promise<void> {
     monitorBounds,
     devicePixelRatio: window.devicePixelRatio,
   })
-  await invoke('set_toolbar_popup', { visible: true, x: left, y: top })
+  await invoke('set_toolbar_popup', { visible: true, x: left, y: top, height: panelH })
 }
 
 async function setToolbarPopupVisible(visible: boolean) {
@@ -1528,6 +1527,12 @@ onMounted(async () => {
       if (isDrawing.value || isDragging || capturedPointerId !== null) {
         finishActivePointerInteraction()
       }
+    }),
+  )
+
+  unlisteners.push(
+    await listen<number>(TOOLBAR_PANEL_HEIGHT_EVENT, (event) => {
+      rememberToolbarPanelHeight(event.payload)
     }),
   )
 })

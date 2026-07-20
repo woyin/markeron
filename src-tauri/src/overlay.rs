@@ -145,8 +145,21 @@ pub fn setup_overlay_size(app: &AppHandle) {
 
 const TOOLBAR_WIDTH: f64 = 320.0;
 const TOOLBAR_PANEL_WIDTH: f64 = 300.0;
-const TOOLBAR_PANEL_HEIGHT: f64 = 500.0;
+/// Compact standalone panel height measured from live DOM (`.overlay-panel-surface`).
+/// Expanded ≈452. Inflating this (e.g. 500) raises maxTop and pulls space-popup away from a
+/// bottom-edge pointer.
+const TOOLBAR_PANEL_HEIGHT_COMPACT: f64 = 234.0;
 const TOOLBAR_EDGE_MARGIN: f64 = 8.0;
+
+fn toolbar_panel_height_logical(window: &tauri::WebviewWindow, fallback: f64) -> f64 {
+    let scale = window.scale_factor().unwrap_or(1.0);
+    window
+        .outer_size()
+        .ok()
+        .map(|s| s.height as f64 / scale)
+        .filter(|h| *h >= 64.0)
+        .unwrap_or(fallback)
+}
 
 fn position_toolbar_window(app: &AppHandle) {
     let Some(window) = app.get_webview_window("toolbar") else {
@@ -185,7 +198,7 @@ fn create_toolbar_window(app: &AppHandle) {
     let url = WebviewUrl::App("index.html#toolbar".into());
     let builder = WebviewWindowBuilder::new(app, "toolbar", url)
         .title("MarkerOn")
-        .inner_size(TOOLBAR_WIDTH, 480.0)
+        .inner_size(TOOLBAR_WIDTH, TOOLBAR_PANEL_HEIGHT_COMPACT)
         .decorations(false)
         .transparent(true)
         .always_on_top(true)
@@ -277,11 +290,12 @@ fn clamp_toolbar_to_overlay_monitor(app: &AppHandle) {
     let left = pos.x as f64 / toolbar_scale;
     let top = pos.y as f64 / toolbar_scale;
 
+    let panel_h = toolbar_panel_height_logical(&window, TOOLBAR_PANEL_HEIGHT_COMPACT);
     let (x, y) = monitor::clamp_logical_position_to_monitor(
         left,
         top,
         TOOLBAR_PANEL_WIDTH,
-        TOOLBAR_PANEL_HEIGHT,
+        panel_h,
         &bounds,
         TOOLBAR_EDGE_MARGIN,
     );
@@ -326,7 +340,7 @@ pub fn set_toolbar_window_visible(app: &AppHandle, visible: bool) {
     }
 }
 
-pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
+pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64, panel_height: Option<f64>) {
     create_toolbar_window(app);
     let Some(window) = app.get_webview_window("toolbar") else {
         return;
@@ -334,12 +348,15 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
     let bounds = monitor::get_overlay_monitor_logical_bounds(app);
     let requested_x = x;
     let requested_y = y;
+    let panel_h = panel_height
+        .filter(|h| *h >= 64.0)
+        .unwrap_or_else(|| toolbar_panel_height_logical(&window, TOOLBAR_PANEL_HEIGHT_COMPACT));
     let (x, y) = if let Some(ref bounds) = bounds {
         monitor::clamp_logical_position_to_monitor(
             x,
             y,
             TOOLBAR_PANEL_WIDTH,
-            TOOLBAR_PANEL_HEIGHT,
+            panel_h,
             bounds,
             TOOLBAR_EDGE_MARGIN,
         )
@@ -359,6 +376,7 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
         Some(serde_json::json!({
             "requested": { "x": requested_x, "y": requested_y },
             "clamped": { "x": x, "y": y },
+            "panelHeight": panel_h,
             "monitorBounds": bounds,
             "overlayScale": overlay_scale,
         })),
@@ -370,7 +388,7 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
         let phys_x = (x * overlay_scale).round() as i32;
         let phys_y = (y * overlay_scale).round() as i32;
         let phys_w = (TOOLBAR_PANEL_WIDTH * overlay_scale).round() as u32;
-        let phys_h = (TOOLBAR_PANEL_HEIGHT * overlay_scale).round() as u32;
+        let phys_h = (panel_h * overlay_scale).round() as u32;
         if let Ok(hwnd) = window.hwnd() {
             crate::win32::position_window_on_monitor(
                 hwnd.0 as isize,
@@ -398,6 +416,9 @@ pub fn position_toolbar_at(app: &AppHandle, x: f64, y: f64) {
     #[cfg(not(windows))]
     {
         window.set_position(tauri::LogicalPosition::new(x, y)).ok();
+        if let Err(e) = app.emit("toolbar-window-positioned", ()) {
+            warn!("Failed to emit toolbar-window-positioned: {}", e);
+        }
     }
 
     raise_toolbar_above_overlay(app);
@@ -409,10 +430,11 @@ pub fn set_toolbar_popup(
     visible: bool,
     x: Option<f64>,
     y: Option<f64>,
+    height: Option<f64>,
 ) {
     if visible {
         if let (Some(x), Some(y)) = (x, y) {
-            position_toolbar_at(app, x, y);
+            position_toolbar_at(app, x, y, height);
         }
         set_toolbar_window_visible(app, true);
         suppress_penetration_for(state, 800);
