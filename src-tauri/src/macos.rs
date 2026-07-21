@@ -48,12 +48,7 @@ unsafe fn msg_send_iset(receiver: *mut c_void, sel: Sel, value: isize) {
     f(receiver, sel, value);
 }
 
-unsafe fn msg_send_add_child(
-    receiver: *mut c_void,
-    sel: Sel,
-    child: *mut c_void,
-    ordered: isize,
-) {
+unsafe fn msg_send_add_child(receiver: *mut c_void, sel: Sel, child: *mut c_void, ordered: isize) {
     let f: unsafe extern "C" fn(*mut c_void, Sel, *mut c_void, isize) =
         std::mem::transmute(objc_msgSend as *const c_void);
     f(receiver, sel, child, ordered);
