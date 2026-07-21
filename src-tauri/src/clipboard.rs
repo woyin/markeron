@@ -42,10 +42,21 @@ fn with_toolbar_excluded_from_capture<R>(app: &AppHandle, capture: impl FnOnce()
         .ok()
         .is_some_and(|hwnd| crate::win32::set_window_exclude_from_capture(hwnd.0 as isize, true));
 
-    // Hide so capture never includes the toolbar. On Windows, display-affinity
-    // above also covers the brief compositor race between hide() and BitBlt.
-    toolbar.hide().ok();
-    std::thread::sleep(Duration::from_millis(64));
+    #[cfg(target_os = "macos")]
+    {
+        // Sync AppKit orderOut — Tauri hide() is async and races with screencapture.
+        crate::macos::hide_toolbar_ns_window_for_capture(&toolbar);
+        // Brief settle for the compositor after orderOut.
+        std::thread::sleep(Duration::from_millis(32));
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        // Hide so capture never includes the toolbar. On Windows, display-affinity
+        // above also covers the brief compositor race between hide() and BitBlt.
+        toolbar.hide().ok();
+        std::thread::sleep(Duration::from_millis(64));
+    }
+
     let result = capture();
     crate::set_toolbar_window_visible(app, true);
 

@@ -36,6 +36,10 @@ arboard = { version = "3", features = ["image-data"] }
 base64 = "0.22"
 image = { version = "0.25", default-features = false, features = ["png"] }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+# Same GCD queue tao uses for setLevel / ignoresMouseEvents — keep toolbar restack ordered after those.
+dispatch2 = "0.3"
+
 [profile.release]
 opt-level = 3
 lto = true

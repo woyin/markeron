@@ -2460,6 +2460,7 @@ dependencies = [
  "arboard",
  "base64 0.22.1",
  "ctrlc",
+ "dispatch2",
  "image",
  "serde",
  "serde_json",

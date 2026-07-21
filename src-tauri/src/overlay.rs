@@ -84,11 +84,32 @@ pub fn notify_overlay_geometry_changed(app: &AppHandle) {
         let app_for_thread = app.clone();
         let _ = app.run_on_main_thread(move || {
             emit_overlay_geometry_changed(&app_for_thread);
+            #[cfg(target_os = "macos")]
+            {
+                // Overlay may have moved while the toolbar was its child; clamp and
+                // re-attach so the panel stays on the new monitor and above ink.
+                if app_for_thread
+                    .get_webview_window("toolbar")
+                    .is_some_and(|w| w.is_visible().unwrap_or(false))
+                {
+                    clamp_toolbar_to_overlay_monitor(&app_for_thread);
+                    raise_toolbar_above_overlay(&app_for_thread);
+                }
+            }
         });
     });
 }
 
 pub fn setup_overlay_size(app: &AppHandle) {
+    #[cfg(target_os = "macos")]
+    {
+        // Detach before moving the overlay so an attached toolbar is not dragged
+        // by the parent's set_position / set_size.
+        if let Some(toolbar) = app.get_webview_window("toolbar") {
+            crate::macos::detach_toolbar_ns_window_from_overlay(&toolbar);
+        }
+    }
+
     if let Some(window) = app.get_webview_window("overlay") {
         if let Some((x, y, w, h)) = monitor::get_cursor_monitor_rect() {
             #[cfg(target_os = "macos")]
@@ -140,6 +161,18 @@ pub fn setup_overlay_size(app: &AppHandle) {
             }
         }
         set_ignore_cursor_events(&window, true);
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // Restore on-monitor placement and child stacking if the toolbar is up.
+        if app
+            .get_webview_window("toolbar")
+            .is_some_and(|w| w.is_visible().unwrap_or(false))
+        {
+            clamp_toolbar_to_overlay_monitor(app);
+            raise_toolbar_above_overlay(app);
+        }
     }
 }
 
@@ -230,13 +263,14 @@ fn create_toolbar_window(app: &AppHandle) {
 ///
 /// **Windows:** `SetWindowPos(HWND_TOPMOST)` on overlay, then toolbar (`win32.rs`).
 ///
-/// **macOS:** `-[NSWindow orderWindow:NSWindowAbove relativeTo:]` on the toolbar
-/// window (`macos.rs`). Do **not** rely on `toolbar.show()` — it is often a no-op
-/// when the toolbar is already visible, leaving ink from the overlay painted over
-/// the panel. Do not call WKWebView Objective-C selectors (crashes on Wry).
+/// **macOS:** attach toolbar as overlay's AppKit child window (`macos.rs`). Do
+/// **not** rely on `toolbar.show()` or same-level `always_on_top` — leaving the
+/// panel toggles click-through and canvas clicks reorder the overlay above the
+/// panel. A child window stays above its parent. Do not call WKWebView
+/// Objective-C selectors (crashes on Wry).
 ///
-/// Invoked from drawing activation, toolbar reposition, and the frontend `raise_toolbar`
-/// IPC (pointer-down, toolbar drag end).
+/// Invoked from drawing activation, toolbar reposition, panel hover pass-through
+/// changes, and the frontend `raise_toolbar` IPC (pointer-down, toolbar drag end).
 pub fn raise_toolbar_above_overlay(app: &AppHandle) {
     let Some(toolbar) = app.get_webview_window("toolbar") else {
         return;
@@ -244,26 +278,30 @@ pub fn raise_toolbar_above_overlay(app: &AppHandle) {
     if !toolbar.is_visible().unwrap_or(false) {
         return;
     }
-    // Keep both windows topmost, then force toolbar above overlay in the OS Z-order.
     let overlay = app.get_webview_window("overlay");
-    if let Some(ref overlay) = overlay {
-        overlay.set_always_on_top(true).ok();
-    }
-    toolbar.set_always_on_top(true).ok();
-    #[cfg(windows)]
-    {
-        if let Ok(toolbar_hwnd) = toolbar.hwnd() {
-            if let Some(ref overlay) = overlay {
-                if let Ok(overlay_hwnd) = overlay.hwnd() {
-                    crate::win32::raise_window_topmost_no_activate(overlay_hwnd.0 as isize);
-                }
-            }
-            crate::win32::raise_window_topmost_no_activate(toolbar_hwnd.0 as isize);
-        }
-    }
     #[cfg(target_os = "macos")]
     {
         crate::macos::raise_toolbar_ns_window_above_overlay(&toolbar, overlay.as_ref());
+        return;
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        // Keep both windows topmost, then force toolbar above overlay in the OS Z-order.
+        if let Some(ref overlay) = overlay {
+            overlay.set_always_on_top(true).ok();
+        }
+        toolbar.set_always_on_top(true).ok();
+        #[cfg(windows)]
+        {
+            if let Ok(toolbar_hwnd) = toolbar.hwnd() {
+                if let Some(ref overlay) = overlay {
+                    if let Ok(overlay_hwnd) = overlay.hwnd() {
+                        crate::win32::raise_window_topmost_no_activate(overlay_hwnd.0 as isize);
+                    }
+                }
+                crate::win32::raise_window_topmost_no_activate(toolbar_hwnd.0 as isize);
+            }
+        }
     }
 }
 
@@ -540,14 +578,37 @@ pub fn is_pointer_over_toolbar_panel(app: &AppHandle) -> bool {
 }
 
 /// Pass pointer events through the overlay while the cursor is over the toolbar (drawing mode).
+///
+/// **macOS:** the toolbar is an AppKit *child* above the overlay, so it already wins
+/// hit-testing. Enabling `ignoresMouseEvents` on the parent was the old (sibling
+/// z-order) approach and now prevents the child from receiving hover until a click
+/// activates it. Instead: keep stacking, make the toolbar key on enter, and restore
+/// the overlay as key on leave.
+///
+/// **Other platforms:** unused from the frontend today; keep click-through + raise.
 pub fn set_overlay_ignore_cursor_events(app: &AppHandle, state: &AppState, ignore: bool) {
     if current_mode(state) != OverlayMode::Drawing {
         return;
     }
-    if let Some(window) = app.get_webview_window("overlay") {
-        set_ignore_cursor_events(&window, ignore);
+    #[cfg(target_os = "macos")]
+    {
+        raise_toolbar_above_overlay(app);
+        if ignore {
+            if let Some(toolbar) = app.get_webview_window("toolbar") {
+                crate::macos::activate_toolbar_for_pointer_interaction(&toolbar);
+            }
+        } else if let Some(overlay) = app.get_webview_window("overlay") {
+            // Ensure we are not left in a stale click-through state from older builds.
+            set_ignore_cursor_events(&overlay, false);
+            crate::macos::activate_overlay_for_drawing(&overlay);
+        }
+        return;
     }
-    if ignore {
+    #[cfg(not(target_os = "macos"))]
+    {
+        if let Some(window) = app.get_webview_window("overlay") {
+            set_ignore_cursor_events(&window, ignore);
+        }
         raise_toolbar_above_overlay(app);
     }
 }
@@ -656,14 +717,14 @@ pub fn on_overlay_focus_lost(app: &AppHandle, state: &AppState) {
 mod tests {
     /// Regression guard for cross-platform toolbar stacking in `raise_toolbar_above_overlay`.
     ///
-    /// macOS must use NSWindow `orderWindow:relativeTo:` (`macos.rs`), not the
-    /// Win32-only `SetWindowPos` branch. CI on macOS runners executes this test.
+    /// macOS must use AppKit `addChildWindow` (`macos.rs`), not the Win32-only
+    /// `SetWindowPos` branch. CI on macOS runners executes this test.
     #[test]
     #[cfg(target_os = "macos")]
     fn macos_raise_toolbar_uses_nswindow_reorder_not_win32() {
         assert!(
             !cfg!(windows),
-            "macOS must use NSWindow orderWindow:relativeTo:, not SetWindowPos"
+            "macOS must use NSWindow addChildWindow, not SetWindowPos"
         );
     }
 
