@@ -16,13 +16,18 @@ MarkerOn  9N6623X973JV Unknown   msstore
 
 Recommended next step: keep the Microsoft Store listing as the canonical WinGet path unless a separate direct-installer manifest is needed in `microsoft/winget-pkgs`.
 
-If a direct WinGet community manifest is submitted later, use:
+If a direct WinGet community manifest is submitted later, use (replace `X.Y.Z` / hashes with the current GitHub Release before submitting):
 
 - Package identifier: `ifer47.MarkerOn`
 - Package name: `MarkerOn`
 - Publisher: `ifer47`
-- Homepage: `https://github.com/ifer47/markeron`
+- Homepage: `https://markeron.cn/`
 - License: `MIT`
-- Release URL: `https://github.com/ifer47/markeron/releases/tag/v1.0.0`
-- Installer URL: `https://github.com/ifer47/markeron/releases/download/v1.0.0/MarkerOn_1.0.0_x64_zh-CN.msi`
-- Installer SHA256: `3694b53359e2828321097c0992738a6efca1657e2e83c9c04e548cc5f9329e80`
+- Release URL: `https://github.com/ifer47/markeron/releases/tag/vX.Y.Z`
+- Installer URL: `https://github.com/ifer47/markeron/releases/download/vX.Y.Z/MarkerOn_X.Y.Z_x64_zh-CN.msi`
+- Installer SHA256: _(compute from the published MSI)_
+
+Example values for **v2.2.0** (verify against the live release assets before use):
+
+- Release URL: `https://github.com/ifer47/markeron/releases/tag/v2.2.0`
+- Installer URL: `https://github.com/ifer47/markeron/releases/download/v2.2.0/MarkerOn_2.2.0_x64_zh-CN.msi`

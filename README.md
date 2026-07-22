@@ -52,7 +52,7 @@ winget install --id 9N6623X973JV --source msstore
 
 ## Features
 
-- **Lightweight & fast** — ~1.5 MB installer (Rust + Canvas), minimal memory, no background daemons
+- **Lightweight & fast** — ~1.5 MB installer (Rust + Canvas), minimal memory; runs quietly in the system tray (no extra daemons or telemetry)
 - **Annotate anywhere** — draw over any app, including the taskbar
 - **9 tools** — pen, highlighter, laser, arrow, rectangle, ellipse, line, eraser, text
 - **Flexible toolbar** — press <kbd>Space</kbd> to toggle, or enable **always-on** in Settings; compact panel with **More** to expand, undo, copy, and whiteboard actions in-panel; **independent floating window** with drawing / click-through toggles
@@ -65,13 +65,15 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/annotation-tools.png" alt="MarkerOn annotation tools" />
+<img src="assets/annotation-tools.png" alt="MarkerOn annotation tools (screenshot may lag current UI)" />
 </td>
 <td width="50%">
 <img src="assets/settings-panel.png" alt="Settings panel" />
 </td>
 </tr>
 </table>
+
+> Screenshots above may still show an older toolbar layout. Current builds have **9 tools** with keys <kbd>1</kbd>–<kbd>8</kbd> and <kbd>T</kbd> (laser is <kbd>8</kbd>).
 
 ## Keyboard Shortcuts
 

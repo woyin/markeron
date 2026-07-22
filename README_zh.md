@@ -52,7 +52,7 @@ winget install --id 9N6623X973JV --source msstore
 
 ## 功能一览
 
-- **轻量高效** — 安装包仅 ~1.5 MB（Rust + Canvas），内存占用极低，不驻留后台进程
+- **轻量高效** — 安装包仅 ~1.5 MB（Rust + Canvas），内存占用极低；托盘静默运行（无多余服务、无遥测）
 - **随处标注** — 在任何应用上方绘制，覆盖全屏包括任务栏
 - **9 种工具** — 画笔、荧光笔、激光笔、箭头、矩形、椭圆、直线、橡皮擦、文字
 - **灵活工具栏** — 按 <kbd>Space</kbd> 呼出，或在设置中**常驻显示**；紧凑面板，点「更多」展开完整选项，面板内可撤销、复制、切换白板；**独立浮动窗口**，含绘制 / 穿透模式切换按钮
@@ -65,13 +65,15 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/八种标注工具.png" alt="MarkerOn 标注工具" />
+<img src="assets/八种标注工具.png" alt="MarkerOn 标注工具（截图可能落后于当前界面）" />
 </td>
 <td width="50%">
 <img src="assets/设置面板.png" alt="设置面板" />
 </td>
 </tr>
 </table>
+
+> 上方截图可能仍是旧版工具栏布局。当前版本为 **9 种工具**，快捷键 <kbd>1</kbd>–<kbd>8</kbd> 与 <kbd>T</kbd>（激光笔为 <kbd>8</kbd>）。
 
 ## 快捷键一览
 

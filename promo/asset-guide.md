@@ -29,6 +29,8 @@ The following legacy marketing images visibly show an 8-tool UI and pre-laser sh
 
 They are still usable as historical/product-context images, but do not pair them with a current “9 tools” claim until the screenshots are regenerated from the current UI.
 
+README currently keeps these images with an explicit note that the UI may lag (laser = key `8`). Re-export from the live app (or from updated `assets/store-screenshots/scene*.html`) when preparing the next Store / marketing refresh.
+
 ## New Social Concept Visual
 
 `assets/social/click-through-social-square.png` was generated as a supporting illustration, not a literal MarkerOn screenshot. Captions should label it as an illustration if the context could confuse it with the real interface. Pair it with the real click-through GIF in launch galleries.

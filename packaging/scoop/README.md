@@ -34,7 +34,7 @@ Draft metadata:
 
 - App name: `markeron`
 - Description: `Lightweight screen annotation tool with click-through mode`
-- Homepage: `https://github.com/ifer47/markeron`
+- Homepage: `https://markeron.cn/`
 - License: `MIT`
 - Architecture: `64bit`
 - Bin/shortcut target: `MarkerOn.exe`

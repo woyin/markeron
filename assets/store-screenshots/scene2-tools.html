@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1920, height=1080">
-<title>MarkerOn - 8 Annotation Tools</title>
+<title>MarkerOn - 9 Annotation Tools</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html {
@@ -64,11 +64,11 @@ body {
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   gap: 24px;
   width: 1400px;
-  height: 660px;
+  height: 720px;
   margin: 20px auto 0;
 }
 
@@ -190,8 +190,8 @@ body {
 
 <div class="header">
   <div class="accent-line"></div>
-  <h1>8 种标注工具，覆盖所有场景</h1>
-  <div class="subtitle">按数字键 <kbd>1-7</kbd> / <kbd>T</kbd> 即时切换，无需打开菜单</div>
+  <h1>9 种标注工具，覆盖所有场景</h1>
+  <div class="subtitle">按数字键 <kbd>1-8</kbd> / <kbd>T</kbd> 即时切换，无需打开菜单</div>
 </div>
 
 <div class="tools-grid">
@@ -295,10 +295,26 @@ body {
     </div>
   </div>
 
-  <!-- 8. Text -->
+  <!-- 8. Laser -->
+  <div class="tool-card">
+    <div class="tool-card-header"><h3>激光笔</h3><div class="tool-key">8</div></div>
+    <div class="tool-desc">临时笔迹，先画的部分先淡出</div>
+    <div class="tool-demo">
+      <svg viewBox="0 0 340 140" fill="none">
+        <path d="M40,100 C90,30 140,110 190,50 C240,10 280,90 310,40"
+          stroke="#FF3B30" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
+        <path d="M140,70 C190,30 230,90 280,45"
+          stroke="#FF3B30" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+        <circle cx="280" cy="45" r="6" fill="#FF3B30"/>
+        <circle cx="280" cy="45" r="14" stroke="#FF3B30" stroke-width="1.5" opacity="0.45"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 9. Text -->
   <div class="tool-card">
     <div class="tool-card-header"><h3>文字</h3><div class="tool-key">T</div></div>
-    <div class="tool-desc">双击放置，支持英字号</div>
+    <div class="tool-desc">双击放置，支持多种字号</div>
     <div class="tool-demo" style="flex-direction:column; gap:8px; align-items:flex-start; padding:10px 20px;">
       <span style="font-size:28px; font-weight:700; color:#FF3B30;">标注文字</span>
       <span style="font-size:18px; font-weight:600; color:#FFCC02;">支持多种字号</span>

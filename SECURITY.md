@@ -26,8 +26,9 @@ You should receive a response within 72 hours. We will work with you to understa
 
 MarkerOn is designed with security in mind:
 
-- **No network access** — the app does not collect telemetry or send data anywhere
-- **Local-only config** — all settings are stored locally in the system config directory
+- **No telemetry** — the app does not collect usage analytics or upload annotations
+- **Local-only config** — settings stay on disk under the OS app data directory, or under `data\` for portable builds
+- **Optional update network** — installer builds may contact GitHub Releases only when you check for or install updates; portable builds update manually
 - **URL allowlist** — the `open_url` command only permits pre-approved domains
 - **Memory-only drawings** — annotations exist only in RAM and are never written to disk
 - **CSP enforced** — Content Security Policy restricts the webview to local resources only
