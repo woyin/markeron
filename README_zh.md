@@ -65,15 +65,13 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/八种标注工具.png" alt="MarkerOn 标注工具（截图可能落后于当前界面）" />
+<img src="assets/九种标注工具.png" alt="MarkerOn 标注工具" />
 </td>
 <td width="50%">
 <img src="assets/设置面板.png" alt="设置面板" />
 </td>
 </tr>
 </table>
-
-> 上方截图可能仍是旧版工具栏布局。当前版本为 **9 种工具**，快捷键 <kbd>1</kbd>–<kbd>8</kbd> 与 <kbd>T</kbd>（激光笔为 <kbd>8</kbd>）。
 
 ## 快捷键一览
 
@@ -107,7 +105,7 @@ winget install --id 9N6623X973JV --source msstore
 | 复制屏幕 / 白板 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | 白板模式切换 | <kbd>W</kbd> | <kbd>W</kbd> |
 | 撤销 / 重做 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
-| 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮（画笔与形状共用；荧光笔/橡皮擦/文字各自独立） |
+| 调整线宽 | <kbd>Ctrl</kbd> + 滚轮 | <kbd>Command</kbd> + 滚轮（画笔、激光笔与形状共用；荧光笔/橡皮擦/文字各自独立） |
 | 退出标注 | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
 <details>

@@ -137,7 +137,7 @@
       'helpPage.session.copy': 'Copy screen',
       'helpPage.session.copyKeys': `${copyCombo} <span class="help-key-sep" aria-hidden="true">/</span> ${copyComboMac}`,
       'helpPage.session.widthHint':
-        'Pen, arrow, rectangle, ellipse, and line share one width; highlighter, eraser, and text each have their own.',
+        'Pen, laser, arrow, rectangle, ellipse, and line share one width; highlighter, eraser, and text each have their own.',
       'helpPage.draw.eyebrow': '04',
       'helpPage.draw.title': 'Drawing modifiers, colors & whiteboard',
       'helpPage.draw.lead': 'Hold modifiers while dragging to snap shapes. Cycle colors without leaving the canvas.',
@@ -378,7 +378,7 @@
       'helpPage.session.copy': '复制屏幕',
       'helpPage.session.copyKeys': `${copyCombo} <span class="help-key-sep" aria-hidden="true">/</span> ${copyComboMac}`,
       'helpPage.session.widthHint':
-        '画笔与箭头 / 矩形 / 椭圆 / 直线共用粗细；荧光笔、橡皮擦、文字各自独立。',
+        '画笔、激光笔与箭头 / 矩形 / 椭圆 / 直线共用粗细；荧光笔、橡皮擦、文字各自独立。',
       'helpPage.draw.eyebrow': '04',
       'helpPage.draw.title': '绘制修饰键、颜色与白板',
       'helpPage.draw.lead': '拖动时按住修饰键吸附形状；无需离开画布即可切换颜色。',

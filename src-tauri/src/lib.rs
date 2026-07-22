@@ -49,6 +49,7 @@ pub fn rebuild_tray_menu(app: &AppHandle) -> Result<(), Box<dyn std::error::Erro
             .item(&quit_item)
             .build()?;
         tray.set_menu(Some(menu))?;
+        tray.set_tooltip(Some(s.tray_tooltip))?;
     }
     Ok(())
 }

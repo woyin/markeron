@@ -282,7 +282,7 @@ MarkerOn provides an open-source, local-first alternative with a small installer
 
 ### MarkerOn vs meeting whiteboards
 
-Meeting whiteboards are tied to a meeting app. MarkerOn works over any desktop app, offline, and without account setup.
+Meeting whiteboards are tied to a meeting app. MarkerOn works over any desktop app, needs no account, and keeps drawings local (no cloud upload).
 
 ## Chinese Social Copy
 

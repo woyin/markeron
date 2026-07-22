@@ -33,7 +33,7 @@
       "id": "main",
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true,
-      "tooltip": "MarkerOn - 屏幕标注工具",
+      "tooltip": "MarkerOn - Screen annotation",
       "menuOnLeftClick": false
     }
   },

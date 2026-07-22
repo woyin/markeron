@@ -65,15 +65,13 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/annotation-tools.png" alt="MarkerOn annotation tools (screenshot may lag current UI)" />
+<img src="assets/annotation-tools.png" alt="MarkerOn annotation tools" />
 </td>
 <td width="50%">
 <img src="assets/settings-panel.png" alt="Settings panel" />
 </td>
 </tr>
 </table>
-
-> Screenshots above may still show an older toolbar layout. Current builds have **9 tools** with keys <kbd>1</kbd>–<kbd>8</kbd> and <kbd>T</kbd> (laser is <kbd>8</kbd>).
 
 ## Keyboard Shortcuts
 
@@ -107,7 +105,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | Copy screen / whiteboard | <kbd>Ctrl</kbd> + <kbd>C</kbd> | <kbd>Command</kbd> + <kbd>C</kbd> |
 | Whiteboard toggle | <kbd>W</kbd> | <kbd>W</kbd> |
 | Undo / Redo | <kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> | <kbd>Command</kbd> + <kbd>Z</kbd> / <kbd>Y</kbd> |
-| Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll (pen & shapes share; highlighter/eraser/text separate) |
+| Stroke width | <kbd>Ctrl</kbd> + Scroll | <kbd>Command</kbd> + Scroll (pen, laser & shapes share; highlighter/eraser/text separate) |
 | Exit | <kbd>Esc</kbd> | <kbd>Esc</kbd> |
 
 <details>
