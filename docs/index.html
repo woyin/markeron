@@ -13,17 +13,89 @@
       name="keywords"
       content="screen annotation tool, desktop drawing overlay, click-through annotation, desktop whiteboard, Tauri app, screen drawing"
     />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://markeron.cn/" />
     <meta property="og:title" content="MarkerOn - Lightweight Screen Annotation Tool" />
     <meta
       property="og:description"
       content="Draw, highlight, and annotate anywhere on your desktop. Click-through mode keeps annotations visible while you interact with apps below."
     />
-    <meta property="og:image" content="assets/hero.png" />
+    <meta property="og:url" content="https://markeron.cn/" />
+    <meta property="og:site_name" content="MarkerOn" />
+    <meta property="og:image" content="https://markeron.cn/assets/hero.png" />
+    <meta property="og:image:alt" content="MarkerOn screen annotation tool" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MarkerOn - Lightweight Screen Annotation Tool" />
+    <meta
+      name="twitter:description"
+      content="Draw over any desktop app, keep annotations visible, and click through to the app below. Free, open source, and local-first."
+    />
+    <meta name="twitter:image" content="https://markeron.cn/assets/hero.png" />
     <link rel="icon" href="assets/icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="motion.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "MarkerOn",
+            "applicationCategory": "ProductivityApplication",
+            "operatingSystem": "Windows, macOS",
+            "url": "https://markeron.cn/",
+            "downloadUrl": "https://github.com/ifer47/markeron/releases/latest",
+            "image": "https://markeron.cn/assets/hero.png",
+            "description": "A lightweight open-source screen annotation tool with click-through mode, whiteboard mode, and keyboard-first controls.",
+            "license": "https://github.com/ifer47/markeron/blob/master/LICENSE",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "ifer47"
+            },
+            "sameAs": [
+              "https://github.com/ifer47/markeron",
+              "https://apps.microsoft.com/detail/9n6623x973jv"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is MarkerOn for?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "MarkerOn provides live screen annotation for demos, teaching, meetings, and recordings on Windows and macOS."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does click-through mode work?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Annotations remain visible while clicks, scrolling, and typing pass through to the application underneath."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does MarkerOn require an account or cloud upload?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. MarkerOn is local-first, open source, and account-free."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
     <script>
       (function () {
         var stored = localStorage.getItem('markeron-lang');
@@ -95,7 +167,7 @@
               </div>
             </div>
             <ul class="hero-chips t-avatar-group t-scroll-reveal" data-reveal-immediate data-reveal-delay="5" data-i18n-aria="hero.chipsAria">
-              <li class="t-avatar" data-i18n="hero.chip.tools">8 drawing tools</li>
+              <li class="t-avatar" data-i18n="hero.chip.tools">Keyboard-first drawing tools</li>
               <li class="t-avatar" data-i18n="hero.chip.clickThrough">Click-through mode</li>
               <li class="t-avatar" data-i18n="hero.chip.whiteboard">Whiteboard mode</li>
               <li class="t-avatar" data-i18n="hero.chip.platforms">Win / macOS</li>
