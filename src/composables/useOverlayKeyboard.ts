@@ -32,6 +32,9 @@ export interface KeyboardContext {
 export interface KeyboardActions {
   cycleColor: (direction: number) => void
   showToolTip: (tool: Tool) => void
+  showStampTip?: () => void
+  cycleStampKind?: () => void
+  resetStampCounter?: () => void
   undo: () => void
   redo: () => void
   exitDrawing: () => void
@@ -177,6 +180,27 @@ export function createKeyDownHandler(ctx: KeyboardContext, actions: KeyboardActi
       logActionEvent('tool selected', { reason: 'keyboard', tool: 'text' })
       ctx.currentTool.value = 'text'
       actions.showToolTip('text')
+      return
+    }
+
+    // Stamp tool — N selects; N again cycles number ↔ letter; Shift+N resets active counter.
+    // Ignore Ctrl/Meta so we don't steal OS chords (⌘N / ⌘⇧N on macOS, Ctrl+N elsewhere).
+    if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
+      if (e.shiftKey) {
+        e.preventDefault()
+        logActionEvent('stamp counter reset', { reason: 'keyboard' })
+        ctx.currentTool.value = 'stamp'
+        actions.resetStampCounter?.()
+        return
+      }
+      if (ctx.currentTool.value === 'stamp') {
+        logActionEvent('stamp kind cycled', { reason: 'keyboard' })
+        actions.cycleStampKind?.()
+      } else {
+        logActionEvent('tool selected', { reason: 'keyboard', tool: 'stamp' })
+        ctx.currentTool.value = 'stamp'
+        actions.showStampTip?.()
+      }
       return
     }
 

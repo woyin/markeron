@@ -35,7 +35,7 @@ export async function refreshToolbarWindowScreenOrigin(): Promise<{ x: number; y
 }
 
 /** Logical width of the toolbar panel (must match ToolToolbar / Rust overlay). */
-export const TOOLBAR_PANEL_WIDTH = 300
+export const TOOLBAR_PANEL_WIDTH = 320
 
 /**
  * Compact (default) standalone panel height, measured from live DOM (`.overlay-panel-surface`).

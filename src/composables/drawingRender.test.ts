@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { drawText } from './drawingRender'
+import { drawText, drawStamp } from './drawingRender'
 import type { DrawAction } from './drawingTypes'
 
 function makeTextAction(overrides: Partial<DrawAction> = {}): DrawAction {
@@ -75,5 +75,53 @@ describe('drawingRender text outline', () => {
 
     expect(ctx.strokeStyle).toBe('#000000')
     expect(calls).toEqual(['stroke', 'fill'])
+  })
+})
+
+describe('drawingRender stamp', () => {
+  it('draws FastStone-style ring disc, fill, then label', () => {
+    const calls: string[] = []
+    const ctx = {
+      globalAlpha: 1,
+      fillStyle: '',
+      strokeStyle: '',
+      lineWidth: 1,
+      lineJoin: 'miter',
+      font: '',
+      textAlign: 'start',
+      textBaseline: 'alphabetic',
+      shadowColor: '',
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      save: vi.fn(),
+      restore: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      translate: vi.fn(),
+      scale: vi.fn(),
+      fill: vi.fn(() => calls.push('fill')),
+      stroke: vi.fn(() => calls.push('stroke')),
+      fillText: vi.fn(() => calls.push('label')),
+    } as unknown as CanvasRenderingContext2D
+
+    drawStamp(ctx, {
+      tool: 'stamp',
+      color: '#FF3B30',
+      lineWidth: 3,
+      opacity: 1,
+      points: [{ x: 50, y: 60 }],
+      text: '1',
+      fontSize: 24,
+    })
+
+    expect(ctx.save).toHaveBeenCalled()
+    expect(ctx.restore).toHaveBeenCalled()
+    // shadow silhouette + crisp ring disc + inner fill
+    expect(ctx.arc).toHaveBeenCalledTimes(3)
+    expect(ctx.scale).not.toHaveBeenCalled()
+    expect(ctx.fillText).toHaveBeenCalledOnce()
+    expect(calls).toEqual(['fill', 'fill', 'fill', 'label'])
+    expect(ctx.fillStyle).toBe('#FFFFFF')
   })
 })

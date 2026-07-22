@@ -14,6 +14,7 @@ function createTooltip() {
     line: 'Line',
     eraser: 'Eraser',
     text: 'Text',
+    stamp: 'Stamp',
   }))
 
   const colorNameMap = computed<Record<string, string>>(() => ({

@@ -397,6 +397,16 @@ describe('useDrawing', () => {
     })
   })
 
+  describe('addStampAction', () => {
+    it('adds a stamp and hits near its center', () => {
+      drawing.addStampAction('1', 100, 100, 24, '#FF3B30')
+      expect(drawing.findActionAt({ x: 100, y: 100 })).not.toBeNull()
+      expect(drawing.findActionAt({ x: 200, y: 200 })).toBeNull()
+      drawing.undo()
+      expect(drawing.findActionAt({ x: 100, y: 100 })).toBeNull()
+    })
+  })
+
   describe('tool switching', () => {
     it('allows changing tools between draws', () => {
       drawing.currentTool.value = 'pen'

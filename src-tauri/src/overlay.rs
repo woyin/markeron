@@ -176,8 +176,8 @@ pub fn setup_overlay_size(app: &AppHandle) {
     }
 }
 
-const TOOLBAR_WIDTH: f64 = 320.0;
-const TOOLBAR_PANEL_WIDTH: f64 = 300.0;
+const TOOLBAR_WIDTH: f64 = 340.0;
+const TOOLBAR_PANEL_WIDTH: f64 = 320.0;
 /// Compact standalone panel height measured from live DOM (`.overlay-panel-surface`).
 /// Expanded ≈452. Inflating this (e.g. 500) raises maxTop and pulls space-popup away from a
 /// bottom-edge pointer.

@@ -634,4 +634,31 @@ describe('hitTestAction', () => {
       expect(hitTestAction(action, { x: 50, y: 50 })).toBe(false)
     })
   })
+
+  describe('stamp tool', () => {
+    it('hits inside the stamp circle', () => {
+      const action = makeAction({
+        tool: 'stamp',
+        lineWidth: 3,
+        points: [{ x: 100, y: 100 }],
+        text: '1',
+        fontSize: 24,
+        bbox: { x1: 82, y1: 82, x2: 118, y2: 118 },
+      })
+      expect(hitTestAction(action, { x: 100, y: 100 })).toBe(true)
+      expect(hitTestAction(action, { x: 110, y: 100 })).toBe(true)
+    })
+
+    it('misses outside the stamp circle', () => {
+      const action = makeAction({
+        tool: 'stamp',
+        lineWidth: 3,
+        points: [{ x: 100, y: 100 }],
+        text: '1',
+        fontSize: 24,
+        bbox: { x1: 82, y1: 82, x2: 118, y2: 118 },
+      })
+      expect(hitTestAction(action, { x: 160, y: 100 })).toBe(false)
+    })
+  })
 })

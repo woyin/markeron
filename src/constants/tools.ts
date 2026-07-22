@@ -1,5 +1,16 @@
 import type { Component } from 'vue'
-import { Pen, Highlighter, Crosshair, ArrowUpRight, Square, Circle, Minus, Eraser, Type } from '@lucide/vue'
+import {
+  Pen,
+  Highlighter,
+  Crosshair,
+  ArrowUpRight,
+  Square,
+  Circle,
+  Minus,
+  Eraser,
+  Type,
+  ListOrdered,
+} from '@lucide/vue'
 import type { Tool } from '../composables/drawingTypes'
 
 export interface ToolDef {
@@ -18,6 +29,7 @@ export const TOOL_DEFS: ToolDef[] = [
   { id: 'eraser', icon: Eraser, key: '7' },
   { id: 'laser', icon: Crosshair, key: '8' },
   { id: 'text', icon: Type, key: 'T' },
+  { id: 'stamp', icon: ListOrdered, key: 'N' },
 ]
 
 export const TOOL_ICON_MAP: Record<Tool, Component> = Object.fromEntries(
@@ -44,7 +56,7 @@ const STROKE_TOOLS = new Set<Tool>(['pen', 'laser', 'arrow', 'rect', 'ellipse', 
 export function toolLineWidthGroup(tool: Tool): LineWidthGroup {
   if (tool === 'highlighter') return 'highlighter'
   if (tool === 'eraser') return 'eraser'
-  if (tool === 'text') return 'text'
+  if (tool === 'text' || tool === 'stamp') return 'text'
   return 'stroke'
 }
 

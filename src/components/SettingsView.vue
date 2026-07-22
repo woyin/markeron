@@ -51,6 +51,7 @@ const helpTools = [
   { key: '7', name: 'tools.eraser', desc: 'toolDesc.eraser' },
   { key: '8', name: 'tools.laser', desc: 'toolDesc.laser' },
   { key: 'T', name: 'tools.text', desc: 'toolDesc.text' },
+  { key: 'N', name: 'tools.stamp', desc: 'toolDesc.stamp' },
 ] as const
 
 const hashTab = window.location.hash.split('/')[1]

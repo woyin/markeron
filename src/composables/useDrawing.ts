@@ -3,6 +3,7 @@ import type { EraserMode } from '../utils/eraserMode'
 import {
   computeBbox,
   computeTextBbox,
+  computeStampBbox,
   bboxesIntersect,
   offsetAttachedErasers,
   updateShapeHitCache,
@@ -11,6 +12,7 @@ import {
 } from './drawingGeometry'
 import { drawActionDirect, drawLaserTrail } from './drawingRender'
 import { normalizeTextOutline } from '../constants/textOutline'
+import { stampFontSizeFromWidth } from '../constants/stamp'
 import { isLaserTrailGone, pruneAgedLaserPoints } from '../constants/laser'
 
 export type { Tool, Point, DrawAction } from './drawingTypes'
@@ -674,6 +676,32 @@ export function useDrawing(
     flushRender()
   }
 
+  function addStampAction(text: string, x: number, y: number, fontSize?: number, color?: string) {
+    const fs = fontSize ?? stampFontSizeFromWidth(lineWidths.value.text)
+    const action: DrawAction = {
+      tool: 'stamp',
+      color: color ?? currentColor.value,
+      lineWidth: lineWidths.value.text,
+      opacity: 1,
+      points: [{ x, y }],
+      text,
+      fontSize: fs,
+    }
+    action.bbox = computeStampBbox(action)
+
+    redoStack.length = 0
+    ensureCache()
+    if (cacheCtx) drawActionOn(cacheCtx, action)
+    history.push(action)
+    trackHistoryPush(action)
+    undoStack.push({ type: 'add', action })
+    appendActionToHitGrid(action)
+    historyDirty = true
+    previewDirty = true
+    markHistoryStacksChanged()
+    flushRender()
+  }
+
   function processObjectEraserHits(action: DrawAction) {
     const pts = action.points
     let removedAny = false
@@ -695,7 +723,7 @@ export function useDrawing(
   }
 
   function startDraw(point: Point) {
-    if (currentTool.value === 'text') return
+    if (currentTool.value === 'text' || currentTool.value === 'stamp') return
     isDrawing.value = true
     if (redoStack.length > 0) {
       redoStack.length = 0
@@ -1019,7 +1047,12 @@ export function useDrawing(
     if (canvas) {
       const dpr = getEffectiveDpr()
       const pad = Math.max(20, action.lineWidth / 2 + 10) + 2
-      const bbox = action.tool === 'text' ? computeTextBbox(action) : computeBbox(action, pad)
+      const bbox =
+        action.tool === 'text'
+          ? computeTextBbox(action)
+          : action.tool === 'stamp'
+            ? computeStampBbox(action)
+            : computeBbox(action, pad)
       if (bbox) {
         const bw = Math.ceil((bbox.x2 - bbox.x1) * dpr)
         const bh = Math.ceil((bbox.y2 - bbox.y1) * dpr)
@@ -1072,6 +1105,8 @@ export function useDrawing(
 
       if (action.tool === 'text' && action.textWidth != null) {
         action.bbox = computeTextBbox(action)
+      } else if (action.tool === 'stamp') {
+        action.bbox = computeStampBbox(action)
       } else {
         const pad = Math.max(20, action.lineWidth / 2 + 10)
         action.bbox = computeBbox(action, pad)
@@ -1370,6 +1405,7 @@ export function useDrawing(
     findActionAt,
     removeAction,
     addTextAction,
+    addStampAction,
     undo,
     redo,
     canUndo,

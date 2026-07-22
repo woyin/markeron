@@ -9,6 +9,10 @@ export default {
     line: 'Line',
     eraser: 'Eraser',
     text: 'Text',
+    stamp: 'Stamp',
+    stampNumber: 'Number stamps',
+    stampLetter: 'Letter stamps',
+    stampReset: 'Counter reset · next {label}',
   },
   toolDesc: {
     pen: 'Freehand strokes',
@@ -20,6 +24,7 @@ export default {
     line: 'Straight line segment',
     eraser: 'Stroke or object erase (General settings)',
     text: 'Double-click to place, scroll to resize',
+    stamp: 'Click to place; N toggles number/letter; Shift+N resets',
   },
   colors: {
     '#FF3B30': 'Red',
@@ -41,7 +46,7 @@ export default {
   textSizes: { 1: 'XS', 2: 'S', 3: 'M', 5: 'L', 8: 'XL' },
   panel: {
     tools: 'Tools',
-    toolsHint: 'Press 1-8 / T',
+    toolsHint: 'Press 1-8 / T / N',
     colors: 'Colors',
     customColor: 'Custom color',
     strokeWidth: 'Stroke',

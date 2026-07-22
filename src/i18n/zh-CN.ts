@@ -9,6 +9,10 @@ export default {
     line: '直线',
     eraser: '橡皮擦',
     text: '文字',
+    stamp: '序号',
+    stampNumber: '数字序号',
+    stampLetter: '字母序号',
+    stampReset: '序号已重置 · 下一枚 {label}',
   },
   toolDesc: {
     pen: '自由绘画',
@@ -20,6 +24,7 @@ export default {
     line: '直线段',
     eraser: '轨迹 / 对象擦除（常规设置）',
     text: '双击放置，滚轮调字号',
+    stamp: '单击放置；N 切换数字/字母；Shift+N 重置',
   },
   colors: {
     '#FF3B30': '红色',
@@ -41,7 +46,7 @@ export default {
   textSizes: { 1: '极小', 2: '小', 3: '中', 5: '大', 8: '极大' },
   panel: {
     tools: '工具',
-    toolsHint: '按 1-8 / T 切换',
+    toolsHint: '按 1-8 / T / N 切换',
     colors: '颜色',
     customColor: '自定义颜色',
     strokeWidth: '线宽',

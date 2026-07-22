@@ -1,5 +1,13 @@
 import type { DrawAction, Point } from './drawingTypes'
 import { getActiveTextOutline } from '../constants/textOutline'
+import {
+  stampContrastColor,
+  stampLabelFontSize,
+  stampRadius,
+  stampRingColor,
+  stampShadowParams,
+  stampStrokeWidth,
+} from '../constants/stamp'
 import { LaserPointer } from '@excalidraw/laser-pointer'
 import { laserSizeFromMapping, smoothLaserPositions } from '../constants/laser'
 
@@ -119,6 +127,54 @@ export function drawText(ctx: CanvasRenderingContext2D, action: DrawAction) {
   }
 }
 
+export function drawStamp(ctx: CanvasRenderingContext2D, action: DrawAction) {
+  const label = action.text ?? ''
+  if (!label || action.points.length === 0) return
+
+  const fs = action.fontSize ?? 24
+  const { x, y } = action.points[0]
+  const outerR = stampRadius(fs, label)
+  const ringW = stampStrokeWidth(outerR)
+  const innerR = Math.max(1, outerR - ringW)
+  const labelFs = stampLabelFontSize(fs, label)
+  const shadow = stampShadowParams(outerR)
+  const ink = stampContrastColor(action.color)
+  const ring = stampRingColor(action.color)
+
+  ctx.globalAlpha = 1
+
+  // Soft contact shadow under the full outer silhouette (tight FastStone blur)
+  ctx.save()
+  ctx.shadowColor = `rgba(0, 0, 0, ${shadow.alpha})`
+  ctx.shadowBlur = shadow.blur
+  ctx.shadowOffsetX = shadow.offsetX
+  ctx.shadowOffsetY = shadow.offsetY
+  ctx.beginPath()
+  ctx.arc(x, y, outerR, 0, Math.PI * 2)
+  ctx.fillStyle = ring
+  ctx.fill()
+  ctx.restore()
+
+  // Redraw outer ring disc without shadow so the rim stays crisp
+  ctx.beginPath()
+  ctx.arc(x, y, outerR, 0, Math.PI * 2)
+  ctx.fillStyle = ring
+  ctx.fill()
+
+  // Inner fill — inset by ring width for an even white band
+  ctx.beginPath()
+  ctx.arc(x, y, innerR, 0, Math.PI * 2)
+  ctx.fillStyle = action.color
+  ctx.fill()
+
+  // Arial Bold, optically centered (no horizontal squash — FastStone digits are round)
+  ctx.fillStyle = ink
+  ctx.font = `bold ${labelFs}px Arial, Helvetica, sans-serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(label, x, y + labelFs * 0.04)
+}
+
 /**
  * Draw an action with full style setup (opacity, composite operation, stroke/fill).
  * Handles all tool types including eraser composite mode.
@@ -146,6 +202,12 @@ export function drawActionDirect(
 
   if (action.tool === 'text') {
     drawText(ctx, action)
+    ctx.restore()
+    return
+  }
+
+  if (action.tool === 'stamp') {
+    drawStamp(ctx, action)
     ctx.restore()
     return
   }

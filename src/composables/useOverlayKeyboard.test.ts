@@ -42,6 +42,9 @@ function createActions(): KeyboardActions & { calls: Record<string, unknown[][]>
     calls,
     cycleColor: make('cycleColor') as KeyboardActions['cycleColor'],
     showToolTip: make('showToolTip') as KeyboardActions['showToolTip'],
+    showStampTip: make('showStampTip') as KeyboardActions['showStampTip'],
+    cycleStampKind: make('cycleStampKind') as KeyboardActions['cycleStampKind'],
+    resetStampCounter: make('resetStampCounter') as KeyboardActions['resetStampCounter'],
     undo: make('undo') as KeyboardActions['undo'],
     redo: make('redo') as KeyboardActions['redo'],
     exitDrawing: make('exitDrawing') as KeyboardActions['exitDrawing'],
@@ -149,6 +152,35 @@ describe('useOverlayKeyboard', () => {
       handler(key('t'))
       expect(ctx.currentTool.value).toBe('text')
       expect(actions.calls.showToolTip[0]).toEqual(['text'])
+    })
+
+    it('key N selects stamp and shows stamp tip', () => {
+      handler(key('n'))
+      expect(ctx.currentTool.value).toBe('stamp')
+      expect(actions.calls.showStampTip).toHaveLength(1)
+    })
+
+    it('key N while on stamp cycles stamp kind', () => {
+      ctx.currentTool.value = 'stamp'
+      handler(key('N'))
+      expect(ctx.currentTool.value).toBe('stamp')
+      expect(actions.calls.cycleStampKind).toHaveLength(1)
+      expect(actions.calls.showStampTip).toHaveLength(0)
+    })
+
+    it('Shift+N resets stamp counter and selects stamp', () => {
+      handler(key('n', { shiftKey: true }))
+      expect(ctx.currentTool.value).toBe('stamp')
+      expect(actions.calls.resetStampCounter).toHaveLength(1)
+      expect(actions.calls.cycleStampKind).toHaveLength(0)
+    })
+
+    it('ignores N / Shift+N when Ctrl or Meta is held', () => {
+      handler(key('n', { ctrlKey: true }))
+      handler(key('n', { metaKey: true, shiftKey: true }))
+      expect(ctx.currentTool.value).toBe('pen')
+      expect(actions.calls.showStampTip).toHaveLength(0)
+      expect(actions.calls.resetStampCounter).toHaveLength(0)
     })
 
     it('tool switch keeps toolbar popup open', () => {

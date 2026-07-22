@@ -577,18 +577,18 @@ onUnmounted(() => {
 
         <!-- Simple compact tools -->
         <div v-if="!showFullPanel" class="px-3 pb-2">
-          <div class="grid grid-cols-9 gap-0.75">
+          <div class="flex items-center justify-between gap-0.5">
             <button
               v-for="tool in tools"
               :key="tool.id"
               :aria-label="`${tool.label} (${tool.key})`"
               :aria-pressed="currentTool === tool.id"
-              class="flex min-w-0 items-center justify-center h-7.5 border-none rounded-[9px] cursor-pointer transition-all duration-150"
+              class="size-7 shrink-0 flex items-center justify-center border-none rounded-[9px] cursor-pointer transition-all duration-150"
               :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
               :title="`${tool.label} (${tool.key})`"
               @click="selectTool(tool.id)"
             >
-              <component :is="tool.icon" :size="16" />
+              <component :is="tool.icon" :size="15" />
             </button>
           </div>
         </div>

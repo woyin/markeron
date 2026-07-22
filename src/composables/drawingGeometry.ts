@@ -1,5 +1,6 @@
 import type { DrawAction, Point } from './drawingTypes'
 import { textOutlinePadding } from '../constants/textOutline'
+import { stampBboxPad, stampRadius } from '../constants/stamp'
 
 export function computeBbox(action: DrawAction, pad: number): DrawAction['bbox'] {
   const pts = action.points
@@ -33,6 +34,16 @@ export function computeTextBbox(action: DrawAction): DrawAction['bbox'] {
     x2: x + textWidth + 20 + outlinePad,
     y2: y + lines.length * lh + lh / 2 + 10 + outlinePad,
   }
+}
+
+export function computeStampBbox(action: DrawAction): DrawAction['bbox'] {
+  if (action.tool !== 'stamp' || action.points.length === 0) return undefined
+  const fs = action.fontSize ?? 24
+  const label = action.text ?? ''
+  const r = stampRadius(fs, label)
+  const pad = stampBboxPad(r)
+  const { x, y } = action.points[0]
+  return { x1: x - r - pad, y1: y - r - pad, x2: x + r + pad, y2: y + r + pad }
 }
 
 export function bboxesIntersect(a: NonNullable<DrawAction['bbox']>, b: NonNullable<DrawAction['bbox']>) {
@@ -147,6 +158,12 @@ export function hitTestAction(action: DrawAction, p: Point, extraMargin = 0): bo
   if (action.tool === 'text' && action.text) {
     const textBox = computeTextBbox(action)
     return !!textBox && p.x >= textBox.x1 && p.x <= textBox.x2 && p.y >= textBox.y1 && p.y <= textBox.y2
+  }
+
+  if (action.tool === 'stamp' && action.text) {
+    const fs = action.fontSize ?? 24
+    const r = stampRadius(fs, action.text) + extraMargin
+    return Math.hypot(p.x - pts[0].x, p.y - pts[0].y) <= r
   }
 
   if (action.tool === 'pen' || action.tool === 'highlighter') {

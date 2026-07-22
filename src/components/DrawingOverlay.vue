@@ -28,6 +28,13 @@ import {
 import type { AppConfig } from '../types/app'
 import TextBox from './TextBox.vue'
 import { TOOL_ICON_MAP, WIDTH_PRESETS, eraserLineWidth, resolveLineWidths } from '../constants/tools'
+import {
+  cycleStampKind as cycleStampKindState,
+  getStampKind,
+  resetActiveStampCounter,
+  stampFontSizeFromWidth,
+  takeStampLabel,
+} from '../constants/stamp'
 import { createDefaultTextOutline, normalizeTextOutline } from '../constants/textOutline'
 import {
   EMPTY_TEXT_RMB_CLICK,
@@ -91,6 +98,7 @@ const toolLabelMap = computed<Record<Tool, string>>(() => ({
   line: t('tools.line'),
   eraser: t('tools.eraser'),
   text: t('tools.text'),
+  stamp: t('tools.stamp'),
 }))
 
 const colorNameMap = computed<Record<string, string>>(() => ({
@@ -201,7 +209,7 @@ function onWheel(e: WheelEvent) {
         )
   const next = Math.max(0, Math.min(WIDTH_PRESETS.length - 1, cur + dir))
   lineWidth.value = WIDTH_PRESETS[next]
-  const labelKey = tool === 'text' ? `textSizes.${lineWidth.value}` : `widths.${lineWidth.value}`
+  const labelKey = tool === 'text' || tool === 'stamp' ? `textSizes.${lineWidth.value}` : `widths.${lineWidth.value}`
   showWidthTip(lineWidth.value, t(labelKey))
   schedulePersistLineWidths()
 }
@@ -220,6 +228,7 @@ const {
   drawBatch,
   endDraw,
   addTextAction,
+  addStampAction,
   findActionAt,
   removeAction,
   undo,
@@ -875,7 +884,8 @@ async function onPointerDown(e: PointerEvent) {
   }
 
   // Capture immediately so move/up events are not lost while awaiting IPC (raise_toolbar).
-  const willInteract = canStartElementDrag(e) || (currentTool.value !== 'text' && !penetrationMode.value)
+  const willInteract =
+    canStartElementDrag(e) || (currentTool.value !== 'text' && currentTool.value !== 'stamp' && !penetrationMode.value)
   if (willInteract) {
     capturePointer(e)
   }
@@ -895,6 +905,13 @@ async function onPointerDown(e: PointerEvent) {
 
   // In text mode, single-click is a no-op (text creation is handled by double-click)
   if (currentTool.value === 'text') {
+    return
+  }
+
+  // Stamp: single click places the next number/letter badge
+  if (currentTool.value === 'stamp') {
+    hideToolbarPopupForCanvasInteraction()
+    placeStampAt(e.clientX, e.clientY)
     return
   }
 
@@ -1049,6 +1066,28 @@ function onTextCancel() {
   commitCurrentTextBox(true)
 }
 
+function showStampTip() {
+  const kind = getStampKind()
+  showTip(t(kind === 'number' ? 'tools.stampNumber' : 'tools.stampLetter'))
+}
+
+function cycleStampKind() {
+  cycleStampKindState()
+  showStampTip()
+}
+
+function resetStampCounter() {
+  const label = resetActiveStampCounter()
+  showTip(t('tools.stampReset', { label }))
+  logActionEvent('stamp counter reset', { kind: getStampKind(), next: label })
+}
+
+function placeStampAt(x: number, y: number) {
+  const label = takeStampLabel()
+  addStampAction(label, x, y, stampFontSizeFromWidth(lineWidth.value), currentColor.value)
+  logActionEvent('stamp placed', { kind: getStampKind(), label })
+}
+
 const onKeyDown = createKeyDownHandler(
   {
     active,
@@ -1067,6 +1106,9 @@ const onKeyDown = createKeyDownHandler(
   {
     cycleColor,
     showToolTip,
+    showStampTip,
+    cycleStampKind,
+    resetStampCounter,
     undo,
     redo,
     togglePenetrationMode,
@@ -1141,7 +1183,8 @@ const wantsCustomCursor = computed(
     !toolbarPanelHovered.value &&
     !toolbarPanelDragging.value &&
     !showDragCursor.value &&
-    currentTool.value !== 'text',
+    currentTool.value !== 'text' &&
+    currentTool.value !== 'stamp',
 )
 
 // Use system cursor as fallback whenever the SVG overlay cursor is suppressed.
@@ -1149,6 +1192,7 @@ const canvasCursor = computed(() => {
   if (penetrationMode.value) return 'default'
   if (showDragCursor.value) return 'move'
   if (currentTool.value === 'text') return 'text'
+  if (currentTool.value === 'stamp') return 'crosshair'
   if (showQuickColors.value) return 'default'
   if (wantsCustomCursor.value) return isMacOS() ? MAC_HIDDEN_CURSOR : 'none'
   return 'default'
@@ -1272,8 +1316,17 @@ async function handleToolbarAction(action: ToolbarAction) {
   switch (action.type) {
     case 'selectTool':
       await resumeDrawingFromToolbar()
-      currentTool.value = action.tool
-      showToolTip(action.tool)
+      if (action.tool === 'stamp') {
+        if (currentTool.value === 'stamp') {
+          cycleStampKind()
+        } else {
+          currentTool.value = 'stamp'
+          showStampTip()
+        }
+      } else {
+        currentTool.value = action.tool
+        showToolTip(action.tool)
+      }
       break
     case 'selectColor':
       await resumeDrawingFromToolbar()

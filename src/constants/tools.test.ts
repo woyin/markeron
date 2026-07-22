@@ -28,6 +28,7 @@ describe('line width helpers', () => {
     expect(toolLineWidthGroup('highlighter')).toBe('highlighter')
     expect(toolLineWidthGroup('eraser')).toBe('eraser')
     expect(toolLineWidthGroup('text')).toBe('text')
+    expect(toolLineWidthGroup('stamp')).toBe('text')
   })
 
   it('scales lineWidth for eraser and highlighter', () => {
