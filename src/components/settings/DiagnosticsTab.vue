@@ -105,11 +105,11 @@ async function openGithubIssue() {
       </button>
     </div>
 
-    <div class="min-h-[36px] mt-3 flex items-center">
+    <div class="min-h-9 mt-3 flex items-center">
       <Transition name="msg">
         <div
           v-if="message"
-          class="px-3 py-1.5 rounded-[6px]"
+          class="px-3 py-1.5 rounded-md"
           :class="message.type === 'success' ? 'settings-msg-success' : 'settings-msg-error'"
         >
           {{ message.text }}

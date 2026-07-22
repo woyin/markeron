@@ -577,13 +577,13 @@ onUnmounted(() => {
 
         <!-- Simple compact tools -->
         <div v-if="!showFullPanel" class="px-3 pb-2">
-          <div class="grid grid-cols-9 gap-[3px]">
+          <div class="grid grid-cols-9 gap-0.75">
             <button
               v-for="tool in tools"
               :key="tool.id"
               :aria-label="`${tool.label} (${tool.key})`"
               :aria-pressed="currentTool === tool.id"
-              class="flex min-w-0 items-center justify-center h-[30px] border-none rounded-[9px] cursor-pointer transition-all duration-150"
+              class="flex min-w-0 items-center justify-center h-7.5 border-none rounded-[9px] cursor-pointer transition-all duration-150"
               :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
               :title="`${tool.label} (${tool.key})`"
               @click="selectTool(tool.id)"
@@ -607,7 +607,7 @@ onUnmounted(() => {
               :key="tool.id"
               :aria-label="`${tool.label} (${tool.key})`"
               :aria-pressed="currentTool === tool.id"
-              class="flex flex-col items-center gap-[3px] pt-2 px-0.5 pb-1.5 border-none rounded-[10px] cursor-pointer relative transition-all duration-150"
+              class="flex flex-col items-center gap-0.75 pt-2 px-0.5 pb-1.5 border-none rounded-[10px] cursor-pointer relative transition-all duration-150"
               :class="currentTool === tool.id ? 'overlay-tool-btn--active' : 'overlay-tool-btn'"
               :title="`${tool.label} (${tool.key})`"
               @click="selectTool(tool.id)"
@@ -615,7 +615,7 @@ onUnmounted(() => {
               <component :is="tool.icon" :size="18" />
               <span class="text-[10px] leading-none font-sans">{{ tool.label }}</span>
               <span
-                class="absolute top-[3px] right-[5px] text-[8px] font-sans"
+                class="absolute top-0.75 right-1.25 text-[8px] font-sans"
                 :class="currentTool === tool.id ? 'overlay-text-key--active' : 'overlay-text-key'"
                 >{{ tool.key }}</span
               >
@@ -629,7 +629,7 @@ onUnmounted(() => {
             <button
               v-for="color in simpleColors"
               :key="color"
-              class="w-[30px] h-[30px] p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
+              class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
               :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
               @click="selectColor(color)"
             >
@@ -654,7 +654,7 @@ onUnmounted(() => {
               <button
                 v-for="(color, ci) in row"
                 :key="color"
-                class="w-[30px] h-[30px] p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
+                class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
                 :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
                 @click="selectColor(color)"
               >
@@ -686,7 +686,7 @@ onUnmounted(() => {
               @input="selectColor(($event.target as HTMLInputElement).value)"
             />
             <span
-              class="w-[20px] h-[20px] rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
+              class="w-5 h-5 rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
               style="
                 background: conic-gradient(
                   from 90deg,
@@ -706,9 +706,7 @@ onUnmounted(() => {
                 );
               "
             >
-              <span
-                class="text-white text-[14px] leading-none font-light"
-                style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6)"
+              <span class="text-white text-sm leading-none font-light" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6)"
                 >+</span
               >
             </span>
@@ -751,7 +749,7 @@ onUnmounted(() => {
             }}</span>
             <button
               type="button"
-              class="px-2.5 py-[4px] rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120"
+              class="px-2.5 py-1 rounded-md ui-segment text-[10.5px] leading-none transition-colors duration-120"
               :class="{ 'ui-segment--active': textOutline.enabled }"
               :aria-pressed="textOutline.enabled"
               @click="updateTextOutline({ enabled: !textOutline.enabled })"

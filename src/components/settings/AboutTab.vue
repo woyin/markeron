@@ -53,7 +53,7 @@ async function openUrl(url: string) {
       </p>
 
       <div class="flex flex-col items-center gap-2 w-full" :class="updateUiExpanded ? 'mb-3' : 'mb-6'">
-        <p v-if="portableMode === true" class="settings-text-subtle text-center text-[12px] leading-relaxed m-0 px-2">
+        <p v-if="portableMode === true" class="settings-text-subtle text-center text-xs leading-relaxed m-0 px-2">
           {{ t('about.portableUpdateHint') }}
         </p>
 

@@ -1947,7 +1947,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
               @click="selectQuickColor(color)"
             >
               <span
-                class="w-[22px] h-[22px] rounded-full color-swatch-ring color-swatch-ring--compact transition-[border-color] duration-100"
+                class="w-5.5 h-5.5 rounded-full color-swatch-ring color-swatch-ring--compact transition-[border-color] duration-100"
                 :class="{ 'color-swatch-ring--active': currentColor === color }"
                 :style="{ backgroundColor: color }"
               />

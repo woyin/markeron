@@ -258,7 +258,7 @@ onUnmounted(() => {
 <template>
   <div class="flex h-full w-full font-text text-white select-none overflow-hidden">
     <!-- Sidebar -->
-    <div class="relative z-10 w-[164px] shrink-0 bg-[#161618] flex flex-col ui-divider-v">
+    <div class="relative z-10 w-41 shrink-0 bg-[#161618] flex flex-col ui-divider-v">
       <div class="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <svg class="w-7 h-7 shrink-0" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -276,17 +276,17 @@ onUnmounted(() => {
           role="tab"
           :aria-selected="activeTab === tab.id"
           :aria-controls="`tabpanel-${tab.id}`"
-          class="relative flex items-center gap-2 px-3 py-[7px] rounded-lg border-none cursor-pointer transition-all duration-120 overflow-hidden"
+          class="relative flex items-center gap-2 px-3 py-1.75 rounded-lg border-none cursor-pointer transition-all duration-120 overflow-hidden"
           :class="activeTab === tab.id ? 'settings-nav-item--active' : 'settings-nav-item'"
           @click="activeTab = tab.id"
         >
           <div
             v-if="activeTab === tab.id"
-            class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-3.5 bg-accent rounded-r-md"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-3.5 bg-accent rounded-r-md"
           ></div>
           <svg
             v-if="tab.id === 'general'"
-            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            class="w-3.5 h-3.5 shrink-0 opacity-70"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -301,7 +301,7 @@ onUnmounted(() => {
           </svg>
           <svg
             v-else-if="tab.id === 'shortcuts'"
-            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            class="w-3.5 h-3.5 shrink-0 opacity-70"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -314,7 +314,7 @@ onUnmounted(() => {
           </svg>
           <svg
             v-else-if="tab.id === 'help'"
-            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            class="w-3.5 h-3.5 shrink-0 opacity-70"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -328,7 +328,7 @@ onUnmounted(() => {
           </svg>
           <svg
             v-else-if="tab.id === 'diagnostics'"
-            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            class="w-3.5 h-3.5 shrink-0 opacity-70"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -344,7 +344,7 @@ onUnmounted(() => {
           </svg>
           <svg
             v-else-if="tab.id === 'about'"
-            class="w-[14px] h-[14px] shrink-0 opacity-70"
+            class="w-3.5 h-3.5 shrink-0 opacity-70"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -370,7 +370,7 @@ onUnmounted(() => {
           <h2 class="font-semibold settings-text-title">{{ t('settings.shortcutsTitle') }}</h2>
           <div class="group relative flex items-center">
             <svg
-              class="w-[14px] h-[14px] settings-text-icon settings-text-icon-hover cursor-help transition-colors duration-200 outline-none"
+              class="w-3.5 h-3.5 settings-text-icon settings-text-icon-hover cursor-help transition-colors duration-200 outline-none"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -383,7 +383,7 @@ onUnmounted(() => {
               <path d="M12 8h.01"></path>
             </svg>
             <div
-              class="absolute left-full top-1/2 -translate-y-1/2 ml-2 mt-4 w-[248px] p-2.5 ui-tooltip rounded-[8px] opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none origin-left"
+              class="absolute left-full top-1/2 -translate-y-1/2 ml-2 mt-4 w-62 p-2.5 ui-tooltip rounded-lg opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none origin-left"
             >
               <p class="settings-text-tooltip leading-[1.6] m-0 text-left font-sans">
                 {{ t('settings.comboRequirement', { mod: modLabel }) }}
@@ -403,11 +403,11 @@ onUnmounted(() => {
 
             <div class="flex items-center gap-2">
               <template v-if="capturing === action">
-                <span class="settings-text-capture font-medium min-w-[90px] text-right tracking-wide">
+                <span class="settings-text-capture font-medium min-w-22.5 text-right tracking-wide">
                   {{ capturedKeys || t('settings.pressComboHint') }}
                 </span>
                 <button
-                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn cursor-pointer"
+                  class="px-2.5 py-1 rounded-md ui-btn-outline settings-text-btn cursor-pointer"
                   @click="cancelCapture"
                 >
                   {{ t('settings.cancel') }}
@@ -417,11 +417,11 @@ onUnmounted(() => {
                 <kbd v-if="shortcuts[action]" class="ui-kbd--shortcut">
                   {{ shortcuts[action] }}
                 </kbd>
-                <span v-else class="settings-text-muted min-w-[90px] text-right">
+                <span v-else class="settings-text-muted min-w-22.5 text-right">
                   {{ t('settings.shortcutNotSet') }}
                 </span>
                 <button
-                  class="px-2.5 py-[4px] rounded-md ui-btn-outline settings-text-btn-strong cursor-pointer shadow-sm"
+                  class="px-2.5 py-1 rounded-md ui-btn-outline settings-text-btn-strong cursor-pointer shadow-sm"
                   @click="startCapture(action)"
                 >
                   {{ t('settings.edit') }}
@@ -434,11 +434,11 @@ onUnmounted(() => {
         <!-- Actions -->
         <div class="flex items-center justify-between mt-4">
           <!-- Message -->
-          <div class="min-h-[32px] flex items-center">
+          <div class="min-h-8 flex items-center">
             <Transition name="msg">
               <div
                 v-if="message"
-                class="px-3 py-1.5 rounded-[6px]"
+                class="px-3 py-1.5 rounded-md"
                 :class="message.type === 'success' ? 'settings-msg-success' : 'settings-msg-error'"
               >
                 {{ message.text }}
@@ -447,7 +447,7 @@ onUnmounted(() => {
           </div>
 
           <button
-            class="px-3.5 py-[5px] rounded-[6px] ui-btn-outline ui-btn-outline--subtle settings-text-btn cursor-pointer shadow-sm ml-auto"
+            class="px-3.5 py-1.25 rounded-md ui-btn-outline ui-btn-outline--subtle settings-text-btn cursor-pointer shadow-sm ml-auto"
             @click="resetDefaults"
           >
             {{ t('settings.restoreDefaults') }}
@@ -478,7 +478,7 @@ onUnmounted(() => {
           <h2 class="font-semibold settings-text-title m-0">{{ t('help.basicUsage') }}</h2>
           <button
             type="button"
-            class="shrink-0 px-3 py-[5px] rounded-[6px] ui-btn-outline settings-text-btn cursor-pointer"
+            class="shrink-0 px-3 py-1.25 rounded-md ui-btn-outline settings-text-btn cursor-pointer"
             @click="openOnlineHelp"
           >
             {{ t('help.openOnline') }}

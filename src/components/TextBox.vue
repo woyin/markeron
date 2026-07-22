@@ -149,7 +149,7 @@ defineExpose({ commitText, getText, getFontSize })
   <div
     v-if="activeTextOutline"
     aria-hidden="true"
-    class="fixed left-0 top-0 z-100001 px-0.5 py-0 pointer-events-none select-none font-text overflow-visible whitespace-pre min-w-[4px] max-w-[80vw]"
+    class="fixed left-0 top-0 z-100001 px-0.5 py-0 pointer-events-none select-none font-text overflow-visible whitespace-pre min-w-1 max-w-[80vw]"
     :style="{
       transform: textBoxTransform,
       width: boxWidth,
@@ -173,7 +173,7 @@ defineExpose({ commitText, getText, getFontSize })
   </span>
   <textarea
     ref="textareaRef"
-    class="textbox-input fixed left-0 top-0 z-100002 px-0.5 py-0 border-none bg-transparent outline-none resize-none font-text whitespace-pre min-w-[4px] max-w-[80vw]"
+    class="textbox-input fixed left-0 top-0 z-100002 px-0.5 py-0 border-none bg-transparent outline-none resize-none font-text whitespace-pre min-w-1 max-w-[80vw]"
     :class="{ 'textbox-input--block-caret': supportsBlockCaret }"
     :value="draftText"
     :style="{
