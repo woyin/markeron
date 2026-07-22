@@ -13,8 +13,8 @@ Last audited: 2026-07-22
 | Vertical high-resolution | `assets/招贴画_1440x2160.png` | 1440×2160 | High-resolution vertical cover |
 | Real click-through demo | `assets/click-through-mode.gif` | 720×405 | Strongest functional proof; compress or convert to MP4 per platform |
 | Real desktop scenario | `assets/desktop-annotation.png` / `assets/桌面标注场景.png` | 2880×1530 | Regenerated from `scene1-desktop*.html` |
-| Shortcut reference | `assets/shortcuts-overview.png` / `assets/快捷键一览.png` | 2880×1530 | Regenerated from store scenes (9 tools / `1-8` + `T`) |
-| Annotation tools grid | `assets/annotation-tools.png` / `assets/九种标注工具.png` | 2880×1530 | Regenerated from store scenes (9 tools / `1-8` + `T`) |
+| Shortcut reference | `assets/shortcuts-overview.png` / `assets/快捷键一览.png` | 2880×1530 | Regenerated from store scenes (10 tools / `1-8` + `T` + `N`) |
+| Annotation tools grid | `assets/annotation-tools.png` / `assets/十种标注工具.png` | 2880×1530 | Regenerated from store scenes (10 tools / `1-8` + `T` + `N`) |
 | Settings / panel | `assets/settings-panel.png` / `assets/设置面板.png` | 2880×1530 | Regenerated from `scene3-panel*.html` |
 | Hero / brand | `assets/MarkerOn.png` / `assets/MarkerOn_en.png` / `docs/assets/hero.png` | 2880×1530 | Regenerated from `scene0-hero*.html` |
 

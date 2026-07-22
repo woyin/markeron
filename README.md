@@ -54,8 +54,8 @@ winget install --id 9N6623X973JV --source msstore
 
 - **Lightweight & fast** — ~1.5 MB installer (Rust + Canvas), minimal memory; runs quietly in the system tray (no extra daemons or telemetry)
 - **Annotate anywhere** — draw over any app, including the taskbar
-- **9 tools** — pen, highlighter, laser, arrow, rectangle, ellipse, line, eraser, text
-- **Flexible toolbar** — press <kbd>Space</kbd> to toggle, or enable **always-on** in Settings; compact panel with **More** to expand, undo, copy, and whiteboard actions in-panel; **independent floating window** with drawing / click-through toggles
+- **10 tools** — pen, highlighter, laser, arrow, rectangle, ellipse, line, eraser, text, stamp
+- **Flexible toolbar** — press <kbd>Space</kbd> to toggle, or enable **always-on** in Settings; compact panel with **Expand** for full options, undo, copy, and whiteboard actions in-panel; **independent floating window** with drawing / click-through toggles
 - **Click-through mode** — interact with apps below while staying in the session; toggle via toolbar buttons, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> (global), or <kbd>X</kbd> while drawing; disabled in whiteboard mode
 - **Full keyboard control** — every action has a shortcut, no menus needed
 - **Preserve drawings** — enable **Keep after exit** under Whiteboard & content to resume on re-enter
@@ -93,7 +93,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | <kbd>2</kbd> | Highlighter | <kbd>6</kbd> | Line |
 | <kbd>3</kbd> | Arrow | <kbd>7</kbd> | Eraser |
 | <kbd>4</kbd> | Rectangle | <kbd>8</kbd> | Laser |
-| <kbd>T</kbd> | Text | | |
+| <kbd>T</kbd> | Text | <kbd>N</kbd> | Stamp |
 
 ### Common Actions
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1920, height=1080">
-<title>MarkerOn - 9 Annotation Tools</title>
+<title>MarkerOn - 10 Annotation Tools</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html {
@@ -64,11 +64,11 @@ body {
 
 .tools-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 24px;
-  width: 1400px;
-  height: 720px;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+  width: 1680px;
+  height: 680px;
   margin: 20px auto 0;
 }
 
@@ -190,8 +190,8 @@ body {
 
 <div class="header">
   <div class="accent-line"></div>
-  <h1>9 Annotation Tools for Every Scenario</h1>
-  <div class="subtitle">Press <kbd>1-8</kbd> / <kbd>T</kbd> to switch instantly — no menus needed</div>
+  <h1>10 Annotation Tools for Every Scenario</h1>
+  <div class="subtitle">Press <kbd>1-8</kbd> / <kbd>T</kbd> / <kbd>N</kbd> to switch instantly — no menus needed</div>
 </div>
 
 <div class="tools-grid">
@@ -319,6 +319,25 @@ body {
       <span style="font-size:28px; font-weight:700; color:#FF3B30;">Annotate</span>
       <span style="font-size:18px; font-weight:600; color:#FFCC02;">Multiple font sizes</span>
       <span style="font-size:13px; color:rgba(255,255,255,0.4); margin-top:4px;">Ctrl+Enter to confirm</span>
+    </div>
+  </div>
+
+  <!-- 10. Stamp -->
+  <div class="tool-card">
+    <div class="tool-card-header"><h3>Stamp</h3><div class="tool-key">N</div></div>
+    <div class="tool-desc">Click to place; digits or letters</div>
+    <div class="tool-demo">
+      <svg viewBox="0 0 340 140" fill="none">
+        <circle cx="80" cy="70" r="30" fill="#FF3B30"/>
+        <circle cx="80" cy="70" r="34" stroke="#FFFFFF" stroke-width="4"/>
+        <text x="80" y="80" text-anchor="middle" font-family="Arial" font-weight="700" font-size="28" fill="#FFFFFF">1</text>
+        <circle cx="170" cy="70" r="30" fill="#007AFF"/>
+        <circle cx="170" cy="70" r="34" stroke="#FFFFFF" stroke-width="4"/>
+        <text x="170" y="80" text-anchor="middle" font-family="Arial" font-weight="700" font-size="28" fill="#FFFFFF">2</text>
+        <circle cx="260" cy="70" r="30" fill="#34C759"/>
+        <circle cx="260" cy="70" r="34" stroke="#FFFFFF" stroke-width="4"/>
+        <text x="260" y="80" text-anchor="middle" font-family="Arial" font-weight="700" font-size="26" fill="#FFFFFF">A</text>
+      </svg>
     </div>
   </div>
 </div>

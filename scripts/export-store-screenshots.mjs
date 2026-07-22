@@ -18,7 +18,7 @@ const jobs = [
   },
   {
     html: 'scene2-tools.html',
-    outs: ['assets/九种标注工具.png'],
+    outs: ['assets/十种标注工具.png'],
   },
   {
     html: 'scene1-desktop-en.html',

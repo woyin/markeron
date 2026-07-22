@@ -129,7 +129,7 @@ body {
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .section-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); }
 .section-hint { font-size: 11px; color: rgba(255,255,255,0.3); }
-.panel-tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 18px; }
+.panel-tools-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 18px; }
 .tool-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 54px; border-radius: 8px; background: rgba(255,255,255,0.05); border: none; position: relative; gap: 3px; }
 .tool-btn.active { background: rgba(10,132,255,0.3); box-shadow: inset 0 0 0 1.5px rgba(10,132,255,0.5); }
 .tool-btn svg { width: 18px; height: 18px; stroke: rgba(255,255,255,0.8); stroke-width: 2; fill: none; }
@@ -319,7 +319,7 @@ body {
     <div class="panel-content">
       <div class="section-header">
         <span class="section-title">工具</span>
-        <span class="section-hint">按 1-8 / T 切换</span>
+        <span class="section-hint">按 1-8 / T / N 切换</span>
       </div>
       <div class="panel-tools-grid">
         <div class="tool-btn">
@@ -366,6 +366,11 @@ body {
           <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
           <span class="tool-label">文字</span>
           <span class="tool-shortcut">T</span>
+        </div>
+        <div class="tool-btn">
+          <svg viewBox="0 0 24 24"><path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+          <span class="tool-label">序号</span>
+          <span class="tool-shortcut">N</span>
         </div>
       </div>
 
