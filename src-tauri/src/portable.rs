@@ -4,6 +4,7 @@
 //! config, logs, and WebView2 user data are stored under `{exe_dir}/data/` instead
 //! of the system AppData directories.
 
+#[cfg(target_os = "windows")]
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
