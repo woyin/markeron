@@ -93,11 +93,11 @@ Link: https://alternativeto.net/faq/
 
 ### Scoop
 
-Do not submit yet. Add a true portable Windows zip first.
+Portable Windows zip is published as `MarkerOn_X.Y.Z_x64_portable.zip`.
 
 Local note: `packaging/scoop/README.md`
 
-Target repository after portable artifact exists:
+Target repository:
 
 - Scoop Extras: https://github.com/ScoopInstaller/Extras
 

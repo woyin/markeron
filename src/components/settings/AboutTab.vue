@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { useI18n } from '../../i18n'
 import { useUpdater } from '../../composables/useUpdater'
+import { resolvePortableMode } from '../../utils/portable'
 
 const { t } = useI18n()
 
+const portableMode = ref<boolean | null>(null)
 const { status, newVersion, progress, checkForUpdate, downloadAndInstall } = useUpdater()
 
 const updateUiExpanded = computed(
   () =>
-    status.value === 'available' ||
-    status.value === 'downloading' ||
-    status.value === 'checking' ||
-    status.value === 'up-to-date',
+    portableMode.value === false &&
+    (status.value === 'available' ||
+      status.value === 'downloading' ||
+      status.value === 'checking' ||
+      status.value === 'up-to-date'),
 )
+
+onMounted(async () => {
+  portableMode.value = await resolvePortableMode()
+})
 
 async function openUrl(url: string) {
   try {
@@ -27,7 +34,7 @@ async function openUrl(url: string) {
 
 <template>
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden items-center px-7 py-8 w-full">
-    <div class="shrink-0 flex flex-col items-center w-full max-w-[340px]">
+    <div class="shrink-0 flex flex-col items-center w-full max-w-85">
       <div
         class="settings-app-icon w-16 h-16 rounded-2xl flex items-center justify-center"
         :class="updateUiExpanded ? 'mb-3' : 'mb-4'"
@@ -46,49 +53,55 @@ async function openUrl(url: string) {
       </p>
 
       <div class="flex flex-col items-center gap-2 w-full" :class="updateUiExpanded ? 'mb-3' : 'mb-6'">
-        <button
-          v-if="status === 'idle' || status === 'error'"
-          class="settings-btn-accent-outline px-4 py-1.5 rounded-lg cursor-pointer"
-          @click="checkForUpdate()"
-        >
-          {{ status === 'error' ? t('about.updateError') : t('about.checkUpdate') }}
-        </button>
+        <p v-if="portableMode === true" class="settings-text-subtle text-center text-[12px] leading-relaxed m-0 px-2">
+          {{ t('about.portableUpdateHint') }}
+        </p>
 
-        <span v-else-if="status === 'checking'" class="settings-text-subtle flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          {{ t('about.checking') }}
-        </span>
-
-        <div v-else-if="status === 'available'" class="flex flex-col items-center gap-1.5">
-          <span class="settings-text-accent">{{ t('about.updateAvailable', { version: newVersion }) }}</span>
+        <template v-else-if="portableMode === false">
           <button
-            class="settings-btn-accent-primary px-4 py-1.5 rounded-lg cursor-pointer"
-            @click="downloadAndInstall()"
+            v-if="status === 'idle' || status === 'error'"
+            class="settings-btn-accent-outline px-4 py-1.5 rounded-lg cursor-pointer"
+            @click="checkForUpdate()"
           >
-            {{ t('about.installAndRestart') }}
+            {{ status === 'error' ? t('about.updateError') : t('about.checkUpdate') }}
           </button>
-        </div>
 
-        <div v-else-if="status === 'downloading'" class="flex flex-col items-center gap-1.5 w-full max-w-[200px]">
-          <span class="settings-text-subtle">{{ t('about.downloading', { progress: String(progress) }) }}</span>
-          <div class="settings-progress-track w-full h-1.5 rounded-full overflow-hidden">
-            <div
-              class="settings-progress-fill h-full rounded-full transition-all duration-300"
-              :style="{ width: progress + '%' }"
-            />
+          <span v-else-if="status === 'checking'" class="settings-text-subtle flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {{ t('about.checking') }}
+          </span>
+
+          <div v-else-if="status === 'available'" class="flex flex-col items-center gap-1.5">
+            <span class="settings-text-accent">{{ t('about.updateAvailable', { version: newVersion }) }}</span>
+            <button
+              class="settings-btn-accent-primary px-4 py-1.5 rounded-lg cursor-pointer"
+              @click="downloadAndInstall()"
+            >
+              {{ t('about.installAndRestart') }}
+            </button>
           </div>
-        </div>
 
-        <span v-else-if="status === 'up-to-date'" class="settings-status-success">
-          {{ t('about.upToDate') }}
-        </span>
+          <div v-else-if="status === 'downloading'" class="flex flex-col items-center gap-1.5 w-full max-w-50">
+            <span class="settings-text-subtle">{{ t('about.downloading', { progress: String(progress) }) }}</span>
+            <div class="settings-progress-track w-full h-1.5 rounded-full overflow-hidden">
+              <div
+                class="settings-progress-fill h-full rounded-full transition-all duration-300"
+                :style="{ width: progress + '%' }"
+              />
+            </div>
+          </div>
+
+          <span v-else-if="status === 'up-to-date'" class="settings-status-success">
+            {{ t('about.upToDate') }}
+          </span>
+        </template>
       </div>
     </div>
 
-    <div class="w-full max-w-[340px] shrink-0">
+    <div class="w-full max-w-85 shrink-0">
       <div class="settings-card w-full overflow-hidden">
         <div class="flex items-center justify-between px-4 py-3 ui-divider-b settings-row-hover transition-colors">
           <span class="settings-text-row-key">{{ t('about.license') }}</span>

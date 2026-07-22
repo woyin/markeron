@@ -2,19 +2,25 @@
 
 Scoop is strongest when the app has a portable `.zip` release that can be extracted into Scoop's app directory without running a traditional installer.
 
-Current v1.0.0 Windows assets are installer-oriented:
+Windows GitHub Release assets include:
 
-- `MarkerOn_1.0.0_x64-setup.exe`
-- `MarkerOn_1.0.0_x64-setup.nsis.zip`
-- `MarkerOn_1.0.0_x64_zh-CN.msi`
-- `MarkerOn_1.0.0_x64.msix`
+- `MarkerOn_X.Y.Z_x64-setup.exe` (NSIS)
+- `MarkerOn_X.Y.Z_x64_zh-CN.msi`
+- `MarkerOn_X.Y.Z_x64.msix`
+- `MarkerOn_X.Y.Z_x64_portable.zip` (green / portable)
 
-Recommended next step before submitting to Scoop Extras:
+Portable zip contents:
 
-1. Add a true portable Windows zip artifact, for example `MarkerOn_1.0.0_windows_x64_portable.zip`.
+- `MarkerOn.exe`
+- `WebView2Loader.dll` (required for windows-gnu builds)
+- `markeron.portable` marker file (config / logs / WebView data → `./data/`)
+- `README.txt`
+
+Recommended next step for Scoop Extras:
+
+1. Use `MarkerOn_X.Y.Z_x64_portable.zip` as the download URL.
 2. Ensure it can run from the extracted folder without writing installation metadata.
-3. Include `MarkerOn.exe`, required runtime files, icon resources, and an optional shortcut target.
-4. Generate SHA256 for the zip and add an autoupdate block.
+3. Generate SHA256 for the zip and add an autoupdate block.
 
 Draft metadata:
 

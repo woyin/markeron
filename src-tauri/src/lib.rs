@@ -7,6 +7,7 @@ mod config;
 mod diagnostics;
 mod error;
 mod i18n;
+mod portable;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "macos")]
@@ -127,6 +128,9 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
 }
 
 pub fn run() {
+    // Redirect WebView2 profile before any webview is created (portable builds).
+    portable::apply_webview_user_data_dir();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             on_second_instance(app);
@@ -168,6 +172,7 @@ pub fn run() {
             commands::set_whiteboard_mode,
             commands::open_url,
             commands::reveal_settings_window,
+            commands::is_portable,
             diagnostics::export_diagnostics,
             diagnostics::open_github_issue_report,
             diagnostics::append_diagnostic_event,
@@ -178,7 +183,11 @@ pub fn run() {
             let handle = app.handle().clone();
             let log_guard = diagnostics::init_tracing(&handle)?;
             app.manage(log_guard);
-            info!("Starting MarkerOn");
+            if portable::is_portable() {
+                info!("Starting MarkerOn (portable mode)");
+            } else {
+                info!("Starting MarkerOn");
+            }
 
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);

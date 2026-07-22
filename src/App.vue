@@ -2,6 +2,7 @@
 import { ref, onMounted, defineAsyncComponent, markRaw, nextTick, shallowRef, type Component } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { useUpdater } from './composables/useUpdater'
+import { isInstalledMode } from './utils/portable'
 
 const DrawingOverlay = defineAsyncComponent(() => import('./components/DrawingOverlay.vue'))
 const ToolbarWindow = defineAsyncComponent(() => import('./components/ToolbarWindow.vue'))
@@ -59,8 +60,10 @@ onMounted(async () => {
       console.error('Failed to load settings view:', error)
     }
 
-    const { checkForUpdate } = useUpdater()
-    checkForUpdate(true)
+    if (await isInstalledMode()) {
+      const { checkForUpdate } = useUpdater()
+      checkForUpdate(true)
+    }
   }
 })
 </script>

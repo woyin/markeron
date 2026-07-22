@@ -297,6 +297,10 @@ pub fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
 }
 
 pub fn config_path(app: &AppHandle) -> std::path::PathBuf {
+    if let Some(data) = crate::portable::data_dir() {
+        fs::create_dir_all(&data).ok();
+        return data.join("config.json");
+    }
     let dir = app
         .path()
         .app_config_dir()
@@ -333,6 +337,12 @@ pub fn load_config(app: &AppHandle) -> AppConfig {
 
 pub fn sync_autostart(app: &AppHandle, enabled: bool) {
     use tauri_plugin_autostart::ManagerExt;
+
+    // Portable builds should not touch OS autostart / registry entries.
+    if crate::portable::is_portable() {
+        info!("Portable mode: skipping autostart sync");
+        return;
+    }
 
     let manager = app.autolaunch();
     let current = manager.is_enabled().unwrap_or(false);

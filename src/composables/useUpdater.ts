@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { check, type Update } from '@tauri-apps/plugin-updater'
 import { relaunch } from '@tauri-apps/plugin-process'
+import { isInstalledMode } from '../utils/portable'
 
 export type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'up-to-date' | 'error'
 
@@ -14,6 +15,8 @@ let pendingUpdate: Update | null = null
 export function useUpdater() {
   async function checkForUpdate(silent = false) {
     if (status.value === 'checking' || status.value === 'downloading') return
+    // Only run NSIS-oriented updater when we know this is a normal install.
+    if (!(await isInstalledMode())) return
 
     status.value = 'checking'
     errorMessage.value = ''
@@ -46,6 +49,7 @@ export function useUpdater() {
 
   async function downloadAndInstall() {
     if (!pendingUpdate) return
+    if (!(await isInstalledMode())) return
 
     status.value = 'downloading'
     progress.value = 0

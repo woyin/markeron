@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import { enable, isEnabled, disable } from '@tauri-apps/plugin-autostart'
+import { enable, disable } from '@tauri-apps/plugin-autostart'
 import type { AppConfig } from '../../types/app'
 import type { DragMode } from '../../utils/dragMode'
 import { DRAG_MODE_OPTIONS } from '../../utils/dragMode'
@@ -11,8 +11,11 @@ import type { EraserMode } from '../../utils/eraserMode'
 import { ERASER_MODE_OPTIONS } from '../../utils/eraserMode'
 import { useI18n } from '../../i18n'
 import { isMacOS } from '../../utils/platform'
+import { isInstalledMode, resolvePortableMode } from '../../utils/portable'
 
 const { t, locale, setLocale, availableLocales } = useI18n()
+
+const portableMode = ref<boolean | null>(null)
 
 const localeLabels: Record<string, string> = {
   en: 'English',
@@ -90,6 +93,8 @@ function closeLocaleDropdown(e: MouseEvent) {
 }
 
 async function toggleAutoStart() {
+  // Never touch OS autostart unless we confirmed a normal install.
+  if (portableMode.value !== false || !(await isInstalledMode())) return
   const nextValue = !props.autoStartEnabled
   try {
     if (nextValue) {
@@ -113,6 +118,10 @@ async function toggleAutoStart() {
     console.error('Failed to toggle auto start:', error)
   }
 }
+
+onMounted(async () => {
+  portableMode.value = await resolvePortableMode()
+})
 
 function dragModeLabel(mode: DragMode): string {
   if (mode === 'modifier') return t('settings.dragModeModifier', { modKey: modKeyLabel.value })
@@ -249,7 +258,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
           <span class="settings-text-label">{{ t('settings.language') }}</span>
           <div ref="localeDropdownRef" class="relative">
             <button
-              class="flex items-center gap-1.5 px-3 py-[5px] rounded-md ui-select cursor-pointer outline-none"
+              class="flex items-center gap-1.5 px-3 py-1.25 rounded-md ui-select cursor-pointer outline-none"
               @click="toggleLocaleDropdown"
             >
               {{ localeLabels[locale.locale] || locale.locale }}
@@ -269,12 +278,12 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             <Transition name="dropdown">
               <div
                 v-if="localeOpen"
-                class="absolute right-0 top-full mt-1 min-w-[120px] py-1 rounded-lg ui-popover z-50 overflow-hidden"
+                class="absolute right-0 top-full mt-1 min-w-30 py-1 rounded-lg ui-popover z-50 overflow-hidden"
               >
                 <button
                   v-for="loc in availableLocales"
                   :key="loc"
-                  class="w-full flex items-center gap-2 px-3 py-[6px] settings-text-value border-none cursor-pointer transition-colors duration-100"
+                  class="w-full flex items-center gap-2 px-3 py-1.5 settings-text-value border-none cursor-pointer transition-colors duration-100"
                   :class="locale.locale === loc ? 'settings-locale-item--active' : 'settings-locale-item'"
                   @click="changeLocale(loc)"
                 >
@@ -299,7 +308,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
         </div>
       </div>
 
-      <div class="settings-card">
+      <div v-if="portableMode === false" class="settings-card">
         <div class="settings-card-row">
           <span class="settings-text-label">{{ t('settings.autoStart') }}</span>
           <button
@@ -311,8 +320,8 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             @click="toggleAutoStart"
           >
             <span
-              class="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-md transition-transform duration-200"
-              :class="autoStartEnabled ? 'translate-x-[14px]' : 'translate-x-0'"
+              class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow-md transition-transform duration-200"
+              :class="autoStartEnabled ? 'translate-x-3.5' : 'translate-x-0'"
             />
           </button>
         </div>
@@ -325,7 +334,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             <button
               v-for="mode in dragModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-1 rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': dragMode === mode }"
               :aria-pressed="dragMode === mode"
               @click="setDragMode(mode)"
@@ -346,7 +355,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             <button
               v-for="step in snapStepOptions"
               :key="step"
-              class="px-2.5 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120"
+              class="px-2.5 py-1 rounded-md ui-segment leading-none transition-colors duration-120"
               :class="{ 'ui-segment--active': angleSnapStep === step }"
               @click="toggleAngleSnapStep(step)"
             >
@@ -364,7 +373,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             <button
               v-for="mode in eraserModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-1 rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': eraserMode === mode }"
               :aria-pressed="eraserMode === mode"
               @click="setEraserMode(mode)"
@@ -386,7 +395,7 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             <button
               v-for="mode in defaultEntryModeOptions"
               :key="mode"
-              class="px-2 py-[4px] rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
+              class="px-2 py-1 rounded-md ui-segment leading-none transition-colors duration-120 whitespace-nowrap"
               :class="{ 'ui-segment--active': defaultEntryMode === mode }"
               :aria-pressed="defaultEntryMode === mode"
               @click="setDefaultEntryMode(mode)"
@@ -407,8 +416,8 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             @click="togglePreserveDrawings"
           >
             <span
-              class="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-md transition-transform duration-200"
-              :class="preserveDrawings ? 'translate-x-[14px]' : 'translate-x-0'"
+              class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow-md transition-transform duration-200"
+              :class="preserveDrawings ? 'translate-x-3.5' : 'translate-x-0'"
             />
           </button>
         </div>
@@ -424,8 +433,8 @@ async function toggleAngleSnapStep(step: (typeof snapStepOptions)[number]) {
             @click="toggleWhiteboardPreserveDrawings"
           >
             <span
-              class="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full bg-white shadow-md transition-transform duration-200"
-              :class="whiteboardPreserveDrawings ? 'translate-x-[14px]' : 'translate-x-0'"
+              class="absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow-md transition-transform duration-200"
+              :class="whiteboardPreserveDrawings ? 'translate-x-3.5' : 'translate-x-0'"
             />
           </button>
         </div>

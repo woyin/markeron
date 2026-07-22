@@ -247,6 +247,20 @@ jobs:
           MSIX=$(ls src-tauri/target/release/bundle/msix/*.msix)
           gh release upload "${{ github.ref_name }}" "$MSIX" --clobber
 
+      - name: Build portable zip
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        run: bash scripts/build-portable.sh
+
+      - name: Upload portable zip to release
+        if: matrix.platform == 'windows-latest'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ZIP=$(ls src-tauri/target/release/bundle/portable/*_portable.zip)
+          gh release upload "${{ github.ref_name }}" "$ZIP" --clobber
+
   publish-release:
     needs: build
     runs-on: ubuntu-latest

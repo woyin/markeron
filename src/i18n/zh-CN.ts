@@ -216,6 +216,7 @@ export default {
     upToDate: '已是最新版本',
     updateError: '检查失败，请稍后重试',
     installAndRestart: '安装并重启',
+    portableUpdateHint: '当前为绿色免安装版，请从 GitHub Releases 下载最新 portable.zip 覆盖更新。',
   },
   diagnostics: {
     title: '应用诊断',

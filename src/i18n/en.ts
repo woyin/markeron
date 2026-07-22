@@ -219,6 +219,7 @@ export default {
     upToDate: 'Already up to date',
     updateError: 'Check failed, try again later',
     installAndRestart: 'Install & Restart',
+    portableUpdateHint: 'Portable build: download the latest portable.zip from GitHub Releases to update.',
   },
   diagnostics: {
     title: 'Diagnostics',

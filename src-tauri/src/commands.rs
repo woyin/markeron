@@ -298,6 +298,11 @@ pub fn reveal_settings_window(app: AppHandle) {
 }
 
 #[tauri::command]
+pub fn is_portable() -> bool {
+    crate::portable::is_portable()
+}
+
+#[tauri::command]
 pub fn open_url(app: AppHandle, url: String) -> AppResult<()> {
     if !is_allowed_open_url(&url) {
         warn!("Blocked open_url for untrusted URL: {}", url);

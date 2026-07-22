@@ -53,11 +53,15 @@ pub struct DiagnosticBundle {
 pub struct LogGuard(pub tracing_appender::non_blocking::WorkerGuard);
 
 pub fn log_dir(app: &AppHandle) -> AppResult<PathBuf> {
-    let dir = app
-        .path()
-        .app_log_dir()
-        .map_err(|e| AppError::Other(e.to_string()))?;
-    let logs = dir.join("logs");
+    let logs = if let Some(data) = crate::portable::data_dir() {
+        data.join("logs")
+    } else {
+        let dir = app
+            .path()
+            .app_log_dir()
+            .map_err(|e| AppError::Other(e.to_string()))?;
+        dir.join("logs")
+    };
     fs::create_dir_all(&logs).map_err(|e| AppError::Other(e.to_string()))?;
     Ok(logs)
 }

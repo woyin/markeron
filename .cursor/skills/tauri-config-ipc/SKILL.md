@@ -19,7 +19,7 @@ config.json (disk, camelCase JSON)
     ↔ Vue (invoke get_config / save_*)
 ```
 
-Config path: app config dir → `config.json` (`config::config_path`).
+Config path: app config dir → `config.json` (`config::config_path`), or `{exe_dir}/data/config.json` when a `markeron.portable` marker file is next to the executable.
 
 ## Naming convention
 
