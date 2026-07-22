@@ -65,7 +65,7 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/annotation-tools.png" alt="8 annotation tools" />
+<img src="assets/annotation-tools.png" alt="MarkerOn annotation tools" />
 </td>
 <td width="50%">
 <img src="assets/settings-panel.png" alt="Settings panel" />

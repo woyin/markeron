@@ -1,15 +1,15 @@
 cask "markeron" do
   arch arm: "aarch64", intel: "x64"
 
-  version "1.0.0"
-  sha256 arm:   "7339b7f5ac4a9e0ab95a6e35b9eb2fc1d3c0c6cd89dab22573060313c728d3ef",
-         intel: "beddf4c171f596a41a0b73784ec64899c311c34599a5f23cca7fbca5a06b4129"
+  version "2.2.0"
+  sha256 arm:   "316afc1076e43560dfb67df1ec55892e3c35b35ac08715c3e130930680b0a03c",
+         intel: "d770b49125118af5316ddcfe6b12cee00b1e5129ab53b7f66aa88494a0a2adf"
 
   url "https://github.com/ifer47/markeron/releases/download/v#{version}/MarkerOn_#{version}_#{arch}.dmg",
       verified: "github.com/ifer47/markeron/"
   name "MarkerOn"
   desc "Lightweight screen annotation tool with click-through mode"
-  homepage "https://github.com/ifer47/markeron"
+  homepage "https://markeron.cn/"
 
   app "MarkerOn.app"
 

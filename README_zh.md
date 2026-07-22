@@ -65,7 +65,7 @@ winget install --id 9N6623X973JV --source msstore
 <table>
 <tr>
 <td width="50%">
-<img src="assets/八种标注工具.png" alt="8 种标注工具" />
+<img src="assets/八种标注工具.png" alt="MarkerOn 标注工具" />
 </td>
 <td width="50%">
 <img src="assets/设置面板.png" alt="设置面板" />

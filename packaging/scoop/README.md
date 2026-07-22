@@ -1,5 +1,13 @@
 # Scoop Distribution Notes
 
+Status: published in Scoop Extras.
+
+- Manifest: https://github.com/ScoopInstaller/Extras/blob/master/bucket/markeron.json
+- Initial inclusion: https://github.com/ScoopInstaller/Extras/pull/18304
+- Install after adding Extras: `scoop bucket add extras && scoop install markeron`
+
+The upstream manifest currently extracts the signed Windows installer and stores normal MarkerOn configuration outside the Scoop version directory. Switching it to the new portable zip would enable a cleaner archive install but would also change configuration behavior for existing Scoop users. Do not change that packaging path without a migration plan and `persist` testing.
+
 Scoop is strongest when the app has a portable `.zip` release that can be extracted into Scoop's app directory without running a traditional installer.
 
 Windows GitHub Release assets include:
@@ -16,11 +24,11 @@ Portable zip contents:
 - `markeron.portable` marker file (config / logs / WebView data → `./data/`)
 - `README.txt`
 
-Recommended next step for Scoop Extras:
+Portable-build reference for future maintenance:
 
-1. Use `MarkerOn_X.Y.Z_x64_portable.zip` as the download URL.
-2. Ensure it can run from the extracted folder without writing installation metadata.
-3. Generate SHA256 for the zip and add an autoupdate block.
+1. Use `MarkerOn_X.Y.Z_x64_portable.zip` only after migration behavior is agreed.
+2. Add `persist` for `data` so portable configuration survives Scoop upgrades.
+3. Test migration from an existing installer-based Scoop install.
 
 Draft metadata:
 
