@@ -6,7 +6,12 @@ import { isMacOS } from '../utils/platform'
 import { useI18n } from '../i18n'
 import { TOOL_DEFS, WIDTH_PRESETS } from '../constants/tools'
 import { COLOR_ROWS } from '../constants/colors'
-import { TEXT_OUTLINE_WIDTH_PRESETS, normalizeTextOutline, resolveTextOutlineColor } from '../constants/textOutline'
+import {
+  TEXT_OUTLINE_WIDTH_PRESETS,
+  normalizeTextOutline,
+  resolveTextOutlineColor,
+  resolveAutoTextOutlineColor,
+} from '../constants/textOutline'
 import { loadToolbarPosition, saveToolbarPosition, clampToolbarWindowPosition } from '../utils/toolbarPosition'
 import {
   fitToolbarWindow,
@@ -77,8 +82,9 @@ const showFullPanel = computed(() => expanded.value)
 // Keep compact and expanded states the same width so the standalone toolbar never jumps sideways.
 const PANEL_WIDTH = TOOLBAR_PANEL_WIDTH
 const panelW = computed(() => PANEL_WIDTH)
-function needsWhiteCheck(ri: number, ci: number): boolean {
-  return ci >= 5 || (ri === colors.length - 1 && ci >= 3)
+/** White ✓ on dark swatches; black ✓ on light ones. */
+function needsWhiteCheck(color: string): boolean {
+  return resolveAutoTextOutlineColor(color) === '#FFFFFF'
 }
 
 function selectTool(tool: Tool) {
@@ -577,7 +583,7 @@ onUnmounted(() => {
 
         <!-- Simple compact tools -->
         <div v-if="!showFullPanel" class="px-3 pb-2">
-          <div class="flex items-center justify-between gap-0.5">
+          <div class="flex items-center justify-between">
             <button
               v-for="tool in tools"
               :key="tool.id"
@@ -625,20 +631,60 @@ onUnmounted(() => {
 
         <!-- Simple colors -->
         <div v-if="!showFullPanel" class="px-3 py-2 ui-divider-h">
-          <div class="flex justify-between">
+          <div class="flex items-center justify-between">
             <button
               v-for="color in simpleColors"
               :key="color"
-              class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
+              class="size-7 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
               :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
+              :title="t(`colors.${color}`)"
               @click="selectColor(color)"
             >
               <span
-                class="w-6 h-6 rounded-full color-swatch-ring transition-[border-color] duration-120"
+                class="w-5.5 h-5.5 rounded-full color-swatch-ring transition-[border-color] duration-120"
                 :class="{ 'color-swatch-ring--active': currentColor === color }"
                 :style="{ backgroundColor: color }"
               />
             </button>
+            <label
+              class="size-7 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120 hover:scale-[1.18]"
+              :title="t('panel.customColor')"
+              :aria-label="t('panel.customColor')"
+            >
+              <input
+                type="color"
+                class="absolute w-0 h-0 opacity-0 pointer-events-none"
+                :value="currentColor"
+                @input="selectColor(($event.target as HTMLInputElement).value)"
+              />
+              <span
+                class="w-5.5 h-5.5 rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
+                style="
+                  background: conic-gradient(
+                    from 90deg,
+                    #ff0000,
+                    #ff8000,
+                    #ffff00,
+                    #80ff00,
+                    #00ff00,
+                    #00ff80,
+                    #00ffff,
+                    #0080ff,
+                    #0000ff,
+                    #8000ff,
+                    #ff00ff,
+                    #ff0080,
+                    #ff0000
+                  );
+                "
+              >
+                <span
+                  class="text-white text-[11px] leading-none font-light"
+                  style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6)"
+                  >+</span
+                >
+              </span>
+            </label>
           </div>
         </div>
 
@@ -649,73 +695,75 @@ onUnmounted(() => {
               t('panel.colors')
             }}</span>
           </div>
-          <div class="flex flex-col gap-1.5">
-            <div v-for="(row, ri) in colors" :key="ri" class="flex justify-between">
-              <button
-                v-for="(color, ci) in row"
-                :key="color"
-                class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
-                :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
-                @click="selectColor(color)"
-              >
-                <span
-                  class="w-6 h-6 rounded-full color-swatch-ring transition-[border-color] duration-120"
-                  :class="{ 'color-swatch-ring--active': currentColor === color }"
-                  :style="{ backgroundColor: color }"
-                />
-                <span
-                  v-if="currentColor === color"
-                  class="absolute text-[11px] font-bold pointer-events-none"
-                  :class="
-                    needsWhiteCheck(ri, ci)
-                      ? 'text-white [text-shadow:0_0_2px_rgba(0,0,0,0.5)]'
-                      : 'text-black [text-shadow:0_0_2px_rgba(255,255,255,0.5)]'
-                  "
-                  >✓</span
-                >
-              </button>
-            </div>
-          </div>
-          <label
-            class="group inline-flex items-center gap-2.5 cursor-pointer py-1.5 pl-1.5 pr-2.5 rounded-lg mt-1.5 transition-[background] duration-120 settings-row-hover-strong"
-          >
-            <input
-              type="color"
-              class="absolute w-0 h-0 opacity-0 pointer-events-none"
-              :value="currentColor"
-              @input="selectColor(($event.target as HTMLInputElement).value)"
-            />
-            <span
-              class="w-5 h-5 rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
-              style="
-                background: conic-gradient(
-                  from 90deg,
-                  #ff0000,
-                  #ff8000,
-                  #ffff00,
-                  #80ff00,
-                  #00ff00,
-                  #00ff80,
-                  #00ffff,
-                  #0080ff,
-                  #0000ff,
-                  #8000ff,
-                  #ff00ff,
-                  #ff0080,
-                  #ff0000
-                );
-              "
+          <div class="flex items-center justify-between">
+            <button
+              v-for="color in simpleColors"
+              :key="color"
+              class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120"
+              :class="currentColor === color ? 'scale-[1.18]' : 'hover:scale-[1.18]'"
+              :title="t(`colors.${color}`)"
+              @click="selectColor(color)"
             >
-              <span class="text-white text-sm leading-none font-light" style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6)"
-                >+</span
+              <span
+                class="w-6 h-6 rounded-full color-swatch-ring transition-[border-color] duration-120"
+                :class="{ 'color-swatch-ring--active': currentColor === color }"
+                :style="{ backgroundColor: color }"
+              />
+              <span
+                v-if="currentColor === color"
+                class="absolute text-[11px] font-bold pointer-events-none"
+                :class="
+                  needsWhiteCheck(color)
+                    ? 'text-white [text-shadow:0_0_2px_rgba(0,0,0,0.5)]'
+                    : 'text-black [text-shadow:0_0_2px_rgba(255,255,255,0.5)]'
+                "
+                >✓</span
               >
-            </span>
-            <span class="text-[11px] overlay-text-label font-sans">{{ t('panel.customColor') }}</span>
-          </label>
+            </button>
+            <label
+              class="w-7.5 h-7.5 p-0 border-none rounded-full bg-transparent cursor-pointer relative flex items-center justify-center transition-transform duration-120 hover:scale-[1.18]"
+              :title="t('panel.customColor')"
+              :aria-label="t('panel.customColor')"
+            >
+              <input
+                type="color"
+                class="absolute w-0 h-0 opacity-0 pointer-events-none"
+                :value="currentColor"
+                @input="selectColor(($event.target as HTMLInputElement).value)"
+              />
+              <span
+                class="w-6 h-6 rounded-full color-picker-ring pointer-events-none flex items-center justify-center shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]"
+                style="
+                  background: conic-gradient(
+                    from 90deg,
+                    #ff0000,
+                    #ff8000,
+                    #ffff00,
+                    #80ff00,
+                    #00ff00,
+                    #00ff80,
+                    #00ffff,
+                    #0080ff,
+                    #0000ff,
+                    #8000ff,
+                    #ff00ff,
+                    #ff0080,
+                    #ff0000
+                  );
+                "
+              >
+                <span
+                  class="text-white text-sm leading-none font-light"
+                  style="text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6)"
+                  >+</span
+                >
+              </span>
+            </label>
+          </div>
         </div>
 
         <!-- Stroke width -->
-        <div class="px-3.5 py-2.5 ui-divider-h">
+        <div class="py-2.5 ui-divider-h" :class="showFullPanel ? 'px-3.5' : 'px-3'">
           <div v-if="showFullPanel" class="flex items-center justify-between mb-2">
             <span class="text-[11px] font-semibold overlay-text-section tracking-[0.5px] font-sans">{{
               t('panel.strokeWidth')
@@ -822,7 +870,7 @@ onUnmounted(() => {
         </div>
 
         <!-- More / collapse -->
-        <div class="px-3.5 pb-3">
+        <div class="pb-3" :class="showFullPanel ? 'px-3.5' : 'px-3'">
           <button
             type="button"
             class="w-full flex items-center justify-center gap-1.5 h-8 border-none rounded-lg cursor-pointer overlay-tool-btn text-[11px] font-sans"

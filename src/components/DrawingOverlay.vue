@@ -109,12 +109,6 @@ const colorNameMap = computed<Record<string, string>>(() => ({
   '#007AFF': t('colors.#007AFF'),
   '#5856D6': t('colors.#5856D6'),
   '#FFFFFF': t('colors.#FFFFFF'),
-  '#AF52DE': t('colors.#AF52DE'),
-  '#FF2D55': t('colors.#FF2D55'),
-  '#00C7BE': t('colors.#00C7BE'),
-  '#8E8E93': t('colors.#8E8E93'),
-  '#636366': t('colors.#636366'),
-  '#3A3A3C': t('colors.#3A3A3C'),
   '#000000': t('colors.#000000'),
 }))
 
@@ -1238,8 +1232,8 @@ watch([toolbarPanelHovered, toolbarPanelDragging, penetrationMode], () => {
 })
 
 const quickColorsPanelStyle = computed(() => {
-  const pw = 260,
-    ph = 100
+  const pw = 280,
+    ph = 72
   let left = quickColorsPos.value.x - pw / 2
   let top = quickColorsPos.value.y - ph - 12
   left = Math.max(8, Math.min(left, window.innerWidth - pw - 8))
@@ -1991,7 +1985,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
           :style="quickColorsPanelStyle"
           @mousedown.stop
         >
-          <div class="grid grid-cols-7 gap-1.5">
+          <div class="grid grid-cols-8 gap-1.5">
             <button
               v-for="color in quickColorList"
               :key="color"
@@ -2008,7 +2002,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
                 v-if="currentColor === color"
                 class="absolute text-[10px] font-bold pointer-events-none"
                 :class="
-                  ['#FFFFFF', '#FFCC02', '#8E8E93'].includes(color)
+                  ['#FFFFFF', '#FFCC02'].includes(color)
                     ? 'text-black/70'
                     : 'text-white [text-shadow:0_0_2px_rgba(0,0,0,0.5)]'
                 "
