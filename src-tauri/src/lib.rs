@@ -7,13 +7,13 @@ mod config;
 mod diagnostics;
 mod error;
 mod i18n;
-mod portable;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "macos")]
 mod macos_cursor;
 mod monitor;
 mod overlay;
+mod portable;
 mod shortcuts;
 #[cfg(target_os = "windows")]
 mod win32;

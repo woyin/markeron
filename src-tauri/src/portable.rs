@@ -15,9 +15,7 @@ static PORTABLE_ROOT: OnceLock<Option<PathBuf>> = OnceLock::new();
 
 /// Directory containing the executable when portable mode is active.
 pub fn portable_root() -> Option<&'static Path> {
-    PORTABLE_ROOT
-        .get_or_init(detect_portable_root)
-        .as_deref()
+    PORTABLE_ROOT.get_or_init(detect_portable_root).as_deref()
 }
 
 pub fn is_portable() -> bool {
@@ -65,10 +63,8 @@ mod tests {
 
     #[test]
     fn detects_portable_marker() {
-        let dir = std::env::temp_dir().join(format!(
-            "markeron-portable-test-{}",
-            std::process::id()
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("markeron-portable-test-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         assert!(detect_portable_root_in(&dir).is_none());
@@ -80,7 +76,10 @@ mod tests {
         );
 
         fs::write(dir.join(MARKER_NAME), b"").unwrap();
-        assert_eq!(detect_portable_root_in(&dir).as_deref(), Some(dir.as_path()));
+        assert_eq!(
+            detect_portable_root_in(&dir).as_deref(),
+            Some(dir.as_path())
+        );
 
         let _ = fs::remove_dir_all(&dir);
     }
