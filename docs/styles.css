@@ -1069,6 +1069,10 @@ a.info-card.t-scroll-reveal.is-revealed:hover {
   margin: 12px 0 0;
 }
 
+.help-video--quick {
+  margin-top: 14px;
+}
+
 .help-video-link {
   color: #1264ff;
   font-size: 14.5px;

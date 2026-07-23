@@ -62,7 +62,7 @@
       'helpPage.title': 'Help & shortcuts',
       'helpPage.lead':
         'Keyboard-first annotation for demos and teaching. Quick reference for global hotkeys, tools, modifiers, and click-through.',
-      'helpPage.video': 'Video tutorial (Chinese, Bilibili) →',
+      'helpPage.video': 'Prefer a walkthrough? Watch the Bilibili tutorial →',
       'helpPage.tocAria': 'On this page',
       'helpPage.toc.quick': 'Quick start',
       'helpPage.toc.global': 'Global',
@@ -307,7 +307,7 @@
       'helpPage.title': '帮助与快捷键',
       'helpPage.lead':
         '面向演示与教学的快捷键优先标注。本页速查全局热键、工具、修饰键与穿透模式。',
-      'helpPage.video': '观看 B 站使用教程 →',
+      'helpPage.video': '更想看演示？观看 B 站使用教程 →',
       'helpPage.tocAria': '本页目录',
       'helpPage.toc.quick': '快速开始',
       'helpPage.toc.global': '全局',
