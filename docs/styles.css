@@ -1065,6 +1065,21 @@ a.info-card.t-scroll-reveal.is-revealed:hover {
   text-wrap: pretty;
 }
 
+.help-video {
+  margin: 12px 0 0;
+}
+
+.help-video-link {
+  color: #1264ff;
+  font-size: 14.5px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.help-video-link:hover {
+  text-decoration: underline;
+}
+
 .help-toc {
   display: flex;
   flex-wrap: wrap;
