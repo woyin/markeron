@@ -1970,7 +1970,7 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
     <Transition name="tooltip-fade">
       <div
         v-if="active && toolTip && !hideUiForCapture"
-        class="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 py-2 px-5 bg-[rgba(28,28,30,0.94)] rounded-[10px] text-white text-[15px] font-sans tracking-[0.5px] pointer-events-none z-100003 whitespace-nowrap shadow-[0_2px_12px_rgba(0,0,0,0.3)]"
+        class="overlay-toast fixed bottom-12 left-1/2 -translate-x-1/2 z-100003"
       >
         <span
           v-if="toolTipColor"
@@ -1979,10 +1979,10 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
         />
         <span
           v-else-if="toolTipWidth"
-          class="shrink-0 rounded-full bg-white"
+          class="overlay-toast-width-bar shrink-0"
           :style="{ width: '20px', height: Math.max(1.5, toolTipWidth * 1.2) + 'px' }"
         />
-        <component v-else-if="toolTipTool" :is="toolIconMap[toolTipTool]" :size="18" color="#fff" />
+        <component v-else-if="toolTipTool" :is="toolIconMap[toolTipTool]" :size="18" color="var(--ui-toast-icon)" />
         <span>{{ toolTip }}</span>
       </div>
     </Transition>

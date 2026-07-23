@@ -105,10 +105,33 @@ html[data-theme='dark'] {
   --ui-credits-closing: rgba(210, 190, 160, 0.62);
   --ui-credits-border: rgba(210, 185, 150, 0.1);
   --ui-credits-border-strong: rgba(210, 185, 150, 0.14);
+  --ui-credits-title: rgba(236, 220, 190, 0.92);
+  --ui-credits-section-label: rgba(195, 170, 135, 0.48);
+  --ui-credits-body-bg: linear-gradient(
+    180deg,
+    rgba(225, 205, 170, 0.13) 0%,
+    rgba(185, 160, 125, 0.09) 45%,
+    rgba(210, 188, 152, 0.11) 100%
+  );
+  --ui-credits-body-border: rgba(210, 185, 150, 0.14);
+  --ui-credits-body-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  --ui-credits-rod-bg: linear-gradient(
+    180deg,
+    rgba(195, 165, 125, 0.55) 0%,
+    rgba(130, 100, 70, 0.5) 55%,
+    rgba(90, 68, 48, 0.45) 100%
+  );
+  --ui-credits-rod-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 1px 3px rgba(0, 0, 0, 0.35);
   --ui-panel-border-standalone: rgba(255, 255, 255, 0.1);
   --ui-card-row-divider: rgba(255, 255, 255, 0.04);
   --ui-locale-hover: rgba(255, 255, 255, 0.06);
   --ui-locale-active: rgba(10, 132, 255, 0.12);
+  --ui-textbox-placeholder: rgba(255, 255, 255, 0.55);
+  --ui-toast-bg: rgba(28, 28, 30, 0.94);
+  --ui-toast-text: rgba(255, 255, 255, 0.95);
+  --ui-toast-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --ui-toast-icon: #ffffff;
+  --ui-toast-width-bar: #ffffff;
 }
 
 html[data-theme='light'] {
@@ -203,16 +226,39 @@ html[data-theme='light'] {
   --ui-footer-version-hover: rgba(0, 0, 0, 0.55);
   --ui-footer-version-shake: rgba(10, 132, 255, 0.8);
   --ui-focus-ring: rgba(10, 132, 255, 0.4);
-  --ui-credits-name: rgba(120, 95, 55, 0.85);
-  --ui-credits-sponsor-name: rgba(90, 70, 40, 0.92);
-  --ui-credits-sponsor-meta: rgba(110, 90, 60, 0.75);
-  --ui-credits-closing: rgba(100, 80, 50, 0.7);
-  --ui-credits-border: rgba(140, 110, 70, 0.18);
-  --ui-credits-border-strong: rgba(140, 110, 70, 0.22);
+  --ui-credits-name: rgba(90, 68, 40, 0.88);
+  --ui-credits-sponsor-name: rgba(70, 52, 30, 0.95);
+  --ui-credits-sponsor-meta: rgba(100, 78, 48, 0.8);
+  --ui-credits-closing: rgba(85, 64, 38, 0.78);
+  --ui-credits-border: rgba(120, 95, 60, 0.22);
+  --ui-credits-border-strong: rgba(120, 95, 60, 0.28);
+  --ui-credits-title: rgba(72, 54, 32, 0.95);
+  --ui-credits-section-label: rgba(110, 88, 55, 0.72);
+  --ui-credits-body-bg: linear-gradient(
+    180deg,
+    rgba(245, 236, 220, 0.96) 0%,
+    rgba(236, 224, 204, 0.95) 45%,
+    rgba(240, 230, 212, 0.96) 100%
+  );
+  --ui-credits-body-border: rgba(150, 120, 80, 0.28);
+  --ui-credits-body-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --ui-credits-rod-bg: linear-gradient(
+    180deg,
+    rgba(170, 140, 95, 0.9) 0%,
+    rgba(130, 100, 70, 0.88) 55%,
+    rgba(100, 78, 52, 0.9) 100%
+  );
+  --ui-credits-rod-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 1px 3px rgba(0, 0, 0, 0.18);
   --ui-panel-border-standalone: rgba(0, 0, 0, 0.12);
   --ui-card-row-divider: rgba(0, 0, 0, 0.05);
   --ui-locale-hover: rgba(0, 0, 0, 0.05);
   --ui-locale-active: rgba(10, 132, 255, 0.1);
+  --ui-textbox-placeholder: rgba(0, 0, 0, 0.45);
+  --ui-toast-bg: rgba(245, 245, 247, 0.96);
+  --ui-toast-text: rgba(0, 0, 0, 0.82);
+  --ui-toast-shadow: 0 2px 12px rgba(0, 0, 0, 0.14);
+  --ui-toast-icon: rgba(0, 0, 0, 0.75);
+  --ui-toast-width-bar: rgba(0, 0, 0, 0.55);
 }
 
 @layer base {
@@ -812,27 +858,15 @@ html.settings .ui-select {
   flex-shrink: 0;
   height: 4px;
   border-radius: 2px;
-  background: linear-gradient(
-    180deg,
-    rgba(195, 165, 125, 0.55) 0%,
-    rgba(130, 100, 70, 0.5) 55%,
-    rgba(90, 68, 48, 0.45) 100%
-  );
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 1px 3px rgba(0, 0, 0, 0.35);
+  background: var(--ui-credits-rod-bg);
+  box-shadow: var(--ui-credits-rod-shadow);
 }
 
 .settings-sidebar-credits__body {
-  background: linear-gradient(
-    180deg,
-    rgba(225, 205, 170, 0.13) 0%,
-    rgba(185, 160, 125, 0.09) 45%,
-    rgba(210, 188, 152, 0.11) 100%
-  );
-  border-left: 1px solid rgba(210, 185, 150, 0.14);
-  border-right: 1px solid rgba(210, 185, 150, 0.14);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  background: var(--ui-credits-body-bg);
+  border-left: 1px solid var(--ui-credits-body-border);
+  border-right: 1px solid var(--ui-credits-body-border);
+  box-shadow: var(--ui-credits-body-shadow);
 }
 
 .settings-sidebar-credits__viewport {
@@ -867,7 +901,7 @@ html.settings .ui-select {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.22em;
-  color: rgba(236, 220, 190, 0.92);
+  color: var(--ui-credits-title);
 }
 
 .settings-sidebar-credits__section {
@@ -880,7 +914,7 @@ html.settings .ui-select {
   text-align: center;
   font-size: 10px;
   letter-spacing: 0.14em;
-  color: rgba(195, 170, 135, 0.48);
+  color: var(--ui-credits-section-label);
 }
 
 .settings-sidebar-credits__name {
@@ -1079,15 +1113,37 @@ html.settings .ui-select {
 
 .textbox-placeholder-hint {
   padding-left: calc(0.125rem + 1ch + 0.25em);
-  color: var(--textbox-placeholder-color, rgba(255, 255, 255, 0.55));
+  color: var(--textbox-placeholder-color, var(--ui-textbox-placeholder));
   text-shadow:
     0 0 3px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5)),
     0 0 1px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5));
 }
 
 .textbox-input::placeholder {
-  color: var(--textbox-placeholder-color, rgba(255, 255, 255, 0.55));
+  color: var(--textbox-placeholder-color, var(--ui-textbox-placeholder));
   text-shadow:
     0 0 3px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5)),
     0 0 1px var(--textbox-placeholder-halo, rgba(0, 0, 0, 0.5));
+}
+
+.overlay-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 10px;
+  background: var(--ui-toast-bg);
+  color: var(--ui-toast-text);
+  font-size: 15px;
+  font-family: inherit;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--ui-toast-shadow);
+}
+
+.overlay-toast-width-bar {
+  border-radius: 9999px;
+  background: var(--ui-toast-width-bar);
+  flex-shrink: 0;
 }

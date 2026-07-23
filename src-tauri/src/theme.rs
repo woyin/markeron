@@ -72,28 +72,46 @@ pub fn apply_app_theme(app: &AppHandle, preference: &ThemePreference) {
     }
 
     #[cfg(target_os = "windows")]
-    if let Err(e) = update_windows_tray_icon(app, resolved) {
-        warn!("Failed to update tray icon: {}", e);
+    {
+        if let Err(e) = update_windows_chrome_icons(app, resolved) {
+            warn!("Failed to update Windows theme icons: {}", e);
+        }
+    }
+}
+
+/// Dark chrome needs a light glyph; light chrome needs a dark glyph.
+/// `icon.png` stays black (macOS template + light Windows surfaces).
+/// `icon-light.png` is the white invert for dark Windows title bar / tray.
+#[cfg(target_os = "windows")]
+fn windows_theme_icon_png(resolved: ResolvedTheme) -> &'static [u8] {
+    match resolved {
+        ResolvedTheme::Dark => include_bytes!("../icons/icon-light.png"),
+        ResolvedTheme::Light => include_bytes!("../icons/icon.png"),
     }
 }
 
 #[cfg(target_os = "windows")]
-fn update_windows_tray_icon(
+fn load_windows_theme_icon(
+    resolved: ResolvedTheme,
+) -> Result<tauri::image::Image<'static>, Box<dyn std::error::Error>> {
+    use tauri::image::Image;
+    let bytes = windows_theme_icon_png(resolved);
+    let rgba = image::load_from_memory(bytes)?.to_rgba8();
+    let (width, height) = rgba.dimensions();
+    Ok(Image::new_owned(rgba.into_raw(), width, height))
+}
+
+#[cfg(target_os = "windows")]
+fn update_windows_chrome_icons(
     app: &AppHandle,
     resolved: ResolvedTheme,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    use tauri::image::Image;
-    let Some(tray) = app.tray_by_id("main") else {
-        return Ok(());
-    };
-    let bytes: &[u8] = match resolved {
-        ResolvedTheme::Dark => include_bytes!("../icons/icon.png"),
-        ResolvedTheme::Light => include_bytes!("../icons/icon-light.png"),
-    };
-    let rgba = image::load_from_memory(bytes)?.to_rgba8();
-    let (width, height) = rgba.dimensions();
-    let icon = Image::new_owned(rgba.into_raw(), width, height);
-    tray.set_icon(Some(icon))?;
+    if let Some(tray) = app.tray_by_id("main") {
+        tray.set_icon(Some(load_windows_theme_icon(resolved)?))?;
+    }
+    if let Some(win) = app.get_webview_window("settings") {
+        win.set_icon(load_windows_theme_icon(resolved)?)?;
+    }
     Ok(())
 }
 

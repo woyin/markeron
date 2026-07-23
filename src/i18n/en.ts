@@ -155,7 +155,7 @@ export default {
   help: {
     basicUsage: 'Quick reference',
     basicDesc:
-      'Runs in the <strong class="text-white/70">system tray</strong>. Enter annotation with the global shortcut; <kbd class="help-kbd">Esc</kbd> exits, <kbd class="help-kbd">X</kbd> toggles click-through. Details live on the website.',
+      'Runs in the <strong>system tray</strong>. Enter annotation with the global shortcut; <kbd class="help-kbd">Esc</kbd> exits, <kbd class="help-kbd">X</kbd> toggles click-through. Details live on the website.',
     globalShortcuts: 'Global',
     inSessionShortcuts: 'In session',
     togglePenetration: 'Click-through',

@@ -153,7 +153,7 @@ export default {
   help: {
     basicUsage: '快捷键速查',
     basicDesc:
-      '运行在<strong class="text-white/70">系统托盘</strong>。用全局快捷键进入标注；<kbd class="help-kbd">Esc</kbd> 退出，<kbd class="help-kbd">X</kbd> 切换穿透。详细说明见官网帮助页。',
+      '运行在<strong>系统托盘</strong>。用全局快捷键进入标注；<kbd class="help-kbd">Esc</kbd> 退出，<kbd class="help-kbd">X</kbd> 切换穿透。详细说明见官网帮助页。',
     globalShortcuts: '全局',
     inSessionShortcuts: '标注中',
     togglePenetration: '穿透模式',
