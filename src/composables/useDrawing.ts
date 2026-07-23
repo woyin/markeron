@@ -60,7 +60,7 @@ export function useDrawing(
   const lineWidth = computed({
     get: () => lineWidths.value[toolLineWidthGroup(currentTool.value)],
     set: (value: number) => {
-      lineWidths.value[toolLineWidthGroup(currentTool.value)] = value
+      setLineWidth(value)
     },
   })
   const isDrawing = ref(false)
@@ -80,6 +80,42 @@ export function useDrawing(
     if (tool === 'highlighter') return highlighterLineWidth(w)
     if (tool === 'eraser') return eraserLineWidth(w)
     return w
+  }
+
+  /**
+   * Update the active tool's width preset.
+   * `tip` = pointer position for mid-gesture eraser resizes (Ctrl+wheel): split the stroke
+   * so the new radius applies at the cursor instead of re-erasing the old path.
+   */
+  function setLineWidth(value: number, tip?: Point) {
+    lineWidths.value[toolLineWidthGroup(currentTool.value)] = value
+    syncInProgressStrokeWidth(tip)
+  }
+
+  /** Keep live stroke width in sync when Ctrl+wheel (etc.) changes size mid-gesture. */
+  function syncInProgressStrokeWidth(tip?: Point) {
+    const action = currentAction.value
+    if (!isDrawing.value || !action) return
+
+    const next = resolveDrawLineWidth(action.tool)
+    if (action.lineWidth === next) return
+
+    // Eraser: one action has a single width. Changing it + redrawing would re-stamp the
+    // whole path with the new radius (looks like erasing at old positions). Split instead.
+    if (action.tool === 'eraser') {
+      const pt = tip ?? action.points[action.points.length - 1]
+      if (!pt) return
+      endDraw()
+      startDraw({ x: pt.x, y: pt.y })
+      return
+    }
+
+    if (action.tool !== 'pen' && action.tool !== 'highlighter' && action.tool !== 'laser') {
+      return
+    }
+    action.lineWidth = next
+    previewDirty = true
+    scheduleRender()
   }
 
   let objectEraserBatch: { action: DrawAction; index: number }[] = []
@@ -1394,9 +1430,16 @@ export function useDrawing(
     lineWidth,
     lineWidths,
     setLineWidths,
+    setLineWidth,
     angleSnapStep,
     setEraserMode,
     isDrawing,
+    /** Active stroke width (for tests / diagnostics); null when not drawing. */
+    getActiveStrokeLineWidth: () => currentAction.value?.lineWidth ?? null,
+    getActiveStrokeFirstPoint: () => {
+      const pts = currentAction.value?.points
+      return pts && pts.length > 0 ? { x: pts[0].x, y: pts[0].y } : null
+    },
     startDraw,
     draw,
     drawBatch,

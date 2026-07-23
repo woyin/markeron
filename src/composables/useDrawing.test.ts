@@ -440,6 +440,30 @@ describe('useDrawing', () => {
   })
 
   describe('eraser', () => {
+    it('updates in-progress eraser stroke width when lineWidth changes mid-gesture', () => {
+      drawing.currentTool.value = 'eraser'
+      drawing.lineWidth.value = 3
+      drawing.startDraw({ x: 10, y: 10 })
+      expect(drawing.getActiveStrokeLineWidth()).toBe(24)
+
+      drawing.lineWidth.value = 8
+      expect(drawing.getActiveStrokeLineWidth()).toBe(64)
+
+      drawing.draw({ x: 20, y: 20 })
+      drawing.endDraw()
+      expect(drawing.getActiveStrokeLineWidth()).toBeNull()
+    })
+
+    it('splits eraser stroke at tip so resize does not re-erase the old path', () => {
+      drawing.currentTool.value = 'eraser'
+      drawing.lineWidth.value = 3
+      drawing.startDraw({ x: 10, y: 10 })
+      drawing.draw({ x: 50, y: 50 })
+      drawing.setLineWidth(8, { x: 200, y: 200 })
+      expect(drawing.getActiveStrokeLineWidth()).toBe(64)
+      expect(drawing.getActiveStrokeFirstPoint()).toEqual({ x: 200, y: 200 })
+    })
+
     it('eraser strokes attach to intersecting actions', () => {
       // Draw something
       drawing.currentTool.value = 'pen'

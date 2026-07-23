@@ -636,12 +636,6 @@ onUnmounted(() => {
                 <div class="help-keys"><kbd class="help-kbd">Q</kbd> / <kbd class="help-kbd">E</kbd></div>
               </div>
               <div class="help-row">
-                <span class="help-label">{{ t('help.rightClickColor') }}</span>
-                <div class="help-keys">
-                  <span class="help-keys-plain">{{ t('help.mouseRightClick') }}</span>
-                </div>
-              </div>
-              <div class="help-row">
                 <span class="help-label">{{ t('help.rightClickErase') }}</span>
                 <div class="help-keys">
                   <span class="help-keys-plain">{{ t('help.mouseRightClickHold') }}</span>

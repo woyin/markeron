@@ -180,7 +180,6 @@ export default {
     thFunction: 'Effect',
     prevColor: 'Previous / next color',
     nextColor: 'Next color',
-    rightClickColor: 'Quick color (tap)',
     rightClickErase: 'Hold to erase',
     mouseRightClick: 'Right-click',
     mouseRightClickHold: 'Hold right-click',

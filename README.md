@@ -137,7 +137,7 @@ On **macOS**, use <kbd>Command</kbd> (⌘) in place of <kbd>Ctrl</kbd>, and <kbd
 | Action | Effect |
 | :--- | :--- |
 | <kbd>Q</kbd> / <kbd>E</kbd> | Previous / Next color |
-| Right-click | Open quick color picker at cursor |
+| Right-click | Hold to erase; release restores the previous tool |
 
 #### Other
 

@@ -1,89 +1,59 @@
 import { describe, expect, it } from 'vitest'
-import {
-  IDLE_RMB_HOLD,
-  RMB_HOLD_ERASE_MS,
-  activateRmbHoldErase,
-  canStartRmbHoldErase,
-  cancelRmbHold,
-  releaseRmbHold,
-  shouldBlockQuickColors,
-  startRmbHoldPending,
-} from './rmbHoldErase'
+import { IDLE_RMB_ERASE, beginRmbErase, canStartRmbErase, endRmbErase } from './rmbHoldErase'
 
-describe('rmbHoldErase', () => {
-  it('exposes 250ms threshold', () => {
-    expect(RMB_HOLD_ERASE_MS).toBe(250)
-  })
-
+describe('rmbHoldErase (immediate RMB erase)', () => {
   it('canStart is false when text box open or penetrating', () => {
     expect(
-      canStartRmbHoldErase({
+      canStartRmbErase({
         active: true,
         penetration: false,
         textBoxOpen: true,
-        quickColorsOpen: false,
       }),
     ).toBe(false)
     expect(
-      canStartRmbHoldErase({
+      canStartRmbErase({
         active: true,
         penetration: true,
         textBoxOpen: false,
-        quickColorsOpen: false,
       }),
     ).toBe(false)
   })
 
   it('canStart is true for normal annotation', () => {
     expect(
-      canStartRmbHoldErase({
+      canStartRmbErase({
         active: true,
         penetration: false,
         textBoxOpen: false,
-        quickColorsOpen: false,
       }),
     ).toBe(true)
   })
 
-  it('short release opens palette and does not finish erase', () => {
-    const pending = startRmbHoldPending()
-    expect(shouldBlockQuickColors(pending)).toBe(true)
-    const out = releaseRmbHold(pending)
-    expect(out.openPalette).toBe(true)
-    expect(out.finishErase).toBe(false)
-    expect(out.restoreTool).toBeNull()
-    expect(out.next).toEqual(IDLE_RMB_HOLD)
-  })
-
-  it('activate then release finishes erase and restores tool', () => {
-    const pending = startRmbHoldPending()
-    const active = activateRmbHoldErase(pending, 'pen')
-    expect(active).toEqual({ phase: 'active', toolBefore: 'pen' })
-    expect(shouldBlockQuickColors(active)).toBe(true)
-    const out = releaseRmbHold(active)
-    expect(out.openPalette).toBe(false)
-    expect(out.finishErase).toBe(true)
+  it('begin then end restores previous tool', () => {
+    const active = beginRmbErase('pen')
+    expect(active).toEqual({ active: true, toolBefore: 'pen' })
+    const out = endRmbErase(active)
+    expect(out.wasActive).toBe(true)
     expect(out.restoreTool).toBe('pen')
-    expect(out.next).toEqual(IDLE_RMB_HOLD)
+    expect(out.next).toEqual(IDLE_RMB_ERASE)
   })
 
-  it('activate while already eraser still restores eraser', () => {
-    const active = activateRmbHoldErase(startRmbHoldPending(), 'eraser')
-    const out = releaseRmbHold(active)
+  it('begin while already eraser still restores eraser', () => {
+    const out = endRmbErase(beginRmbErase('eraser'))
     expect(out.restoreTool).toBe('eraser')
   })
 
-  it('cancel never opens palette', () => {
-    const pending = startRmbHoldPending()
-    expect(cancelRmbHold(pending).openPalette).toBe(false)
-    const active = activateRmbHoldErase(startRmbHoldPending(), 'highlighter')
-    const out = cancelRmbHold(active)
-    expect(out.openPalette).toBe(false)
-    expect(out.finishErase).toBe(true)
-    expect(out.restoreTool).toBe('highlighter')
+  it('end from idle is a no-op', () => {
+    const out = endRmbErase(IDLE_RMB_ERASE)
+    expect(out.wasActive).toBe(false)
+    expect(out.restoreTool).toBeNull()
   })
 
-  it('activate is no-op from idle', () => {
-    expect(activateRmbHoldErase(IDLE_RMB_HOLD, 'pen')).toEqual(IDLE_RMB_HOLD)
+  it('second begin after end works again', () => {
+    const first = endRmbErase(beginRmbErase('highlighter'))
+    expect(first.next).toEqual(IDLE_RMB_ERASE)
+    const second = beginRmbErase('pen')
+    expect(second.active).toBe(true)
+    expect(endRmbErase(second).restoreTool).toBe('pen')
   })
 })

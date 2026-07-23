@@ -44,15 +44,11 @@ import {
   type TextRmbClickState,
 } from '../utils/textRmbDoubleClick'
 import {
-  IDLE_RMB_HOLD,
-  RMB_HOLD_ERASE_MS,
-  activateRmbHoldErase,
-  canStartRmbHoldErase,
-  cancelRmbHold,
-  releaseRmbHold,
-  shouldBlockQuickColors,
-  startRmbHoldPending,
-  type RmbHoldGesture,
+  IDLE_RMB_ERASE,
+  beginRmbErase,
+  canStartRmbErase,
+  endRmbErase,
+  type RmbEraseGesture,
 } from '../utils/rmbHoldErase'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS, MAC_HIDDEN_CURSOR, setMacOverlaySystemCursorHidden } from '../utils/platform'
@@ -146,9 +142,8 @@ let textRmbClick: TextRmbClickState = { ...EMPTY_TEXT_RMB_CLICK }
 /** Swallow trailing contextmenu after text confirm so the palette does not open. */
 let suppressQuickColorsUntil = 0
 
-let rmbHoldGesture: RmbHoldGesture = IDLE_RMB_HOLD
-let rmbHoldTimer: ReturnType<typeof setTimeout> | null = null
-let rmbHoldPointerId: number | null = null
+let rmbEraseGesture: RmbEraseGesture = IDLE_RMB_ERASE
+let rmbErasePointerId: number | null = null
 
 function resetTextRmbDoubleClick() {
   textRmbClick = { ...EMPTY_TEXT_RMB_CLICK }
@@ -186,115 +181,74 @@ function cycleColor(direction: number) {
   showColorTip(currentColor.value)
 }
 
-function clearRmbHoldTimer() {
-  if (rmbHoldTimer !== null) {
-    clearTimeout(rmbHoldTimer)
-    rmbHoldTimer = null
-  }
-}
-
-function openQuickColorsAt(clientX: number, clientY: number, reason = 'context-menu') {
-  if (!active.value || penetrationMode.value || isDrawing.value) return
-  if (showQuickColors.value) return
-  hideToolbarPopupForCanvasInteraction()
-  quickColorsPos.value = { x: clientX, y: clientY }
-  showQuickColors.value = true
-  logActionEvent('quick colors opened', { reason })
-}
-
-function activateHoldEraseFromTimer() {
-  if (rmbHoldGesture.phase !== 'pending') return
-  rmbHoldGesture = activateRmbHoldErase(rmbHoldGesture, currentTool.value)
-  if (rmbHoldGesture.phase !== 'active') return
-  hideToolbarPopupForCanvasInteraction()
-  currentTool.value = 'eraser'
-  startDraw({ x: lastPointerX, y: lastPointerY })
-  logActionEvent('rmb hold erase', { toolBefore: rmbHoldGesture.toolBefore })
-}
-
 function onRmbPointerDown(e: PointerEvent) {
+  if (rmbEraseGesture.active) return
   if (
-    !canStartRmbHoldErase({
+    !canStartRmbErase({
       active: active.value,
       penetration: penetrationMode.value,
       textBoxOpen: !!textBoxPos.value,
-      quickColorsOpen: showQuickColors.value,
     })
   ) {
     return
   }
   if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
 
-  clearRmbHoldTimer()
-  rmbHoldGesture = startRmbHoldPending()
-  rmbHoldPointerId = e.pointerId
+  rmbEraseGesture = beginRmbErase(currentTool.value)
+  rmbErasePointerId = e.pointerId
   pointerDownClient = { x: e.clientX, y: e.clientY }
   pointerMovedSinceDown = false
   lastPointerX = e.clientX
   lastPointerY = e.clientY
   invalidateCopyModifierForPointerInteraction()
+  hideToolbarPopupForCanvasInteraction()
+  currentTool.value = 'eraser'
   capturePointer(e)
-  rmbHoldTimer = setTimeout(() => {
-    rmbHoldTimer = null
-    activateHoldEraseFromTimer()
-  }, RMB_HOLD_ERASE_MS)
+  startDraw({ x: e.clientX, y: e.clientY })
+  logActionEvent('rmb erase start', { toolBefore: rmbEraseGesture.toolBefore })
 }
 
-function finishRmbHoldPointerUp(e: PointerEvent): boolean {
-  if (rmbHoldPointerId === null || e.pointerId !== rmbHoldPointerId) return false
+function finishRmbErasePointerUp(e: PointerEvent): boolean {
+  if (rmbErasePointerId === null || e.pointerId !== rmbErasePointerId) return false
 
-  clearRmbHoldTimer()
-  const end = releaseRmbHold(rmbHoldGesture)
-  rmbHoldGesture = end.next
-  rmbHoldPointerId = null
+  const end = endRmbErase(rmbEraseGesture)
+  rmbEraseGesture = end.next
+  rmbErasePointerId = null
 
-  if (end.finishErase) {
-    const wasDrawing = isDrawing.value
-    releaseCapturedPointer()
-    endDraw()
-    if (end.restoreTool !== null) {
-      currentTool.value = end.restoreTool as Tool
-    }
-    markPointerInteractionEnded()
-    resetPointerGestureState()
-    if (wasDrawing) {
-      logDiagnostic('pointer', 'stroke end', {
-        pointerType: e.pointerType,
-        button: e.button,
-        reason: 'rmb-hold-erase',
-      })
-    }
-    return true
-  }
-
-  if (end.openPalette) {
-    releaseCapturedPointer()
-    markPointerInteractionEnded()
-    resetPointerGestureState()
-    openQuickColorsAt(e.clientX, e.clientY, 'rmb-short-press')
-    return true
-  }
-
+  const wasDrawing = isDrawing.value
   releaseCapturedPointer()
+  if (wasDrawing) {
+    endDraw()
+  }
+  if (end.restoreTool !== null) {
+    currentTool.value = end.restoreTool as Tool
+  }
   markPointerInteractionEnded()
   resetPointerGestureState()
+  if (end.wasActive && wasDrawing) {
+    logDiagnostic('pointer', 'stroke end', {
+      pointerType: e.pointerType,
+      button: e.button,
+      reason: 'rmb-erase',
+    })
+  }
   return true
+}
+
+function resetRmbEraseGesture() {
+  if (!rmbEraseGesture.active && rmbErasePointerId === null) return
+  const end = endRmbErase(rmbEraseGesture)
+  rmbEraseGesture = end.next
+  rmbErasePointerId = null
+  if (end.restoreTool !== null) {
+    currentTool.value = end.restoreTool as Tool
+  }
 }
 
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   if (handleTextBoxContextMenu(e)) return
-  if (shouldBlockQuickColors(rmbHoldGesture)) return
-  if (performance.now() < suppressQuickColorsUntil) return
-  if (!active.value || penetrationMode.value || isDrawing.value) return
-  if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
-  openQuickColorsAt(e.clientX, e.clientY)
-}
-
-function selectQuickColor(color: string) {
-  currentColor.value = color
-  showQuickColors.value = false
-  showColorTip(color)
+  // Right-click is erase-on-hold; never open the old quick-color panel.
 }
 
 function onWheel(e: WheelEvent) {
@@ -311,10 +265,13 @@ function onWheel(e: WheelEvent) {
           WIDTH_PRESETS.findIndex((v) => v >= lineWidth.value),
         )
   const next = Math.max(0, Math.min(WIDTH_PRESETS.length - 1, cur + dir))
-  lineWidth.value = WIDTH_PRESETS[next]
+  // Pass current pointer so mid-gesture eraser resize splits at the cursor (not old path points).
+  setLineWidth(WIDTH_PRESETS[next], { x: lastPointerX, y: lastPointerY })
   const labelKey = tool === 'text' || tool === 'stamp' ? `textSizes.${lineWidth.value}` : `widths.${lineWidth.value}`
   showWidthTip(lineWidth.value, t(labelKey))
   schedulePersistLineWidths()
+  // Wheel often does not fire pointermove; re-anchor cursor so eraser scales from center.
+  updateCursorEl(lastPointerX, lastPointerY)
 }
 
 const {
@@ -323,6 +280,7 @@ const {
   lineWidth,
   lineWidths,
   setLineWidths,
+  setLineWidth,
   setAngleSnapStep,
   setEraserMode,
   isDrawing,
@@ -947,15 +905,7 @@ function finishActivePointerInteraction() {
     cancelAnimationFrame(hoverRafId)
     hoverRafId = null
   }
-  clearRmbHoldTimer()
-  if (rmbHoldGesture.phase !== 'idle') {
-    const end = cancelRmbHold(rmbHoldGesture)
-    rmbHoldGesture = end.next
-    rmbHoldPointerId = null
-    if (end.finishErase && end.restoreTool !== null) {
-      currentTool.value = end.restoreTool as Tool
-    }
-  }
+  resetRmbEraseGesture()
   releaseCapturedPointer()
   if (isDragging) {
     isDragging = false
@@ -1116,7 +1066,7 @@ function onPointerMove(e: PointerEvent) {
 }
 
 function onPointerUp(e: PointerEvent) {
-  if (finishRmbHoldPointerUp(e)) return
+  if (finishRmbErasePointerUp(e)) return
   if (capturedPointerId !== null && e.pointerId !== capturedPointerId) return
   // Text-tool / commit-textbox clicks invalidate the copy modifier on pointerdown but
   // never capture — still clear gesture state so Ctrl+C works after the press.
@@ -1159,15 +1109,7 @@ function abortActivePointerInteraction() {
     cancelAnimationFrame(hoverRafId)
     hoverRafId = null
   }
-  clearRmbHoldTimer()
-  if (rmbHoldGesture.phase !== 'idle') {
-    const end = cancelRmbHold(rmbHoldGesture)
-    rmbHoldGesture = end.next
-    rmbHoldPointerId = null
-    if (end.finishErase && end.restoreTool !== null) {
-      currentTool.value = end.restoreTool as Tool
-    }
-  }
+  resetRmbEraseGesture()
   releaseCapturedPointer()
   if (isDragging) {
     isDragging = false
@@ -1268,15 +1210,18 @@ function getCursorHotspot(): { x: number; y: number } {
   // Mapped to 32x32 cursor size: x = 388/1024*32 ≈ 12, y = 846/1024*32 ≈ 26
   if (tool === 'pen') return { x: 12, y: 26 }
   if (tool === 'highlighter') return { x: 5, y: 27 } // tip at ~(150, 850) in 1024x1024 space
-  if (tool === 'eraser') {
-    const d = Math.min(80, eraserLineWidth(lineWidth.value))
-    return { x: d / 2, y: d / 2 }
-  }
+  // Eraser uses CSS translate(-50%, -50%) so size changes stay centered on the pointer.
+  if (tool === 'eraser') return { x: 0, y: 0 }
   return { x: 14, y: 14 }
 }
 
 function updateCursorEl(x: number, y: number) {
   if (!cursorEl.value) return
+  if (currentTool.value === 'eraser') {
+    // Center of the ring stays under the pointer when Ctrl+wheel resizes the eraser.
+    cursorEl.value.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`
+    return
+  }
   const { x: hx, y: hy } = getCursorHotspot()
   cursorEl.value.style.transform = `translate(${x - hx}px, ${y - hy}px)`
 }
@@ -1331,6 +1276,13 @@ watch([currentTool, currentColor], () => {
   void refreshCustomCursorPosition()
 })
 
+// Eraser ring diameter changes with Ctrl+wheel; keep the ring centered on the pointer.
+watch(eraserCursorDiameter, () => {
+  if (currentTool.value === 'eraser' && showCustomCursor.value) {
+    updateCursorEl(lastPointerX, lastPointerY)
+  }
+})
+
 watch(showCustomCursor, (visible, wasVisible) => {
   setMacOverlaySystemCursorHidden(visible)
   if (visible) {
@@ -1361,17 +1313,6 @@ async function syncMacOverlayCursorPassthrough() {
 
 watch([toolbarPanelHovered, toolbarPanelDragging, penetrationMode], () => {
   void syncMacOverlayCursorPassthrough()
-})
-
-const quickColorsPanelStyle = computed(() => {
-  const pw = 280,
-    ph = 72
-  let left = quickColorsPos.value.x - pw / 2
-  let top = quickColorsPos.value.y - ph - 12
-  left = Math.max(8, Math.min(left, window.innerWidth - pw - 8))
-  if (top < 8) top = quickColorsPos.value.y + 12
-  top = Math.max(8, Math.min(top, window.innerHeight - ph - 8))
-  return { left: left + 'px', top: top + 'px' }
 })
 
 function syncOverlayStateToToolbar() {
@@ -1729,7 +1670,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  clearRmbHoldTimer()
+  resetRmbEraseGesture()
   window.removeEventListener('pointermove', onGlobalPointerMove)
   window.removeEventListener('pointerup', onGlobalPointerUp)
   window.removeEventListener('pointercancel', onGlobalPointerUp)
@@ -2118,51 +2059,6 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
         <span>{{ toolTip }}</span>
       </div>
     </Transition>
-
-    <!-- Quick Color Palette (right-click) -->
-    <Transition name="quick-colors">
-      <div
-        v-if="active && showQuickColors && !hideUiForCapture"
-        class="fixed inset-0 z-100002"
-        @mousedown.self="showQuickColors = false"
-        @contextmenu.prevent
-      >
-        <div
-          class="overlay-panel-surface overlay-panel overlay-panel--compact absolute p-2.5"
-          :style="quickColorsPanelStyle"
-          @mousedown.stop
-        >
-          <div class="grid grid-cols-8 gap-1.5">
-            <button
-              v-for="color in quickColorList"
-              :key="color"
-              class="w-7 h-7 p-0 border-none rounded-full cursor-pointer relative flex items-center justify-center transition-transform duration-100"
-              :class="currentColor === color ? 'scale-[1.2]' : 'hover:scale-[1.15]'"
-              @click="selectQuickColor(color)"
-            >
-              <span
-                class="w-5.5 h-5.5 rounded-full color-swatch-ring color-swatch-ring--compact transition-[border-color] duration-100"
-                :class="{ 'color-swatch-ring--active': currentColor === color }"
-                :style="{ backgroundColor: color }"
-              />
-              <span
-                v-if="currentColor === color"
-                class="absolute text-[10px] font-bold pointer-events-none"
-                :class="
-                  ['#FFFFFF', '#FFCC02'].includes(color)
-                    ? 'text-black/70'
-                    : 'text-white [text-shadow:0_0_2px_rgba(0,0,0,0.5)]'
-                "
-                >✓</span
-              >
-            </button>
-          </div>
-          <div class="flex items-center justify-center gap-3 mt-1.5 pt-1.5 ui-divider-h">
-            <span class="text-[10px] overlay-text-caption font-sans tracking-wider">{{ t('panel.colorSwitch') }}</span>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -2176,24 +2072,5 @@ function exitDrawing(reason: 'keyboard' | 'toolbar' | 'unknown' = 'unknown') {
 .tooltip-fade-enter-from,
 .tooltip-fade-leave-to {
   opacity: 0;
-}
-
-.quick-colors-enter-active {
-  transition:
-    opacity 0.12s ease,
-    transform 0.12s cubic-bezier(0.2, 0, 0.13, 1.5);
-}
-.quick-colors-leave-active {
-  transition:
-    opacity 0.1s ease,
-    transform 0.1s ease;
-}
-.quick-colors-enter-from {
-  opacity: 0;
-  transform: scale(0.9);
-}
-.quick-colors-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
 }
 </style>
