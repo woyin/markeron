@@ -48,8 +48,7 @@ fn windows_apps_use_dark_theme() -> bool {
     use winreg::enums::HKEY_CURRENT_USER;
     use winreg::RegKey;
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let Ok(key) =
-        hkcu.open_subkey(r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
+    let Ok(key) = hkcu.open_subkey(r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
     else {
         return true;
     };
@@ -104,13 +103,7 @@ mod tests {
 
     #[test]
     fn resolve_dark_and_light_are_fixed() {
-        assert_eq!(
-            resolve_theme(&ThemePreference::Dark),
-            ResolvedTheme::Dark
-        );
-        assert_eq!(
-            resolve_theme(&ThemePreference::Light),
-            ResolvedTheme::Light
-        );
+        assert_eq!(resolve_theme(&ThemePreference::Dark), ResolvedTheme::Dark);
+        assert_eq!(resolve_theme(&ThemePreference::Light), ResolvedTheme::Light);
     }
 }

@@ -121,12 +121,16 @@ fn open_settings_tab(app: &AppHandle, tab: Option<&str>) {
         #[cfg(target_os = "macos")]
         Ok(window) => {
             macos::activate_for_settings(app);
-            let preference = lock_or_recover(&app.state::<AppState>().config).general.theme;
+            let preference = lock_or_recover(&app.state::<AppState>().config)
+                .general
+                .theme;
             macos::configure_settings_window(&window, theme::resolve_theme(&preference));
         }
         #[cfg(not(target_os = "macos"))]
         Ok(_) => {
-            let preference = lock_or_recover(&app.state::<AppState>().config).general.theme;
+            let preference = lock_or_recover(&app.state::<AppState>().config)
+                .general
+                .theme;
             theme::apply_app_theme(app, &preference);
         }
         Err(e) => warn!("Failed to open settings window: {}", e),
