@@ -43,6 +43,17 @@ import {
   noteTextRmbClick,
   type TextRmbClickState,
 } from '../utils/textRmbDoubleClick'
+import {
+  IDLE_RMB_HOLD,
+  RMB_HOLD_ERASE_MS,
+  activateRmbHoldErase,
+  canStartRmbHoldErase,
+  cancelRmbHold,
+  releaseRmbHold,
+  shouldBlockQuickColors,
+  startRmbHoldPending,
+  type RmbHoldGesture,
+} from '../utils/rmbHoldErase'
 import { COLOR_PALETTE } from '../constants/colors'
 import { isMacOS, MAC_HIDDEN_CURSOR, setMacOverlaySystemCursorHidden } from '../utils/platform'
 import { canStartElementDrag as canStartElementDragGate } from '../utils/dragInteraction'
@@ -135,6 +146,10 @@ let textRmbClick: TextRmbClickState = { ...EMPTY_TEXT_RMB_CLICK }
 /** Swallow trailing contextmenu after text confirm so the palette does not open. */
 let suppressQuickColorsUntil = 0
 
+let rmbHoldGesture: RmbHoldGesture = IDLE_RMB_HOLD
+let rmbHoldTimer: ReturnType<typeof setTimeout> | null = null
+let rmbHoldPointerId: number | null = null
+
 function resetTextRmbDoubleClick() {
   textRmbClick = { ...EMPTY_TEXT_RMB_CLICK }
 }
@@ -171,16 +186,109 @@ function cycleColor(direction: number) {
   showColorTip(currentColor.value)
 }
 
+function clearRmbHoldTimer() {
+  if (rmbHoldTimer !== null) {
+    clearTimeout(rmbHoldTimer)
+    rmbHoldTimer = null
+  }
+}
+
+function openQuickColorsAt(clientX: number, clientY: number, reason = 'context-menu') {
+  if (!active.value || penetrationMode.value || isDrawing.value) return
+  if (showQuickColors.value) return
+  hideToolbarPopupForCanvasInteraction()
+  quickColorsPos.value = { x: clientX, y: clientY }
+  showQuickColors.value = true
+  logActionEvent('quick colors opened', { reason })
+}
+
+function activateHoldEraseFromTimer() {
+  if (rmbHoldGesture.phase !== 'pending') return
+  rmbHoldGesture = activateRmbHoldErase(rmbHoldGesture, currentTool.value)
+  if (rmbHoldGesture.phase !== 'active') return
+  hideToolbarPopupForCanvasInteraction()
+  currentTool.value = 'eraser'
+  startDraw({ x: lastPointerX, y: lastPointerY })
+  logActionEvent('rmb hold erase', { toolBefore: rmbHoldGesture.toolBefore })
+}
+
+function onRmbPointerDown(e: PointerEvent) {
+  if (
+    !canStartRmbHoldErase({
+      active: active.value,
+      penetration: penetrationMode.value,
+      textBoxOpen: !!textBoxPos.value,
+      quickColorsOpen: showQuickColors.value,
+    })
+  ) {
+    return
+  }
+  if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
+
+  clearRmbHoldTimer()
+  rmbHoldGesture = startRmbHoldPending()
+  rmbHoldPointerId = e.pointerId
+  pointerDownClient = { x: e.clientX, y: e.clientY }
+  pointerMovedSinceDown = false
+  lastPointerX = e.clientX
+  lastPointerY = e.clientY
+  invalidateCopyModifierForPointerInteraction()
+  capturePointer(e)
+  rmbHoldTimer = setTimeout(() => {
+    rmbHoldTimer = null
+    activateHoldEraseFromTimer()
+  }, RMB_HOLD_ERASE_MS)
+}
+
+function finishRmbHoldPointerUp(e: PointerEvent): boolean {
+  if (rmbHoldPointerId === null || e.pointerId !== rmbHoldPointerId) return false
+
+  clearRmbHoldTimer()
+  const end = releaseRmbHold(rmbHoldGesture)
+  rmbHoldGesture = end.next
+  rmbHoldPointerId = null
+
+  if (end.finishErase) {
+    const wasDrawing = isDrawing.value
+    releaseCapturedPointer()
+    endDraw()
+    if (end.restoreTool !== null) {
+      currentTool.value = end.restoreTool as Tool
+    }
+    markPointerInteractionEnded()
+    resetPointerGestureState()
+    if (wasDrawing) {
+      logDiagnostic('pointer', 'stroke end', {
+        pointerType: e.pointerType,
+        button: e.button,
+        reason: 'rmb-hold-erase',
+      })
+    }
+    return true
+  }
+
+  if (end.openPalette) {
+    releaseCapturedPointer()
+    markPointerInteractionEnded()
+    resetPointerGestureState()
+    openQuickColorsAt(e.clientX, e.clientY, 'rmb-short-press')
+    return true
+  }
+
+  releaseCapturedPointer()
+  markPointerInteractionEnded()
+  resetPointerGestureState()
+  return true
+}
+
 function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   if (handleTextBoxContextMenu(e)) return
+  if (shouldBlockQuickColors(rmbHoldGesture)) return
   if (performance.now() < suppressQuickColorsUntil) return
   if (!active.value || penetrationMode.value || isDrawing.value) return
   if (isMacOS() && e.ctrlKey && pointerMovedSinceDown) return
-  hideToolbarPopupForCanvasInteraction()
-  quickColorsPos.value = { x: e.clientX, y: e.clientY }
-  showQuickColors.value = true
-  logActionEvent('quick colors opened', { reason: 'context-menu' })
+  openQuickColorsAt(e.clientX, e.clientY)
 }
 
 function selectQuickColor(color: string) {
@@ -839,6 +947,15 @@ function finishActivePointerInteraction() {
     cancelAnimationFrame(hoverRafId)
     hoverRafId = null
   }
+  clearRmbHoldTimer()
+  if (rmbHoldGesture.phase !== 'idle') {
+    const end = cancelRmbHold(rmbHoldGesture)
+    rmbHoldGesture = end.next
+    rmbHoldPointerId = null
+    if (end.finishErase && end.restoreTool !== null) {
+      currentTool.value = end.restoreTool as Tool
+    }
+  }
   releaseCapturedPointer()
   if (isDragging) {
     isDragging = false
@@ -858,6 +975,10 @@ function finishActivePointerInteraction() {
 }
 
 async function onPointerDown(e: PointerEvent) {
+  if (e.button === 2) {
+    onRmbPointerDown(e)
+    return
+  }
   if (e.button !== 0) return
   if (penetrationMode.value || !active.value || showQuickColors.value) return
 
@@ -995,6 +1116,7 @@ function onPointerMove(e: PointerEvent) {
 }
 
 function onPointerUp(e: PointerEvent) {
+  if (finishRmbHoldPointerUp(e)) return
   if (capturedPointerId !== null && e.pointerId !== capturedPointerId) return
   // Text-tool / commit-textbox clicks invalidate the copy modifier on pointerdown but
   // never capture — still clear gesture state so Ctrl+C works after the press.
@@ -1036,6 +1158,15 @@ function abortActivePointerInteraction() {
   if (hoverRafId !== null) {
     cancelAnimationFrame(hoverRafId)
     hoverRafId = null
+  }
+  clearRmbHoldTimer()
+  if (rmbHoldGesture.phase !== 'idle') {
+    const end = cancelRmbHold(rmbHoldGesture)
+    rmbHoldGesture = end.next
+    rmbHoldPointerId = null
+    if (end.finishErase && end.restoreTool !== null) {
+      currentTool.value = end.restoreTool as Tool
+    }
   }
   releaseCapturedPointer()
   if (isDragging) {
@@ -1598,6 +1729,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  clearRmbHoldTimer()
   window.removeEventListener('pointermove', onGlobalPointerMove)
   window.removeEventListener('pointerup', onGlobalPointerUp)
   window.removeEventListener('pointercancel', onGlobalPointerUp)

@@ -642,6 +642,12 @@ onUnmounted(() => {
                 </div>
               </div>
               <div class="help-row">
+                <span class="help-label">{{ t('help.rightClickErase') }}</span>
+                <div class="help-keys">
+                  <span class="help-keys-plain">{{ t('help.mouseRightClickHold') }}</span>
+                </div>
+              </div>
+              <div class="help-row">
                 <span class="help-label">{{ t('help.toggleWhiteboard') }}</span>
                 <div class="help-keys"><kbd class="help-kbd">W</kbd></div>
               </div>
